@@ -18,7 +18,8 @@
  */
 namespace Runtime;
 use Runtime\rtl;
-class DateTime extends $CoreObject{
+use Runtime\CoreObject;
+class DateTime extends CoreObject{
 	protected $year;
 	protected $month;
 	protected $day;
@@ -28,7 +29,7 @@ class DateTime extends $CoreObject{
 	protected $microseconds;
 	protected $timezone;
 	public function getClassName(){return "Runtime.DateTime";}
-	public static function getParentClassName(){return "CoreObject";}
+	public static function getParentClassName(){return "Runtime.CoreObject";}
 	protected function _init(){
 		parent::_init();
 		$this->year = 0;
