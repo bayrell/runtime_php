@@ -19,7 +19,7 @@
 namespace Runtime;
 use Runtime\rtl;
 use Runtime\CoreObject;
-use Runtime\Utils;
+use Runtime\RuntimeUtils;
 use Runtime\Interfaces\ContextInterface;
 class ContextObject extends CoreObject{
 	protected $_context;
@@ -63,7 +63,7 @@ class ContextObject extends CoreObject{
 		parent::__construct();
 		$this->_context = $context;
 		if (!rtl::exists($this->_context)){
-			$this->_context = Utils::globalContext();
+			$this->_context = RuntimeUtils::globalContext();
 		}
 	}
 }

@@ -1,5 +1,4 @@
 <?php
-
 /*!
  *  Bayrell Runtime Library
  *
@@ -17,19 +16,16 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-
 namespace Runtime;
-
-class Callback {
-	protected $obj;
-	protected $name;
-	
-	function __construct($obj, $name){
-		$this->obj = $obj;
-		$this->name = $name;
-	}
-		
-	function __invoke(){
-		return call_user_func_array([$this->obj, $this->name], func_get_args());
+use Runtime\CoreObject;
+use Runtime\Vector;
+class AsyncTask extends CoreObject{
+	public function getClassName(){return "Runtime.AsyncTask";}
+	public static function getParentClassName(){return "Runtime.CoreObject";}
+	protected function _init(){
+		parent::_init();
+		$this->pos = null;
+		$this->f = null;
+		$this->catch_stack = null;
 	}
 }

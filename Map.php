@@ -81,7 +81,7 @@ class Map implements \JsonSerializable{
 	 * @param T default_value
 	 * @return T
 	 */
-	public function get($key, $default_value){
+	public function get($key, $default_value, $type_value = "mixed", $type_template = ""){
 		$key = rtl::toString($key);
 		return isset($this->_map[$key]) ? $this->_map[$key] : $default_value;
 	}
@@ -93,7 +93,7 @@ class Map implements \JsonSerializable{
 	 * @param T key - position
 	 * @return T
 	 */
-	public function item($key){
+	public function item($key, $type_value = "mixed", $type_template = ""){
 		$key = rtl::toString($key);
 		if (!array_key_exists($key, $this->_map)){
 			throw new KeyNotFound(null, $key);
@@ -298,6 +298,6 @@ class Map implements \JsonSerializable{
 	 * JsonSerializable
 	 */
 	public function jsonSerialize(){
-		return $this->_map;
+		return (object) $this->_map;
 	}
 }

@@ -55,6 +55,13 @@ class CoreObject{
 	 * @param CoreObject obj
 	 */
 	function assignObject($obj){
+		$this->assignObjectAfter($obj);
+	}
+	/**
+	 * Assign and clone data from other object
+	 * @param CoreObject obj
+	 */
+	function assignObjectAfter($obj){
 	}
 	/**
 	 * Set new value instance by variable name

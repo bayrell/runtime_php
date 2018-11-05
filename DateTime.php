@@ -54,7 +54,7 @@ class DateTime extends CoreObject implements CloneableInterface, SerializeInterf
 			$this->ms = rtl::_clone($obj->ms);
 			$this->tz = rtl::_clone($obj->tz);
 		}
-		parser::assign($obj);
+		parent::assignObject($obj);
 	}
 	public function assignValue($variable_name, $value){
 		if ($variable_name == "y") $this->y = rtl::correct($value, "int", 0, "");

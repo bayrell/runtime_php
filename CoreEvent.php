@@ -1,6 +1,6 @@
 <?php
 /*!
- *  Bayrell Runtime Library 
+ *  Bayrell Runtime Library
  *
  *  (c) Copyright 2016-2018 "Ildar Bikmamatov" <support@bayrell.org>
  *
@@ -16,16 +16,14 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-namespace Runtime\Exceptions;
-use Runtime\rtl;
-use Runtime\RuntimeConstant;
-use Runtime\RuntimeUtils;
-use Runtime\Exceptions\RuntimeException;
-use Runtime\Interfaces\ContextInterface;
-class IndexOutOfRange extends RuntimeException{
-	public function getClassName(){return "Runtime.Exceptions.IndexOutOfRange";}
-	public static function getParentClassName(){return "Runtime.Exceptions.RuntimeException";}
-	function __construct($context = null, $prev = null){
-		parent::__construct(RuntimeUtils::translate("ERROR_INDEX_OUT_OF_RANGE", null, "", $context), RuntimeConstant::ERROR_INDEX_OUT_OF_RANGE, $context, $prev);
+namespace Runtime;
+use Runtime\CoreObject;
+class CoreEvent extends CoreObject{
+	public $sender;
+	public function getClassName(){return "Runtime.CoreEvent";}
+	public static function getParentClassName(){return "Runtime.CoreObject";}
+	protected function _init(){
+		parent::_init();
+		$this->sender = null;
 	}
 }

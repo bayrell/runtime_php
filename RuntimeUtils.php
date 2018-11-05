@@ -25,9 +25,9 @@ use Runtime\Vector;
 use Runtime\Interfaces\ContextInterface;
 use Runtime\Interfaces\FactoryInterface;
 use Runtime\Interfaces\SerializeInterface;
-class Utils{
+class RuntimeUtils{
 	static protected $_global_context = null;
-	public function getClassName(){return "Runtime.Utils";}
+	public function getClassName(){return "Runtime.RuntimeUtils";}
 	public static function getParentClassName(){return "";}
 	/**
 	 * Returns global context
@@ -247,24 +247,21 @@ class Utils{
 	 * @param SerializeContainer container
 	 * @return mixed
 	 */
-	static function PrimitiveToObject($obj, $context = null){
+	static function PrimitiveToObject($obj){
 		if ($obj === null){
 			return null;
 		}
 		if (rtl::isScalarValue($obj)){
 			return $obj;
 		}
-		if ($context == null){
-			$context = static::globalContext();
-		}
 		if ($obj instanceof Vector){
-			return $obj->map(function ($value) use (&$context){
-				return static::PrimitiveToObject($value, $context);
+			return $obj->map(function ($value){
+				return static::PrimitiveToObject($value);
 			});
 		}
 		if ($obj instanceof Map){
-			$obj = $obj->map(function ($key, $value) use (&$context){
-				return static::PrimitiveToObject($value, $context);
+			$obj = $obj->map(function ($key, $value){
+				return static::PrimitiveToObject($value);
 			});
 			if (!$obj->has("__class_name__")){
 				return $obj;

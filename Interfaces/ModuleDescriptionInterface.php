@@ -22,16 +22,6 @@ use Runtime\Vector;
 use Runtime\Interfaces\ContextInterface;
 interface ModuleDescriptionInterface{
 	/**
-	 * Init context
-	 * @param ContextInterface context
-	 */
-	static function initContext($context);
-	/**
-	 * Called then module registed in context
-	 * @param ContextInterface context
-	 */
-	static function onRegister($context);
-	/**
 	 * Returns module name
 	 * @return string
 	 */
@@ -46,4 +36,20 @@ interface ModuleDescriptionInterface{
 	 * @return Map<string, string>
 	 */
 	static function getRequiredModules($context);
+	/**
+	 * Called then module registed in context
+	 * @param ContextInterface context
+	 */
+	static function onRegister($context);
+	/**
+	 * Called then context read config
+	 * @param ContextInterface context
+	 * @param Map<mixed> config
+	 */
+	static function onReadConfig($context, $config);
+	/**
+	 * Init context
+	 * @param ContextInterface context
+	 */
+	static function initContext($context);
 }

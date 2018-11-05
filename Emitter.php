@@ -18,7 +18,9 @@
  */
 namespace Runtime;
 use Runtime\rtl;
+use Runtime\CoreEvent;
 use Runtime\CoreObject;
+use Runtime\Map;
 use Runtime\Vector;
 use Runtime\Interfaces\SubscribeInterface;
 class Emitter extends CoreObject{
@@ -36,10 +38,24 @@ class Emitter extends CoreObject{
 	 */
 	function __construct($val = null){
 		parent::__construct();
-		$this->methods = new Vector();
-		$this->subscribers = new Vector();
+		$this->methods = new Map();
+		$this->subscribers = new Map();
 		if ($val != null){
-			$this->methods->push($val);
+			$this->addMethod($val);
+		}
+	}
+	/**
+	 * Add method by name
+	 * @param callback f
+	 * @param string name
+	 */
+	function addMethodByName($f, $name){
+		if (!$this->methods->has($name)){
+			$this->methods->set($name, new Vector());
+		}
+		$v = $this->methods->item($name);
+		if ($v->indexOf($f) == -1){
+			$v->push($f);
 		}
 	}
 	/**
@@ -49,15 +65,45 @@ class Emitter extends CoreObject{
 	 * @return callback
 	 */
 	function addMethod($f, $events = null){
-		$this->methods->push($f);
+		if ($events == null){
+			$this->addMethodByName($f, "");
+		}
+		else {
+			$events->each(function ($item) use (&$f){
+				$this->addMethodByName($f, $item);
+			});
+		}
 		return $f;
 	}
 	/**
 	 * Remove method
 	 * @param callback f
 	 */
-	function removeMethod($f){
-		$this->methods->removeItem($f);
+	function removeMethod($f, $events = null){
+		if ($events == null){
+			$events = $this->methods->keys();
+		}
+		$events->each(function ($name) use (&$f){
+			$v = $this->methods->get($name, null);
+			if ($v == null){
+				return ;
+			}
+			$v->removeItem($f);
+		});
+	}
+	/**
+	 * Add object by name
+	 * @param callback f
+	 * @param string name
+	 */
+	function addObjectByName($f, $name){
+		if (!$this->subscribers->has($name)){
+			$this->subscribers->set($name, new Vector());
+		}
+		$v = $this->subscribers->item($name);
+		if ($v->indexOf($f) == -1){
+			$v->push($f);
+		}
 	}
 	/**
 	 * Add object
@@ -65,38 +111,70 @@ class Emitter extends CoreObject{
 	 * @param Vector<string> events
 	 */
 	function addObject($f, $events = null){
-		$this->subscribers->push($f);
+		if ($events == null){
+			$this->addObjectByName($f, "");
+		}
+		else {
+			$events->each(function ($item) use (&$f){
+				$this->addObjectByName($f, $item);
+			});
+		}
+		return $f;
 	}
 	/**
 	 * Remove object
 	 * @param SubscribeInterface f
 	 */
-	function removeObject($f){
-		$this->subscribers->removeItem($f);
+	function removeObject($f, $events = null){
+		if ($events == null){
+			$events = $this->subscribers->keys();
+		}
+		$events->each(function ($name) use (&$f){
+			$v = $this->subscribers->get($name, null);
+			if ($v == null){
+				return ;
+			}
+			$v->removeItem($f);
+		});
 	}
 	/**
 	 * Dispatch event
-	 * @param var e
+	 * @param CoreEvent e
 	 */
 	function emit($e){
 		$this->dispatch($e);
 	}
 	/**
 	 * Dispatch event
-	 * @param var e
+	 * @param CoreEvent e
 	 */
 	function dispatch($e){
+		/* Copy items */
+		$methods = $this->methods->map(function ($key, $items){
+			return $items->slice();
+		});
+		$subscribers = $this->subscribers->map(function ($key, $items){
+			return $items->slice();
+		});
 		/* Call self handler */
 		$this->handlerEvent($e);
 		/* Call methods */
-		$methods = $this->methods->slice();
-		$methods->each(function ($f) use (&$e){
-			rtl::call($f, $e);
+		$methods->each(function ($key, $items) use (&$e){
+			if ($key != "" && $e->getClassName() != $key){
+				return ;
+			}
+			$items->each(function ($f) use (&$e){
+				rtl::call($f, (new Vector())->push($e));
+			});
 		});
 		/* Call subscribers */
-		$subscribers = $this->subscribers->slice();
-		$subscribers->each(function ($obj) use (&$e){
-			$obj->handlerEvent($e);
+		$subscribers->each(function ($key, $items) use (&$e){
+			if ($key != "" && $e->getClassName() != $key){
+				return ;
+			}
+			$items->each(function ($obj) use (&$e){
+				$obj->handlerEvent($e);
+			});
 		});
 	}
 	/**

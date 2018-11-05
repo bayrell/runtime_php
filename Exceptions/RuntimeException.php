@@ -18,7 +18,7 @@
  */
 namespace Runtime\Exceptions;
 use Runtime\rtl;
-use Runtime\Utils;
+use Runtime\RuntimeUtils;
 use Runtime\Interfaces\ContextInterface;
 
 class ClassException extends \Exception {}
@@ -44,10 +44,10 @@ class RuntimeException extends ClassException{
 		$this->line = -1;
 		$this->pos = -1;
 	}
-	function __construct($context = null, $message = "", $code = 0, $prev = null){
+	function __construct($message = "", $code = 0, $context = null, $prev = null){
 		parent::__construct($message, $code, $prev);
 		if ($context == null){
-			$context = Utils::globalContext();
+			$context = RuntimeUtils::globalContext();
 		}
 		$this->error_str = $message;
 		$this->context = $context;

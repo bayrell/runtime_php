@@ -136,6 +136,24 @@ class rtl{
 		return call_user_func_array([$class_name, $method_name], ($args!=null)?$args->_getArr():[]);
 	}
 	/**
+	 * Call async method
+	 * @return Object
+	 */
+	
+	static function awaitRun($f){
+	}
+	/**
+	 * Returns value if value instanceof type_value, else returns def_value
+	 * @param var value
+	 * @param string type_value
+	 * @param var def_value
+	 * @param var type_template
+	 * @return var
+	 */
+	static function convert($value, $type_value, $def_value = null, $type_template = ""){
+		return static::correct($value, $type_value, $def_value, $type_template);
+	}
+	/**
 	 * Returns value if value instanceof type_value, else returns def_value
 	 * @param var value
 	 * @param string type_value
@@ -187,7 +205,7 @@ class rtl{
 			return static::isString($value);
 		}
 		if ($tp == "bool" || $tp == "boolean"){
-			return static::isBool($value);
+			return static::isBoolean($value);
 		}
 		if (rtl::is_instanceof($value, $tp)){
 			return true;
@@ -370,7 +388,8 @@ class rtl{
 	 */
 	
 	static function convertNodeJSModuleName($name){
-		$arr = "qazwsxedcrfvtgbyhnujmikolp0123456789";
+		$arr1 = "qazwsxedcrfvtgbyhnujmikolp";
+		$arr2 = "0123456789";
 		$res = "";
 		$sz = mb_strlen($name);
 		$previsbig = false;
@@ -378,8 +397,9 @@ class rtl{
 			$ch = mb_substr($name, $i, 1);
 			$ch2 = mb_strtoupper($ch);
 			$ch3 = mb_strtolower($ch);
-			$isAlphaNum = mb_strpos($arr, $ch3) !== false;
-			if ($i > 0 && $ch == $ch2 && !$previsbig && $isAlphaNum){
+			$isAlpha = mb_strpos($arr1, $ch3) !== false;
+			$isNum = mb_strpos($arr2, $ch3) !== false;
+			if ($i > 0 && $ch == $ch2 && !$previsbig && $isAlpha){
 				$res .= "-";
 			}
 			$res .= $ch3;
@@ -389,7 +409,7 @@ class rtl{
 			else {
 				$previsbig = false;
 			}
-			if (!$isAlphaNum){
+			if (!$isAlphaNum && !$isNum){
 				$previsbig = true;
 			}
 		}

@@ -65,4 +65,24 @@ interface ContextInterface{
 	 * @return string - translated string
 	 */
 	/*string translate(string message, Map params = null, string locale = "");*/
+	/**
+	 * For current context
+	 * @return ContextInterface
+	 */
+	function fork();
+	/**
+	 * Realease context resources
+	 */
+	function release();
+	/**
+	 * Returns context value
+	 * @param string name
+	 * @return mixed
+	 */
+	function getValue($name, $default_value = null, $type_value = "mixed", $type_template = "");
+	/**
+	 * Set context value
+	 * @param string name
+	 */
+	function setValue($name, $value);
 }

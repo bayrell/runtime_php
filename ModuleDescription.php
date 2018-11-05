@@ -38,7 +38,7 @@ class ModuleDescription implements ModuleDescriptionInterface{
 	 * @return string
 	 */
 	static function getModuleVersion(){
-		return "0.5.0";
+		return "0.5.1";
 	}
 	/**
 	 * Returns required modules
@@ -48,17 +48,23 @@ class ModuleDescription implements ModuleDescriptionInterface{
 		return null;
 	}
 	/**
-	 * Init context
-	 * @param ContextInterface context
-	 */
-	static function initContext($context){
-	}
-	/**
 	 * Called then module registed in context
 	 * @param ContextInterface context
 	 */
 	static function onRegister($context){
-		$context->registerManager("Runtime.Dispatcher", new Emitter());
 		$context->registerManager("Runtime.Config", new Map());
+	}
+	/**
+	 * Called then context read config
+	 * @param ContextInterface context
+	 * @param Map<mixed> config
+	 */
+	static function onReadConfig($context, $config){
+	}
+	/**
+	 * Init context
+	 * @param ContextInterface context
+	 */
+	static function initContext($context){
 	}
 }

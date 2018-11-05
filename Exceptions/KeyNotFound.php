@@ -18,15 +18,15 @@
  */
 namespace Runtime\Exceptions;
 use Runtime\rtl;
-use Runtime\Utils;
 use Runtime\RuntimeConstant;
+use Runtime\RuntimeUtils;
 use Runtime\Exceptions\RuntimeException;
 use Runtime\Interfaces\ContextInterface;
 class KeyNotFound extends RuntimeException{
 	public function getClassName(){return "Runtime.Exceptions.KeyNotFound";}
 	public static function getParentClassName(){return "Runtime.Exceptions.RuntimeException";}
-	function __construct($context = null, $key, $prev = null){
-		/* Utils::translate("ERROR_KEY_NOT_FOUND", null, "", context),  */
-		parent::__construct($context, "Key '" . rtl::toString($key) . "' not found", RuntimeConstant::ERROR_KEY_NOT_FOUND, $prev);
+	function __construct($key, $context = null, $prev = null){
+		/* RuntimeUtils::translate("ERROR_KEY_NOT_FOUND", null, "", context),  */
+		parent::__construct("Key '" . rtl::toString($key) . "' not found", RuntimeConstant::ERROR_KEY_NOT_FOUND, $context, $prev);
 	}
 }
