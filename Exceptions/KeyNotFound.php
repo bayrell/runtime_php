@@ -23,10 +23,11 @@ use Runtime\RuntimeUtils;
 use Runtime\Exceptions\RuntimeException;
 use Runtime\Interfaces\ContextInterface;
 class KeyNotFound extends RuntimeException{
-	public function getClassName(){return "Runtime.Exceptions.KeyNotFound";}
-	public static function getParentClassName(){return "Runtime.Exceptions.RuntimeException";}
 	function __construct($key, $context = null, $prev = null){
 		/* RuntimeUtils::translate("ERROR_KEY_NOT_FOUND", null, "", context),  */
 		parent::__construct("Key '" . rtl::toString($key) . "' not found", RuntimeConstant::ERROR_KEY_NOT_FOUND, $context, $prev);
 	}
+	/* ======================= Class Init Functions ======================= */
+	public function getClassName(){return "Runtime.Exceptions.KeyNotFound";}
+	public static function getParentClassName(){return "Runtime.Exceptions.RuntimeException";}
 }

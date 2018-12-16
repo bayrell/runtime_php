@@ -26,13 +26,6 @@ use Runtime\Interfaces\SubscribeInterface;
 class Emitter extends CoreObject{
 	protected $methods;
 	protected $subscribers;
-	public function getClassName(){return "Runtime.Emitter";}
-	public static function getParentClassName(){return "Runtime.CoreObject";}
-	protected function _init(){
-		parent::_init();
-		$this->methods = null;
-		$this->subscribers = null;
-	}
 	/**
 	 * Constructor
 	 */
@@ -141,14 +134,8 @@ class Emitter extends CoreObject{
 	 * Dispatch event
 	 * @param CoreEvent e
 	 */
-	function emit($e){
-		$this->dispatch($e);
-	}
-	/**
-	 * Dispatch event
-	 * @param CoreEvent e
-	 */
 	function dispatch($e){
+		$keys = null;
 		/* Copy items */
 		$methods = $this->methods->map(function ($key, $items){
 			return $items->slice();
@@ -159,27 +146,43 @@ class Emitter extends CoreObject{
 		/* Call self handler */
 		$this->handlerEvent($e);
 		/* Call methods */
-		$methods->each(function ($key, $items) use (&$e){
+		$keys = $methods->keys();
+		for ($i = 0; $i < $keys->count(); $i++){
+			$key = $keys->item($i);
+			$items = $methods->item($key);
 			if ($key != "" && $e->getClassName() != $key){
-				return ;
+				continue;
 			}
-			$items->each(function ($f) use (&$e){
+			for ($j = 0; $j < $items->count(); $j++){
+				$f = $items->item($j);
 				rtl::call($f, (new Vector())->push($e));
-			});
-		});
-		/* Call subscribers */
-		$subscribers->each(function ($key, $items) use (&$e){
-			if ($key != "" && $e->getClassName() != $key){
-				return ;
 			}
-			$items->each(function ($obj) use (&$e){
+		}
+		/* Call subscribers */
+		$keys = $subscribers->keys();
+		for ($i = 0; $i < $keys->count(); $i++){
+			$key = $keys->item($i);
+			$items = $subscribers->item($key);
+			if ($key != "" && $e->getClassName() != $key){
+				continue;
+			}
+			for ($j = 0; $j < $items->count(); $j++){
+				$obj = $items->item($j);
 				$obj->handlerEvent($e);
-			});
-		});
+			}
+		}
 	}
 	/**
 	 * Handler Event
 	 */
 	function handlerEvent($e){
+	}
+	/* ======================= Class Init Functions ======================= */
+	public function getClassName(){return "Runtime.Emitter";}
+	public static function getParentClassName(){return "Runtime.CoreObject";}
+	protected function _init(){
+		parent::_init();
+		$this->methods = null;
+		$this->subscribers = null;
 	}
 }

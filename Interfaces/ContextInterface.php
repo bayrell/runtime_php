@@ -85,4 +85,5 @@ interface ContextInterface{
 	 * @param string name
 	 */
 	function setValue($name, $value);
+	/* ======================= Class Init Functions ======================= */
 }

@@ -27,8 +27,6 @@ use Runtime\Interfaces\FactoryInterface;
 use Runtime\Interfaces\SerializeInterface;
 class RuntimeUtils{
 	static protected $_global_context = null;
-	public function getClassName(){return "Runtime.RuntimeUtils";}
-	public static function getParentClassName(){return "";}
 	/**
 	 * Returns global context
 	 * @return ContextInterface
@@ -210,7 +208,7 @@ class RuntimeUtils{
 	 * @param mixed obj
 	 * @return mixed
 	 */
-	static function ObjectToPrimitive($obj){
+	static function ObjectToPrimitive($obj, $force_class_name = false){
 		if ($obj === null){
 			return null;
 		}
@@ -218,25 +216,38 @@ class RuntimeUtils{
 			return $obj;
 		}
 		if ($obj instanceof Vector){
-			return $obj->map(function ($value){
-				return static::ObjectToPrimitive($value);
-			});
+			$res = new Vector();
+			for ($i = 0; $i < $obj->count(); $i++){
+				$value = $obj->item($i);
+				$value = static::ObjectToPrimitive($value, $force_class_name);
+				$res->push($value);
+			}
+			return $res;
 		}
 		if ($obj instanceof Map){
-			$obj = $obj->map(function ($key, $value){
-				return static::ObjectToPrimitive($value);
-			});
-			return $obj;
+			$res = new Map();
+			$keys = $obj->keys();
+			for ($i = 0; $i < $keys->count(); $i++){
+				$key = $keys->item($i);
+				$value = $obj->item($key);
+				$value = static::ObjectToPrimitive($value, $force_class_name);
+				$res->set($key, $value);
+			}
+			if ($force_class_name){
+				$res->set("__class_name__", "Runtime.Map");
+			}
+			return $res;
 		}
 		if ($obj instanceof SerializeInterface){
 			$names = new Vector();
 			$values = new Map();
 			$obj->getVariablesNames($names);
-			$names->each(function ($variable_name) use (&$values, &$obj){
+			for ($i = 0; $i < $names->count(); $i++){
+				$variable_name = $names->item($i);
 				$value = $obj->takeValue($variable_name, null);
-				$value = static::ObjectToPrimitive($value);
+				$value = static::ObjectToPrimitive($value, $force_class_name);
 				$values->set($variable_name, $value);
-			});
+			}
 			$values->set("__class_name__", $obj->getClassName());
 			return $values;
 		}
@@ -255,22 +266,31 @@ class RuntimeUtils{
 			return $obj;
 		}
 		if ($obj instanceof Vector){
-			return $obj->map(function ($value){
-				return static::PrimitiveToObject($value);
-			});
+			$res = new Vector();
+			for ($i = 0; $i < $obj->count(); $i++){
+				$value = $obj->item($i);
+				$value = static::PrimitiveToObject($value);
+				$res->push($value);
+			}
+			return $res;
 		}
 		if ($obj instanceof Map){
-			$obj = $obj->map(function ($key, $value){
-				return static::PrimitiveToObject($value);
-			});
-			if (!$obj->has("__class_name__")){
-				return $obj;
+			$res = new Map();
+			$keys = $obj->keys();
+			for ($i = 0; $i < $keys->count(); $i++){
+				$key = $keys->item($i);
+				$value = $obj->item($key);
+				$value = static::PrimitiveToObject($value);
+				$res->set($key, $value);
 			}
-			if ($obj->item("__class_name__") == "Runtime.Map"){
-				$obj->remove("__class_name__");
-				return $obj;
+			if (!$res->has("__class_name__")){
+				return $res;
 			}
-			$class_name = $obj->item("__class_name__");
+			if ($res->item("__class_name__") == "Runtime.Map"){
+				$res->remove("__class_name__");
+				return $res;
+			}
+			$class_name = $res->item("__class_name__");
 			if (!rtl::class_exists($class_name)){
 				return null;
 			}
@@ -280,13 +300,13 @@ class RuntimeUtils{
 			$instance = rtl::newInstance($class_name, null);
 			$names = new Vector();
 			$instance->getVariablesNames($names);
-			$names->each(function ($variable_name) use (&$instance, &$obj){
-				if ($variable_name == "__class_name__"){
-					return ;
+			for ($i = 0; $i < $names->count(); $i++){
+				$variable_name = $names->item($i);
+				if ($variable_name != "__class_name__"){
+					$value = $res->get($variable_name, null);
+					$instance->assignValue($variable_name, $value);
 				}
-				$value = $obj->get($variable_name, null);
-				$instance->assignValue($variable_name, $value);
-			});
+			}
 			return $instance;
 		}
 		return null;
@@ -330,6 +350,13 @@ class RuntimeUtils{
 		}
 		
 		if (is_array($value)){
+			if ( isset($value['__class_name__']) ){
+				$res = new \Runtime\Map($value);
+				$res = $res->map(function ($key, $val){
+					return self::NativeToPrimitive($val);
+				});
+				return $res;
+			}
 			$arr = array_values($value);
 			$res = (new \Runtime\Vector())->_assignArr($arr);
 			$res = $res->map(function ($item){
@@ -340,8 +367,8 @@ class RuntimeUtils{
 		
 		return $value;
 	}
-	static function ObjectToNative($value){
-		$value = static::ObjectToPrimitive($value);
+	static function ObjectToNative($value, $force_class_name = false){
+		$value = static::ObjectToPrimitive($value, $force_class_name);
 		$value = static::PrimitiveToNative($value);
 		return $value;
 	}
@@ -404,4 +431,7 @@ class RuntimeUtils{
 	static function base64_decode($s){
 		return base64_decode($s);
 	}
+	/* ======================= Class Init Functions ======================= */
+	public function getClassName(){return "Runtime.RuntimeUtils";}
+	public static function getParentClassName(){return "";}
 }

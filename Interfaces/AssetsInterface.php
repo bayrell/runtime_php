@@ -33,4 +33,5 @@ interface AssetsInterface{
 	 * Returns async loaded files
 	 */
 	static function assetsAsyncLoad($context);
+	/* ======================= Class Init Functions ======================= */
 }

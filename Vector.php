@@ -463,6 +463,7 @@ class Vector implements \JsonSerializable{
 	}
 	
 	
+	
 	/**
 	 * Sort vector
 	 * @param callback f - Sort user function
@@ -474,5 +475,54 @@ class Vector implements \JsonSerializable{
 		else{
 			usort($this->_arr, $f);
 		}
+	}
+	
+	
+	
+	/**
+	 * Swap item1 to item2
+	 * @params int index1 - item1 position
+	 * @params int index2 - item2 position. If index2 = -1, insert as last item
+	 */
+	public function swap($index1, $index2){
+		if ($index2 < 0){
+			$index2 += $this->count();
+		}
+		$item1 = $this->item($index1);
+		if ($index2 == -1){
+			$this->remove($index1, 1);
+			$this->push($item1);
+		}
+		else if ($index1 > $index2){
+			$item2 = $this->item($index2);
+			$this->insert($index1, $item2);
+			$this->remove($index1 + 1, 1);			
+			$this->insert($index2, $item1);
+			$this->remove($index2 + 1, 1);
+		}
+		else if (index1 < index2){
+			$item2 = $this->item($index2);
+			$this->insert($index2, $item1);
+			$this->remove($index2 + 1, 1);
+			$this->insert($index1, $item2);
+			$this->remove($index1 + 1, 1);			
+		}
+	}
+	
+	
+	
+	/**
+	 * Remove dublicate values
+	 */
+	public function removeDublicates(){
+		$arr = [];
+		for ($i=0; $i<$this->count();$i++){			
+			$value = $this->item($i);
+			$pos = array_search($value, $arr, true);
+			if ($pos === false){
+				$arr[] = $value;
+			}
+		}
+		$this->_arr = $arr;
 	}
 }

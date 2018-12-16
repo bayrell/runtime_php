@@ -23,6 +23,7 @@ class SerializeContainer extends CoreObject{
 	public $indent;
 	public $space;
 	public $crlf;
+	/* ======================= Class Init Functions ======================= */
 	public function getClassName(){return "Runtime.SerializeContainer";}
 	public static function getParentClassName(){return "Runtime.CoreObject";}
 	protected function _init(){

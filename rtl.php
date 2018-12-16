@@ -19,8 +19,6 @@
 namespace Runtime;
 use Runtime\Interfaces\StringInterface;
 class rtl{
-	public function getClassName(){return "Runtime.rtl";}
-	public static function getParentClassName(){return "";}
 	static function isBrowser(){
 		return false;
 	}
@@ -39,7 +37,9 @@ class rtl{
 	
 	static function is_instanceof($obj, $class_name){
 		$class_name = self::find_class($class_name);
-		if (is_subclass_of($obj, $class_name)) return true;
+		if ($obj == null) return false;
+		if (gettype($obj) != "object") return false;
+		if (is_subclass_of($obj, $class_name)){ return true;}
 		return is_a($obj, $class_name);
 	}
 	/**
@@ -107,7 +107,8 @@ class rtl{
 	 * @return Object
 	 */
 	
-	static function call($f, $args){
+	static function call($f, $args = null){
+		if ($args == null) return call_user_func($f);
 		return call_user_func_array($f, $args);
 	}
 	/**
@@ -115,10 +116,10 @@ class rtl{
 	 * @return Object
 	 */
 	
-	static function callMethod($obj, $method_name, $args){
+	static function callMethod($obj, $method_name, $args = null){
 		if ($args != null)
 			return call_user_func_array([$obj, $method_name], $args->_getArr());
-		return call_user_func_array([$obj, $method_name], $args);
+		return call_user_func([$obj, $method_name]);
 	}
 	/**
 	 * Call method
@@ -150,8 +151,8 @@ class rtl{
 	 * @param var type_template
 	 * @return var
 	 */
-	static function convert($value, $type_value, $def_value = null, $type_template = ""){
-		return static::correct($value, $type_value, $def_value, $type_template);
+	static function correct($value, $type_value, $def_value = null, $type_template = ""){
+		return static::convert($value, $type_value, $def_value, $type_template);
 	}
 	/**
 	 * Returns value if value instanceof type_value, else returns def_value
@@ -161,16 +162,43 @@ class rtl{
 	 * @param var type_template
 	 * @return var
 	 */
-	static function correct($value, $type_value, $def_value = null, $type_template = ""){
+	static function convert($value, $type_value, $def_value = null, $type_template = ""){
 		if ($type_value == "mixed" || $type_value == "var"){
 			return $value;
 		}
-		if (static::checkValue($value, $type_value)){
+		if ($value != null && static::checkValue($value, $type_value)){
 			if (($type_value == "Runtime.Vector" || $type_value == "Runtime.Map") && $type_template != ""){
 				
 				return $value->_correctItemsByType($type_template);
 			}
 			return $value;
+		}
+		else {
+			$is_string = rtl::isString($value);
+			$is_number = rtl::isNumber($value);
+			$is_bool = rtl::isBoolean($value);
+			if ($is_string || $is_bool || $is_number){
+				$s_value = rtl::toString($value);
+				try{
+					if ($type_value == "int"){
+						$val = rtl::toInt($value);
+						return $val;
+					}
+					else if ($type_value == "float" || $type_value == "double"){
+						$val = rtl::toFloat($value);
+						return $val;
+					}
+					else if ($type_value == "bool"){
+						$val = rtl::toBool($value);
+						return $val;
+					}
+				}catch(\Exception $_the_exception){
+					if ($_the_exception instanceof \Exception){
+						$e = $_the_exception;
+					}
+					else { throw $_the_exception; }
+				}
+			}
 		}
 		if (!static::checkValue($def_value, $type_value)){
 			if ($type_value == "int" || $type_value == "float" || $type_value == "double"){
@@ -313,11 +341,44 @@ class rtl{
 	/**
 	 * Convert value to int
 	 * @param var value
-	 * @return string
+	 * @return int
 	 */
 	
 	static function toInt($val){
-		return (int)$val;
+		$res = (int)$val;
+		$s_res = (string)$res;
+		$s_val = (string)$val;
+		if ($s_res == $s_val)
+			return $res;
+		throw new \Exception("Error convert to int");
+	}
+	/**
+	 * Convert value to boolean
+	 * @param var value
+	 * @return bool
+	 */
+	
+	static function toBool($val){
+		$res = (bool)$val;
+		$s_res = (string)$res;
+		$s_val = (string)$val;
+		if ($s_res == $s_val)
+			return $res;
+		throw new \Exception("Error convert to boolean");
+	}
+	/**
+	 * Convert value to float
+	 * @param var value
+	 * @return float
+	 */
+	
+	static function toFloat($val){
+		$res = floatval($val);
+		$s_res = (string)$res;
+		$s_val = (string)$val;
+		if ($s_res == $s_val)
+			return $res;
+		throw new \Exception("Error convert to float");
 	}
 	/**
 	 * Returns unique value
@@ -362,7 +423,7 @@ class rtl{
 	 */
 	
 	static function dump($value){
-		return var_dump($value);
+		var_dump($value);
 	}
 	/**
 	 * Returns random value x, where a <= x <= b
@@ -416,4 +477,25 @@ class rtl{
 		$res .= "-nodejs";
 		return $res;
 	}
+	/**
+	 * Returns global context
+	 * @return ContextInterface
+	 */
+	static function globalContext(){
+		return rtl::callStaticMethod("Runtime.RuntimeUtils", "globalContext", null);
+	}
+	/**
+	 * Translate message
+	 * @params string message - message need to be translated
+	 * @params MapInterface params - Messages params. Default null.
+	 * @params string locale - Different locale. Default "".
+	 * @return string - translated string
+	 */
+	static function translate($message, $params = null, $locale = "", $context = null){
+		
+		return \Runtime\RuntimeUtils::translate($message, $params, $locale, $context);
+	}
+	/* ======================= Class Init Functions ======================= */
+	public function getClassName(){return "Runtime.rtl";}
+	public static function getParentClassName(){return "";}
 }

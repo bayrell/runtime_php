@@ -16,38 +16,28 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-namespace Runtime\Interfaces;
+namespace Runtime;
 use Runtime\CoreObject;
 use Runtime\Map;
-use Runtime\Vector;
-use Runtime\Interfaces\ContextInterface;
-interface SerializeInterface{
-	/**
-	 * Returns classname of the object
-	 * @return string
+use Runtime\Interfaces\SerializeInterface;
+class CoreStruct extends CoreObject implements SerializeInterface{
+	/** 
+	 * Constructor
 	 */
-	function getClassName();
+	function __construct($obj = null){
+		parent::__construct();
+		$this->assignMap($obj);
+	}
 	/**
-	 * Returns name of variables to serialization
-	 * @return Vector<string>
+	 * Clone this object
+	 * @return CoreStruct
 	 */
-	function getVariablesNames($names);
-	/**
-	 * Assign and clone data from other object
-	 * @param CoreObject obj
-	 */
-	function assignObject($obj);
-	/**
-	 * Set new value instance by variable name
-	 * @param string variable_name
-	 * @param var value
-	 */
-	function assignValue($variable_name, $value);
-	/**
-	 * Returns instance of the value by variable name
-	 * @param string variable_name
-	 * @return var
-	 */
-	function takeValue($variable_name, $default_value = null);
+	function clone(){
+		$instance = $rtl::newInstance($this->getClassName());
+		$instance->assignObject($this);
+		return $instance;
+	}
 	/* ======================= Class Init Functions ======================= */
+	public function getClassName(){return "Runtime.CoreStruct";}
+	public static function getParentClassName(){return "Runtime.CoreObject";}
 }

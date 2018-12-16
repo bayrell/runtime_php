@@ -24,8 +24,6 @@ use Runtime\Vector;
 use Runtime\Interfaces\ContextInterface;
 use Runtime\Interfaces\ModuleDescriptionInterface;
 class ModuleDescription implements ModuleDescriptionInterface{
-	public function getClassName(){return "Runtime.ModuleDescription";}
-	public static function getParentClassName(){return "";}
 	/**
 	 * Returns module name
 	 * @return string
@@ -38,7 +36,7 @@ class ModuleDescription implements ModuleDescriptionInterface{
 	 * @return string
 	 */
 	static function getModuleVersion(){
-		return "0.5.1";
+		return "0.6.0";
 	}
 	/**
 	 * Returns required modules
@@ -67,4 +65,7 @@ class ModuleDescription implements ModuleDescriptionInterface{
 	 */
 	static function initContext($context){
 	}
+	/* ======================= Class Init Functions ======================= */
+	public function getClassName(){return "Runtime.ModuleDescription";}
+	public static function getParentClassName(){return "";}
 }

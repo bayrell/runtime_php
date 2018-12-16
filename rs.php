@@ -20,8 +20,6 @@ namespace Runtime;
 use Runtime\rtl;
 use Runtime\Vector;
 class rs{
-	public function getClassName(){return "Runtime.rs";}
-	public static function getParentClassName(){return "";}
 	/**
 	 * Returns string lenght
 	 * @param string s The string
@@ -168,4 +166,7 @@ class rs{
 	static function htmlEscape($s){
 		return htmlspecialchars($s, ENT_QUOTES | ENT_HTML401);
 	}
+	/* ======================= Class Init Functions ======================= */
+	public function getClassName(){return "Runtime.rs";}
+	public static function getParentClassName(){return "";}
 }

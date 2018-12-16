@@ -1,4 +1,5 @@
 <?php
+
 /*!
  *  Bayrell Runtime Library
  *
@@ -16,11 +17,19 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-namespace Runtime\Interfaces;
-interface StringInterface{
-	/**
-	 * Returns string
-	 */
-	function toString();
-	/* ======================= Class Init Functions ======================= */
+
+namespace Runtime;
+
+class Callback {
+	protected $obj;
+	protected $name;
+	
+	function __construct($obj, $name){
+		$this->obj = $obj;
+		$this->name = $name;
+	}
+		
+	function __invoke(){
+		return call_user_func_array([$this->obj, $this->name], func_get_args());
+	}
 }

@@ -18,17 +18,41 @@
  */
 namespace Runtime;
 class RuntimeConstant{
+	/* Log level */
+	/**
+	 * Fatal error. Application stoped
+	 */
 	const LOG_FATAL = 0;
+	/**
+	 * Critical error. Application damaged, but works
+	 */
 	const LOG_CRITICAL = 2;
+	/**
+	 * Any Application error or exception
+	 */
 	const LOG_ERROR = 4;
+	/**
+	 * Log warning. Developer should attention to this
+	 */
 	const LOG_WARNING = 6;
+	/**
+	 * Information about any event
+	 */
 	const LOG_INFO = 8;
+	/**
+	 * Debug level 1
+	 */
 	const LOG_DEBUG = 10;
+	/**
+	 * Debug level 2
+	 */
 	const LOG_DEBUG2 = 12;
+	/* Status codes */
 	const STATUS_DONE = 0;
 	const STATUS_PLAN = 1;
 	const STATUS_PROCESS = 2;
 	const STATUS_FAIL = -1;
+	/* Errors */
 	const ERROR_NULL = 0;
 	const ERROR_OK = 1;
 	const ERROR_PROCCESS = 100;
@@ -45,30 +69,7 @@ class RuntimeConstant{
 	const ERROR_CSRF_TOKEN = -10;
 	const ERROR_RUNTIME = -11;
 	const ERROR_VALIDATION = -12;
+	/* ======================= Class Init Functions ======================= */
 	public function getClassName(){return "Runtime.RuntimeConstant";}
 	public static function getParentClassName(){return "";}
-	/* Log level */
-	/**
-	 * Fatal error. Application stoped
-	 */
-	/**
-	 * Critical error. Application damaged, but works
-	 */
-	/**
-	 * Any Application error or exception
-	 */
-	/**
-	 * Log warning. Developer should attention to this
-	 */
-	/**
-	 * Information about any event
-	 */
-	/**
-	 * Debug level 1
-	 */
-	/**
-	 * Debug level 2
-	 */
-	/* Status codes */
-	/* Errors */
 }

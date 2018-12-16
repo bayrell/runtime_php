@@ -30,65 +30,6 @@ class DateTime extends CoreObject implements CloneableInterface, SerializeInterf
 	protected $s;
 	protected $ms;
 	protected $tz;
-	public function getClassName(){return "Runtime.DateTime";}
-	public static function getParentClassName(){return "Runtime.CoreObject";}
-	protected function _init(){
-		parent::_init();
-		$this->y = 0;
-		$this->m = 0;
-		$this->d = 0;
-		$this->h = 0;
-		$this->u = 0;
-		$this->s = 0;
-		$this->ms = 0;
-		$this->tz = "UTC";
-	}
-	public function assignObject($obj){
-		if ($obj instanceof DateTime){
-			$this->y = rtl::_clone($obj->y);
-			$this->m = rtl::_clone($obj->m);
-			$this->d = rtl::_clone($obj->d);
-			$this->h = rtl::_clone($obj->h);
-			$this->u = rtl::_clone($obj->u);
-			$this->s = rtl::_clone($obj->s);
-			$this->ms = rtl::_clone($obj->ms);
-			$this->tz = rtl::_clone($obj->tz);
-		}
-		parent::assignObject($obj);
-	}
-	public function assignValue($variable_name, $value){
-		if ($variable_name == "y") $this->y = rtl::correct($value, "int", 0, "");
-		else if ($variable_name == "m") $this->m = rtl::correct($value, "int", 0, "");
-		else if ($variable_name == "d") $this->d = rtl::correct($value, "int", 0, "");
-		else if ($variable_name == "h") $this->h = rtl::correct($value, "int", 0, "");
-		else if ($variable_name == "u") $this->u = rtl::correct($value, "int", 0, "");
-		else if ($variable_name == "s") $this->s = rtl::correct($value, "int", 0, "");
-		else if ($variable_name == "ms") $this->ms = rtl::correct($value, "int", 0, "");
-		else if ($variable_name == "tz") $this->tz = rtl::correct($value, "string", "UTC", "");
-		else parent::assignValue($variable_name, $value);
-	}
-	public function takeValue($variable_name, $default_value = null){
-		if ($variable_name == "y") return $this->y;
-		else if ($variable_name == "m") return $this->m;
-		else if ($variable_name == "d") return $this->d;
-		else if ($variable_name == "h") return $this->h;
-		else if ($variable_name == "u") return $this->u;
-		else if ($variable_name == "s") return $this->s;
-		else if ($variable_name == "ms") return $this->ms;
-		else if ($variable_name == "tz") return $this->tz;
-		return parent::takeValue($variable_name, $default_value);
-	}
-	public function getVariablesNames($names){
-		parent::getVariablesNames($names);
-		$names->push("y");
-		$names->push("m");
-		$names->push("d");
-		$names->push("h");
-		$names->push("u");
-		$names->push("s");
-		$names->push("ms");
-		$names->push("tz");
-	}
 	/**
 	 * Set date
 	 * @param int y - Year
@@ -357,5 +298,35 @@ class DateTime extends CoreObject implements CloneableInterface, SerializeInterf
 		$dt->setTimezone( new \DateTimeZone("UTC") ); 
 		return $dt->format("Y-m-d H:i:s");
 		return "";
+	}
+	/* ======================= Class Init Functions ======================= */
+	public function getClassName(){return "Runtime.DateTime";}
+	public static function getParentClassName(){return "Runtime.CoreObject";}
+	protected function _init(){
+		parent::_init();
+		$this->y = 0;
+		$this->m = 0;
+		$this->d = 0;
+		$this->h = 0;
+		$this->u = 0;
+		$this->s = 0;
+		$this->ms = 0;
+		$this->tz = "UTC";
+	}
+	public function assignObject($obj){
+		if ($obj instanceof DateTime){
+		}
+		parent::assignObject($obj);
+	}
+	public function assignValue($variable_name, $value){
+		parent::assignValue($variable_name, $value);
+	}
+	public function takeValue($variable_name, $default_value = null){
+		return parent::takeValue($variable_name, $default_value);
+	}
+	public static function getFieldsList($names){
+	}
+	public static function getFieldInfoByName($field_name){
+		return null;
 	}
 }

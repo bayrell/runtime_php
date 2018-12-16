@@ -29,15 +29,6 @@ class Context extends CoreObject implements ContextInterface{
 	protected $_values;
 	protected $_managers;
 	protected $_providers_names;
-	public function getClassName(){return "Runtime.Context";}
-	public static function getParentClassName(){return "Runtime.CoreObject";}
-	protected function _init(){
-		parent::_init();
-		$this->_modules = null;
-		$this->_values = null;
-		$this->_managers = null;
-		$this->_providers_names = null;
-	}
 	/**
 	 * Constructor
 	 */
@@ -228,5 +219,15 @@ class Context extends CoreObject implements ContextInterface{
 	 */
 	function setValue($name, $value){
 		$this->_values->set($name, $value);
+	}
+	/* ======================= Class Init Functions ======================= */
+	public function getClassName(){return "Runtime.Context";}
+	public static function getParentClassName(){return "Runtime.CoreObject";}
+	protected function _init(){
+		parent::_init();
+		$this->_modules = null;
+		$this->_values = null;
+		$this->_managers = null;
+		$this->_providers_names = null;
 	}
 }

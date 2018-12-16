@@ -20,6 +20,7 @@ namespace Runtime;
 use Runtime\CoreObject;
 use Runtime\Vector;
 class AsyncTask extends CoreObject{
+	/* ======================= Class Init Functions ======================= */
 	public function getClassName(){return "Runtime.AsyncTask";}
 	public static function getParentClassName(){return "Runtime.CoreObject";}
 	protected function _init(){

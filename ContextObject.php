@@ -23,12 +23,6 @@ use Runtime\RuntimeUtils;
 use Runtime\Interfaces\ContextInterface;
 class ContextObject extends CoreObject{
 	protected $_context;
-	public function getClassName(){return "Runtime.ContextObject";}
-	public static function getParentClassName(){return "Runtime.CoreObject";}
-	protected function _init(){
-		parent::_init();
-		$this->_context = null;
-	}
 	/**
 	 * Returns context provider
 	 *
@@ -65,5 +59,12 @@ class ContextObject extends CoreObject{
 		if (!rtl::exists($this->_context)){
 			$this->_context = RuntimeUtils::globalContext();
 		}
+	}
+	/* ======================= Class Init Functions ======================= */
+	public function getClassName(){return "Runtime.ContextObject";}
+	public static function getParentClassName(){return "Runtime.CoreObject";}
+	protected function _init(){
+		parent::_init();
+		$this->_context = null;
 	}
 }

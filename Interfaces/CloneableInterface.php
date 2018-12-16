@@ -31,4 +31,5 @@ interface CloneableInterface{
 	 * @param CoreObject obj
 	 */
 	function assignObject($obj);
+	/* ======================= Class Init Functions ======================= */
 }

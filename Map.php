@@ -83,7 +83,9 @@ class Map implements \JsonSerializable{
 	 */
 	public function get($key, $default_value, $type_value = "mixed", $type_template = ""){
 		$key = rtl::toString($key);
-		return isset($this->_map[$key]) ? $this->_map[$key] : $default_value;
+		$val = isset($this->_map[$key]) ? $this->_map[$key] : $default_value;
+		$val = rtl::convert($val, $type_value, $default_value, $type_template);
+		return $val;
 	}
 	
 	

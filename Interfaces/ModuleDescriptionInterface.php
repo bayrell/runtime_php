@@ -52,4 +52,5 @@ interface ModuleDescriptionInterface{
 	 * @param ContextInterface context
 	 */
 	static function initContext($context);
+	/* ======================= Class Init Functions ======================= */
 }

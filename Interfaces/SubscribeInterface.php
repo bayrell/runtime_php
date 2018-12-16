@@ -23,4 +23,5 @@ interface SubscribeInterface{
 	 * var e
 	 */
 	function handlerEvent($e);
+	/* ======================= Class Init Functions ======================= */
 }

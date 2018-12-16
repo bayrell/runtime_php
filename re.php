@@ -19,8 +19,6 @@
 namespace Runtime;
 use Runtime\Vector;
 class re{
-	public function getClassName(){return "Runtime.re";}
-	public static function getParentClassName(){return "";}
 	/**
 	 * Search regular expression
 	 * @param string r regular expression
@@ -68,4 +66,7 @@ class re{
 		
 		return preg_replace("/" . $r . "/", $replace, $s);
 	}
+	/* ======================= Class Init Functions ======================= */
+	public function getClassName(){return "Runtime.re";}
+	public static function getParentClassName(){return "";}
 }

@@ -24,4 +24,5 @@ interface FactoryInterface{
 	 * Returns new Instance
 	 */
 	function newInstance($context = null);
+	/* ======================= Class Init Functions ======================= */
 }

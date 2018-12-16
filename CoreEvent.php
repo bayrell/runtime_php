@@ -18,8 +18,15 @@
  */
 namespace Runtime;
 use Runtime\CoreObject;
-class CoreEvent extends CoreObject{
+use Runtime\Interfaces\CloneableInterface;
+use Runtime\Interfaces\SerializeInterface;
+class CoreEvent extends CoreObject implements CloneableInterface, SerializeInterface{
 	public $sender;
+	function __construct($sender = null){
+		parent::__construct();
+		$this->sender = $sender;
+	}
+	/* ======================= Class Init Functions ======================= */
 	public function getClassName(){return "Runtime.CoreEvent";}
 	public static function getParentClassName(){return "Runtime.CoreObject";}
 	protected function _init(){

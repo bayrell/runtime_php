@@ -31,19 +31,6 @@ class RuntimeException extends ClassException{
 	protected $file;
 	protected $line;
 	protected $pos;
-	public function getClassName(){return "Runtime.Exceptions.RuntimeException";}
-	public static function getParentClassName(){return "Runtime.Exceptions.ClassException";}
-	protected function _init(){
-		parent::_init();
-		$this->context = null;
-		$this->prev = null;
-		$this->error_str = "";
-		$this->message = "";
-		$this->code = 0;
-		$this->file = "";
-		$this->line = -1;
-		$this->pos = -1;
-	}
 	function __construct($message = "", $code = 0, $context = null, $prev = null){
 		parent::__construct($message, $code, $prev);
 		if ($context == null){
@@ -100,5 +87,19 @@ class RuntimeException extends ClassException{
 	
 	public function __toString (){
 		return $this->toString();
+	}
+	/* ======================= Class Init Functions ======================= */
+	public function getClassName(){return "Runtime.Exceptions.RuntimeException";}
+	public static function getParentClassName(){return "Runtime.Exceptions.ClassException";}
+	protected function _init(){
+		parent::_init();
+		$this->context = null;
+		$this->prev = null;
+		$this->error_str = "";
+		$this->message = "";
+		$this->code = 0;
+		$this->file = "";
+		$this->line = -1;
+		$this->pos = -1;
 	}
 }

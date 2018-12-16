@@ -16,38 +16,22 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-namespace Runtime\Interfaces;
-use Runtime\CoreObject;
-use Runtime\Map;
+namespace Runtime;
+use Runtime\CoreStruct;
 use Runtime\Vector;
-use Runtime\Interfaces\ContextInterface;
-interface SerializeInterface{
-	/**
-	 * Returns classname of the object
-	 * @return string
-	 */
-	function getClassName();
-	/**
-	 * Returns name of variables to serialization
-	 * @return Vector<string>
-	 */
-	function getVariablesNames($names);
-	/**
-	 * Assign and clone data from other object
-	 * @param CoreObject obj
-	 */
-	function assignObject($obj);
-	/**
-	 * Set new value instance by variable name
-	 * @param string variable_name
-	 * @param var value
-	 */
-	function assignValue($variable_name, $value);
-	/**
-	 * Returns instance of the value by variable name
-	 * @param string variable_name
-	 * @return var
-	 */
-	function takeValue($variable_name, $default_value = null);
+class IntrospectionInfo extends CoreStruct{
+	const ITEM_FIELD = "field";
+	const ITEM_METHOD = "method";
+	public $kind;
+	public $name;
+	public $annotations;
 	/* ======================= Class Init Functions ======================= */
+	public function getClassName(){return "Runtime.IntrospectionInfo";}
+	public static function getParentClassName(){return "Runtime.CoreStruct";}
+	protected function _init(){
+		parent::_init();
+		$this->kind = "";
+		$this->name = "";
+		$this->annotations = null;
+	}
 }

@@ -19,6 +19,7 @@
 namespace Runtime;
 use Runtime\Vector;
 class VectorString extends Vector{
+	/* ======================= Class Init Functions ======================= */
 	public function getClassName(){return "Runtime.VectorString";}
 	public static function getParentClassName(){return "Runtime.Vector";}
 }
