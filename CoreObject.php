@@ -107,6 +107,20 @@ class CoreObject{
 		return $this;
 	}
 	/**
+	 * Set new values instance by Map
+	 * @param Map<mixed> map
+	 * @return CoreObject
+	 */
+	function setMap($values = null){
+		if ($values == null){
+			return ;
+		}
+		$values->each(function ($key, $value){
+			$this->assignValue($key, $value);
+		});
+		return $this;
+	}
+	/**
 	 * Dump serializable object to Map
 	 * @return Map<mixed>
 	 */

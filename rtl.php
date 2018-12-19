@@ -246,10 +246,14 @@ class rtl{
 	 * @return {var} result
 	 */
 	
-	static function _clone($val, $context=null){
+	static function _clone($val){
 		if ($val == null) return null;
+		if (self::isScalarValue($val)) return $val;
 		if ($val instanceof \Runtime\Interfaces\CloneableInterface){
-			return $val._clone($context);
+			$class_name = get_class($val);
+			$obj = new $class_name();
+			$obj->assignObject($val);
+			return $obj;
 		}
 		return clone $val;
 	}

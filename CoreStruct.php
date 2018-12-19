@@ -19,6 +19,7 @@
 namespace Runtime;
 use Runtime\CoreObject;
 use Runtime\Map;
+use Runtime\rtl;
 use Runtime\Interfaces\SerializeInterface;
 class CoreStruct extends CoreObject implements SerializeInterface{
 	/** 
@@ -27,14 +28,25 @@ class CoreStruct extends CoreObject implements SerializeInterface{
 	function __construct($obj = null){
 		parent::__construct();
 		$this->assignMap($obj);
+		$this->onCreated();
 	}
 	/**
-	 * Clone this object
+	 * Struct created 
+	 */
+	function onCreated(){
+	}
+	/**
+	 * Clone this object with new values
+	 * @param Map obj = null
 	 * @return CoreStruct
 	 */
-	function clone(){
-		$instance = $rtl::newInstance($this->getClassName());
+	function clone($obj = null){
+		$instance = rtl::newInstance($this->getClassName());
 		$instance->assignObject($this);
+		if ($obj != null){
+			$instance->setMap($obj);
+		}
+		$instance->onCreated();
 		return $instance;
 	}
 	/* ======================= Class Init Functions ======================= */
