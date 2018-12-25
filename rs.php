@@ -58,10 +58,13 @@ class rs{
 	 * @param char ch
 	 */
 	
-	static function ord($s){
-		$result = unpack('V', mb_convert_encoding($s, 'UCS-4LE'));
+	static function ord($s){	
+		if ($s == "") return 0;
+		$s1 = mb_convert_encoding($s, 'UCS-4LE', 'UTF-8');
+		$result = @unpack('V', $s1);
 		if ($result) return $result[1];
-		return ord($s);
+		/*return mb_ord($s);*/
+		return 0;
 	}
 	/**
 	 * Convert string to lower case
@@ -92,6 +95,9 @@ class rs{
 	 */
 	
 	static function strpos($s, $search, $offset = 0){
+		if ($search == ""){
+			return -1;
+		}
 		$res = mb_strpos($s, $search, $offset);
 		if ($res === false)
 			return -1;

@@ -17,6 +17,7 @@
  *  limitations under the License.
  */
 namespace Runtime;
+use Runtime\rs;
 use Runtime\rtl;
 use Runtime\CoreObject;
 use Runtime\Map;
@@ -27,7 +28,7 @@ use Runtime\Interfaces\ModuleDescriptionInterface;
 class Context extends CoreObject implements ContextInterface{
 	protected $_modules;
 	protected $_values;
-	protected $_managers;
+	protected $_drivers;
 	protected $_providers_names;
 	/**
 	 * Constructor
@@ -36,7 +37,7 @@ class Context extends CoreObject implements ContextInterface{
 		parent::__construct();
 		$this->_modules = new Vector();
 		$this->_providers_names = new Map();
-		$this->_managers = new Map();
+		$this->_drivers = new Map();
 		$this->_values = new Map();
 	}
 	/**
@@ -88,13 +89,13 @@ class Context extends CoreObject implements ContextInterface{
 		return $this;
 	}
 	/**
-	 * Register manager
-	 * @param string manager_name
+	 * Register driver
+	 * @param string driver_name
 	 * @param FactoryInterface factory
 	 */
-	function registerManager($manager_name, $obj){
-		if (!$this->_managers->has($manager_name)){
-			$this->_managers->set($manager_name, $obj);
+	function registerDriver($driver_name, $obj){
+		if (!$this->_drivers->has($driver_name)){
+			$this->_drivers->set($driver_name, $obj);
 		}
 		return $this;
 	}
@@ -126,12 +127,29 @@ class Context extends CoreObject implements ContextInterface{
 		return $this;
 	}
 	/**
+	 * Returns provider or driver
+	 *
+	 * @params string name
+	 * @return CoreObject
+	 */
+	function get($name, $params = null){
+		$is_provider = rs::strpos($name, "provider.") === 0;
+		$is_driver = rs::strpos($name, "driver.") === 0;
+		if ($is_provider){
+			return $this->createProvider($name, $params);
+		}
+		if ($is_driver){
+			return $this->getDriver($name);
+		}
+		return null;
+	}
+	/**
 	 * Returns provider
 	 *
 	 * @params string provider_name
 	 * @return CoreObject
 	 */
-	function createProvider($provider_name){
+	function createProvider($provider_name, $params = null){
 		if (!$this->_providers_names->has($provider_name)){
 			return null;
 		}
@@ -139,18 +157,18 @@ class Context extends CoreObject implements ContextInterface{
 		if ($factory_obj == null){
 			return null;
 		}
-		$obj = $factory_obj->newInstance($this);
+		$obj = $factory_obj->newInstance($this, $params);
 		return $obj;
 	}
 	/**
-	 * Returns manager
+	 * Returns driver
 	 *
-	 * @params string manager_name
+	 * @params string driver_name
 	 * @return CoreObject
 	 */
-	function getManager($manager_name){
-		if ($this->_managers->has($manager_name)){
-			return $this->_managers->item($manager_name);
+	function getDriver($driver_name){
+		if ($this->_drivers->has($driver_name)){
+			return $this->_drivers->item($driver_name);
 		}
 		return null;
 	}
@@ -189,9 +207,9 @@ class Context extends CoreObject implements ContextInterface{
 		$this->_modules->each(function ($item) use (&$obj){
 			$obj->_modules->push($item);
 		});
-		/* Add managers */
-		$this->_managers->each(function ($key, $value) use (&$obj){
-			$obj->_managers->set($key, $value);
+		/* Add services */
+		$this->_drivers->each(function ($key, $value) use (&$obj){
+			$obj->_drivers->set($key, $value);
 		});
 		/* Add provider names */
 		$this->_providers_names->each(function ($key, $value) use (&$obj){
@@ -227,7 +245,7 @@ class Context extends CoreObject implements ContextInterface{
 		parent::_init();
 		$this->_modules = null;
 		$this->_values = null;
-		$this->_managers = null;
+		$this->_drivers = null;
 		$this->_providers_names = null;
 	}
 }

@@ -23,6 +23,6 @@ interface FactoryInterface{
 	/**
 	 * Returns new Instance
 	 */
-	function newInstance($context = null);
+	function newInstance($context = null, $params = null);
 	/* ======================= Class Init Functions ======================= */
 }

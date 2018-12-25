@@ -26,12 +26,13 @@ use Runtime\Interfaces\ContextInterface;
 use Runtime\Interfaces\FactoryInterface;
 use Runtime\Interfaces\SerializeInterface;
 class RuntimeUtils{
+	/* ================================ Context Functions ================================ */
 	static protected $_global_context = null;
 	/**
 	 * Returns global context
 	 * @return ContextInterface
 	 */
-	static function globalContext(){
+	static function getContext(){
 		
 		return self::$_global_context;
 	}
@@ -39,17 +40,10 @@ class RuntimeUtils{
 	 * Set global context
 	 * @param ContextInterface context
 	 */
-	static function setGlobalContext($context){
+	static function setContext($context){
 		
 		self::$_global_context = $context;
 		return $context;
-	}
-	/**
-	 * Returns global context
-	 * @param Context context
-	 */
-	static function getGlobalContext(){
-		return static::globalContext();
 	}
 	/**
 	 * Register global Context
@@ -69,9 +63,10 @@ class RuntimeUtils{
 	static function registerGlobalContext($modules = null){
 		$context = static::createContext($modules);
 		$context->init();
-		static::setGlobalContext($context);
+		static::setContext($context);
 		return $context;
 	}
+	/* ========================== Class Introspection Functions ========================== */
 	/**
 	 * Returns parents class names
 	 * @return Vector<string>
@@ -98,6 +93,33 @@ class RuntimeUtils{
 			return str_replace("\\", ".", $s);
 		});
 		return $v;
+	}
+	/**
+	 * Returns names of variables to serialization
+	 * @param Vector<string>
+	 */
+	static function getVariablesNames($class_name, $names){
+		$classes = static::getParents($class_name);
+		$classes->prepend($class_name);
+		$classes->each(function ($class_name) use (&$names){
+			try{
+				rtl::callStaticMethod($class_name, "getFieldsList", (new Vector())->push($names));
+			}catch(\Exception $_the_exception){
+				if ($_the_exception instanceof \Exception){
+					$e = $_the_exception;
+				}
+				else { throw $_the_exception; }
+			}
+			try{
+				rtl::callStaticMethod($class_name, "getVirtualFieldsList", (new Vector())->push($names));
+			}catch(\Exception $_the_exception){
+				if ($_the_exception instanceof \Exception){
+					$e = $_the_exception;
+				}
+				else { throw $_the_exception; }
+			}
+		});
+		$names->removeDublicates();
 	}
 	/**
 	 * Returns Introspection of the class name
@@ -204,109 +226,16 @@ class RuntimeUtils{
 		});
 		return $res;
 	}
-	/**
-	 * Returns true if value is primitive value
-	 * @return boolean 
-	 */
-	static function isPrimitiveValue($value){
-		if (rtl::isScalarValue($value)){
-			return true;
-		}
-		if ($value instanceof Vector){
-			return true;
-		}
-		if ($value instanceof Map){
-			return true;
-		}
-		return false;
+	/* ============================= Serialization Functions ============================= */
+	static function ObjectToNative($value, $force_class_name = false){
+		$value = static::ObjectToPrimitive($value, $force_class_name);
+		$value = static::PrimitiveToNative($value);
+		return $value;
 	}
-	/**
-	 * Get value from object
-	 */
-	static function get($obj, $key, $default_value = null){
-		if ($obj instanceof Vector){
-			return $obj->get($key, $default_value);
-		}
-		if ($obj instanceof Map){
-			return $obj->get($key, $default_value);
-		}
-		return $default_value;
-	}
-	/**
-	 * Set value to object
-	 */
-	static function set($obj, $key, $value = null){
-		if ($obj instanceof Vector){
-			$obj->set($key, $value);
-		}
-		if ($obj instanceof Map){
-			$obj->set($key, $value);
-		}
-	}
-	/**
-	 * Call each
-	 */
-	static function each($obj, $f){
-		if ($obj instanceof Vector){
-			$obj->each($f);
-		}
-		if ($obj instanceof Map){
-			$obj->each($f);
-		}
-	}
-	/**
-	 * Convert bytes to string
-	 * @param Vector<byte> arr - vector of the bytes
-	 * @string charset - charset of the bytes vector. Default utf8
-	 * @return string
-	 */
-	function bytesToString($arr, $charset = "utf8"){
-	}
-	/**
-	 * Convert string to bytes
-	 * @param string s - incoming string
-	 * @param Vector<byte> arr - output vector
-	 * @param charset - Result bytes charset. Default utf8
-	 */
-	function stringToBytes($s, $arr, $charset = "utf8"){
-	}
-	/**
-	 * Translate message
-	 * @params string message - message need to be translated
-	 * @params MapInterface params - Messages params. Default null.
-	 * @params string locale - Different locale. Default "".
-	 * @return string - translated string
-	 */
-	static function translate($message, $params = null, $locale = "", $context = null){
-		if ($context == null){
-			$context = static::globalContext();
-		}
-		if ($context != null){
-			$args = (new Vector())->push($message)->push($params)->push($locale);
-			return rtl::callMethod($context, "translate", $args);
-		}
-		return $message;
-	}
-	/**
-	 * Compare 2 Vectors, Returns true if arr1 and arr2 have same class names
-	 * @param Vector<string> arr1
-	 * @param Vector<string> arr2
-	 * @return bool
-	 */
-	static function equalsVectors($arr1, $arr2){
-		for ($i = 0; $i < $arr1->count(); $i++){
-			$item = $arr1->item($i);
-			if ($arr2->indexOf($item) == -1){
-				return false;
-			}
-		}
-		for ($i = 0; $i < $arr2->count(); $i++){
-			$item = $arr2->item($i);
-			if ($arr1->indexOf($item) == -1){
-				return false;
-			}
-		}
-		return true;
+	static function NativeToObject($value){
+		$value = static::NativeToPrimitive($value);
+		$value = static::PrimitiveToObject($value);
+		return $value;
 	}
 	/**
 	 * Returns object to primitive value
@@ -416,31 +345,6 @@ class RuntimeUtils{
 		}
 		return null;
 	}
-	/**
-	 * Json encode serializable values
-	 * @param serializable value
-	 * @param SerializeContainer container
-	 * @return string 
-	 */
-	
-	static function json_encode($value, $convert = true){
-		if ($convert){
-			$value = self::ObjectToPrimitive($value);
-		}
-		return json_encode($value, JSON_UNESCAPED_UNICODE);
-	}
-	/**
-	 * Json decode to primitive values
-	 * @param string s Encoded string
-	 * @return mixed 
-	 */
-	
-	static function json_decode($obj){
-		$res = @json_decode($obj, false);
-		if (!$res)
-			return null;
-		return self::NativeToObject($res);
-	}
 	
 	static function NativeToPrimitive($value){
 		if ($value === null)
@@ -472,16 +376,53 @@ class RuntimeUtils{
 		
 		return $value;
 	}
-	static function ObjectToNative($value, $force_class_name = false){
-		$value = static::ObjectToPrimitive($value, $force_class_name);
-		$value = static::PrimitiveToNative($value);
-		return $value;
+	const JSON_PRETTY = 1;
+	/**
+	 * Json encode serializable values
+	 * @param serializable value
+	 * @param SerializeContainer container
+	 * @return string 
+	 */
+	
+	static function json_encode($value, $flags = 0, $convert = true){
+		if ($convert){
+			$value = self::ObjectToPrimitive($value);
+		}
+		$json_flags = JSON_UNESCAPED_UNICODE;
+		if ( ($flags & 1) == 1 ) $json_flags = $json_flags | JSON_PRETTY_PRINT;
+		return json_encode($value, $json_flags);
 	}
-	static function NativeToObject($value){
-		$value = static::NativeToPrimitive($value);
-		$value = static::PrimitiveToObject($value);
-		return $value;
+	/**
+	 * Json decode to primitive values
+	 * @param string s Encoded string
+	 * @return mixed 
+	 */
+	
+	static function json_decode($obj){
+		$res = @json_decode($obj, false);
+		if (!$res)
+			return null;
+		return self::NativeToObject($res);
 	}
+	/**
+	 * Base64 encode
+	 * @param string s
+	 * @return string 
+	 */
+	
+	static function base64_encode($s){
+		return base64_encode($s);
+	}
+	/**
+	 * Base64 decode
+	 * @param string s
+	 * @return string 
+	 */
+	
+	static function base64_decode($s){
+		return base64_decode($s);
+	}
+	/* ================================= Other Functions ================================= */
 	/*
 	 * Generate password
 	 *
@@ -519,22 +460,53 @@ class RuntimeUtils{
 		return $res;
 	}
 	/**
-	 * Base64 encode
-	 * @param string s
-	 * @return string 
+	 * Returns true if value is primitive value
+	 * @return boolean 
 	 */
-	
-	static function base64_encode($s){
-		return base64_encode($s);
+	static function isPrimitiveValue($value){
+		if (rtl::isScalarValue($value)){
+			return true;
+		}
+		if ($value instanceof Vector){
+			return true;
+		}
+		if ($value instanceof Map){
+			return true;
+		}
+		return false;
 	}
 	/**
-	 * Base64 decode
-	 * @param string s
-	 * @return string 
+	 * Convert bytes to string
+	 * @param Vector<byte> arr - vector of the bytes
+	 * @string charset - charset of the bytes vector. Default utf8
+	 * @return string
 	 */
-	
-	static function base64_decode($s){
-		return base64_decode($s);
+	function bytesToString($arr, $charset = "utf8"){
+	}
+	/**
+	 * Convert string to bytes
+	 * @param string s - incoming string
+	 * @param Vector<byte> arr - output vector
+	 * @param charset - Result bytes charset. Default utf8
+	 */
+	function stringToBytes($s, $arr, $charset = "utf8"){
+	}
+	/**
+	 * Translate message
+	 * @params string message - message need to be translated
+	 * @params MapInterface params - Messages params. Default null.
+	 * @params string locale - Different locale. Default "".
+	 * @return string - translated string
+	 */
+	static function translate($message, $params = null, $locale = "", $context = null){
+		if ($context == null){
+			$context = static::globalContext();
+		}
+		if ($context != null){
+			$args = (new Vector())->push($message)->push($params)->push($locale);
+			return rtl::callMethod($context, "translate", $args);
+		}
+		return $message;
 	}
 	/* ======================= Class Init Functions ======================= */
 	public function getClassName(){return "Runtime.RuntimeUtils";}

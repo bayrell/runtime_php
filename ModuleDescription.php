@@ -36,7 +36,7 @@ class ModuleDescription implements ModuleDescriptionInterface{
 	 * @return string
 	 */
 	static function getModuleVersion(){
-		return "0.6.1";
+		return "0.6.2";
 	}
 	/**
 	 * Returns required modules
@@ -50,7 +50,7 @@ class ModuleDescription implements ModuleDescriptionInterface{
 	 * @param ContextInterface context
 	 */
 	static function onRegister($context){
-		$context->registerManager("Runtime.Config", new Map());
+		$context->registerDriver("driver.runtime.config", new Map());
 	}
 	/**
 	 * Called then context read config

@@ -57,7 +57,7 @@ class ContextObject extends CoreObject{
 		parent::__construct();
 		$this->_context = $context;
 		if (!rtl::exists($this->_context)){
-			$this->_context = RuntimeUtils::globalContext();
+			$this->_context = RuntimeUtils::getContext();
 		}
 	}
 	/* ======================= Class Init Functions ======================= */

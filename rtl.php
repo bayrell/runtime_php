@@ -481,24 +481,6 @@ class rtl{
 		$res .= "-nodejs";
 		return $res;
 	}
-	/**
-	 * Returns global context
-	 * @return ContextInterface
-	 */
-	static function globalContext(){
-		return rtl::callStaticMethod("Runtime.RuntimeUtils", "globalContext", null);
-	}
-	/**
-	 * Translate message
-	 * @params string message - message need to be translated
-	 * @params MapInterface params - Messages params. Default null.
-	 * @params string locale - Different locale. Default "".
-	 * @return string - translated string
-	 */
-	static function translate($message, $params = null, $locale = "", $context = null){
-		
-		return \Runtime\RuntimeUtils::translate($message, $params, $locale, $context);
-	}
 	/* ======================= Class Init Functions ======================= */
 	public function getClassName(){return "Runtime.rtl";}
 	public static function getParentClassName(){return "";}

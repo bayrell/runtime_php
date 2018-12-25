@@ -244,7 +244,7 @@ class Vector implements \JsonSerializable{
 		if (!array_key_exists($pos, $this->_arr))
 			throw new IndexOutOfRange();
 		$this->_arr[$pos] = $value;
-		return this;
+		return $this;
 	}
 	
 	
@@ -254,6 +254,7 @@ class Vector implements \JsonSerializable{
 	 */
 	public function clear(){
 		$this->_arr = [];
+		return $this;
 	}
 	
 	
@@ -297,6 +298,7 @@ class Vector implements \JsonSerializable{
 		$arr->each(function($item){
 			$this->append($item);
 		});
+		return $this;
 	}
 	
 	
@@ -309,6 +311,7 @@ class Vector implements \JsonSerializable{
 		$arr->each(function($item){
 			$this->prepend($item);
 		});
+		return $this;
 	}
 	
 	
@@ -341,6 +344,7 @@ class Vector implements \JsonSerializable{
 		$index = $this->indexOf($value);
 		if ($index != -1)
 			$this->remove($index, 1);
+		return $this;
 	}
 	
 	
@@ -353,6 +357,22 @@ class Vector implements \JsonSerializable{
 		$index = $this->indexOf($value);
 		if ($index != -1)
 			$this->remove($index, 1);
+		return $this;
+	}
+	
+	
+	
+	/**
+	 * Remove values
+	 * @param mixed values
+	 */
+	public function removeItems($values)
+	{
+		for ($i=0; $i<$values->count(); $i++)
+		{
+			$this->removeItem( $values->item(i) );
+		}
+		return $this;
 	}
 	
 	
@@ -378,7 +398,7 @@ class Vector implements \JsonSerializable{
 	 */
 	function filter($f){
 		$arr2 = $this->createNewInstance();
-		$arr2->_arr = array_filter($this->_arr, $f);
+		$arr2->_arr = array_values(array_filter($this->_arr, $f));
 		return $arr2;
 	}
 	
@@ -402,6 +422,7 @@ class Vector implements \JsonSerializable{
 	 */
 	function each($f){
 		array_walk($this->_arr, $f);
+		return $this;
 	}
 	
 	
@@ -460,6 +481,7 @@ class Vector implements \JsonSerializable{
 	 */
 	public function reverse(){
 		array_reverse($this->_arr);
+		return $this;
 	}
 	
 	
@@ -475,6 +497,7 @@ class Vector implements \JsonSerializable{
 		else{
 			usort($this->_arr, $f);
 		}
+		return $this;
 	}
 	
 	
@@ -507,6 +530,7 @@ class Vector implements \JsonSerializable{
 			$this->insert($index1, $item2);
 			$this->remove($index1 + 1, 1);			
 		}
+		return $this;
 	}
 	
 	
@@ -524,5 +548,6 @@ class Vector implements \JsonSerializable{
 			}
 		}
 		$this->_arr = $arr;
+		return $this;
 	}
 }

@@ -30,11 +30,11 @@ interface ContextInterface{
 	 */
 	function registerProviderFactory($provider_name, $factory);
 	/**
-	 * Register manager
-	 * @param string manager_name
+	 * Register driver
+	 * @param string driver_name
 	 * @param CoreObject obj
 	 */
-	function registerManager($manager_name, $obj);
+	function registerDriver($driver_name, $obj);
 	/**
 	 * Returns provider
 	 * @params string provider_name
@@ -42,11 +42,11 @@ interface ContextInterface{
 	 */
 	function createProvider($provider_name);
 	/**
-	 * Returns manager
-	 * @params string manager_name
+	 * Returns driver
+	 * @params string driver_name
 	 * @return CoreObject
 	 */
-	function getManager($manager_name);
+	function getDriver($driver_name);
 	/**
 	 * Set application locale
 	 * @params string locale

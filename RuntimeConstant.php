@@ -48,9 +48,9 @@ class RuntimeConstant{
 	 */
 	const LOG_DEBUG2 = 12;
 	/* Status codes */
-	const STATUS_DONE = 0;
-	const STATUS_PLAN = 1;
-	const STATUS_PROCESS = 2;
+	const STATUS_PLAN = 0;
+	const STATUS_DONE = 1;
+	const STATUS_PROCESS = 100;
 	const STATUS_FAIL = -1;
 	/* Errors */
 	const ERROR_NULL = 0;
@@ -69,6 +69,8 @@ class RuntimeConstant{
 	const ERROR_CSRF_TOKEN = -10;
 	const ERROR_RUNTIME = -11;
 	const ERROR_VALIDATION = -12;
+	const ERROR_PARSE_SERIALIZATION_ERROR = -14;
+	const ERROR_FATAL = -15;
 	/* ======================= Class Init Functions ======================= */
 	public function getClassName(){return "Runtime.RuntimeConstant";}
 	public static function getParentClassName(){return "";}
