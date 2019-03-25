@@ -25,14 +25,14 @@ use Runtime\Vector;
 use Runtime\Interfaces\SubscribeInterface;
 class Emitter extends CoreObject{
 	protected $methods;
-	protected $subscribers;
+	protected $emitters;
 	/**
 	 * Constructor
 	 */
 	function __construct($val = null){
 		parent::__construct();
 		$this->methods = new Map();
-		$this->subscribers = new Map();
+		$this->emitters = new Vector();
 		if ($val != null){
 			$this->addMethod($val);
 		}
@@ -44,7 +44,7 @@ class Emitter extends CoreObject{
 	function assignObject($obj){
 		if ($obj instanceof Emitter){
 			$this->methods = $obj->methods;
-			$this->subscribers = $obj->subscribers;
+			$this->emitters = $obj->emitters;
 		}
 		parent::assignObject($obj);
 	}
@@ -96,50 +96,19 @@ class Emitter extends CoreObject{
 		});
 	}
 	/**
-	 * Add object by name
-	 * @param callback f
-	 * @param string name
-	 */
-	function addObjectByName($f, $name){
-		if (!$this->subscribers->has($name)){
-			$this->subscribers->set($name, new Vector());
-		}
-		$v = $this->subscribers->item($name);
-		if ($v->indexOf($f) == -1){
-			$v->push($f);
-		}
-	}
-	/**
 	 * Add object
-	 * @param SubscribeInterface f
-	 * @param Vector<string> events
+	 * @param Emitter emitter
 	 */
-	function addObject($f, $events = null){
-		if ($events == null){
-			$this->addObjectByName($f, "");
-		}
-		else {
-			$events->each(function ($item) use (&$f){
-				$this->addObjectByName($f, $item);
-			});
-		}
-		return $f;
+	function addEmitter($emitter){
+		$this->emitters->push($emitter);
+		return $emitter;
 	}
 	/**
 	 * Remove object
-	 * @param SubscribeInterface f
+	 * @param Emitter emitter
 	 */
-	function removeObject($f, $events = null){
-		if ($events == null){
-			$events = $this->subscribers->keys();
-		}
-		$events->each(function ($name) use (&$f){
-			$v = $this->subscribers->get($name, null);
-			if ($v == null){
-				return ;
-			}
-			$v->removeItem($f);
-		});
+	function removeEmitter($emitter){
+		$this->emitters->removeItem($emitter);
 	}
 	/**
 	 * Dispatch event
@@ -151,9 +120,6 @@ class Emitter extends CoreObject{
 		$methods = $this->methods->map(function ($key, $items){
 			return $items->slice();
 		});
-		$subscribers = $this->subscribers->map(function ($key, $items){
-			return $items->slice();
-		});
 		/* Call self handler */
 		$this->handlerEvent($e);
 		/* Call methods */
@@ -161,7 +127,7 @@ class Emitter extends CoreObject{
 		for ($i = 0; $i < $keys->count(); $i++){
 			$key = $keys->item($i);
 			$items = $methods->item($key);
-			if ($key != "" && $e->getClassName() != $key){
+			if ($key != "" && $e->getClassName() != $key && !rtl::is_instanceof($e, $key)){
 				continue;
 			}
 			for ($j = 0; $j < $items->count(); $j++){
@@ -169,18 +135,11 @@ class Emitter extends CoreObject{
 				rtl::call($f, (new Vector())->push($e));
 			}
 		}
-		/* Call subscribers */
-		$keys = $subscribers->keys();
-		for ($i = 0; $i < $keys->count(); $i++){
-			$key = $keys->item($i);
-			$items = $subscribers->item($key);
-			if ($key != "" && $e->getClassName() != $key){
-				continue;
-			}
-			for ($j = 0; $j < $items->count(); $j++){
-				$obj = $items->item($j);
-				$obj->handlerEvent($e);
-			}
+		/* Call emitters */
+		$emitters = $this->emitters->copy();
+		for ($i = 0; $i < $emitters->count(); $i++){
+			$emitter = $this->emitters->item($i);
+			$emitter->dispatch($e);
 		}
 	}
 	/**
@@ -190,10 +149,9 @@ class Emitter extends CoreObject{
 	}
 	/* ======================= Class Init Functions ======================= */
 	public function getClassName(){return "Runtime.Emitter";}
+	public static function getCurrentClassName(){return "Runtime.Emitter";}
 	public static function getParentClassName(){return "Runtime.CoreObject";}
 	protected function _init(){
 		parent::_init();
-		$this->methods = null;
-		$this->subscribers = null;
 	}
 }

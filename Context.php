@@ -57,14 +57,13 @@ class Context extends CoreObject implements ContextInterface{
 	 * Register module
 	 */
 	function registerModule($module_name){
-		$module_description_class_name = rtl::toString($module_name) . ".ModuleDescription";
-		if ($this->_modules->indexOf($module_description_class_name) != -1){
+		if ($this->_modules->indexOf($module_name) != -1){
 			return ;
 		}
-		$this->_modules->push($module_description_class_name);
-		/* Call onRegister */
 		$args = (new Vector())->push($this);
-		rtl::callStaticMethod($module_description_class_name, "onRegister", $args);
+		$module_description_class_name = rtl::toString($module_name) . ".ModuleDescription";
+		/* Add module */
+		$this->_modules->push($module_name);
 		/* Register required Modules*/
 		$modules = rtl::callStaticMethod($module_description_class_name, "getRequiredModules", $args);
 		if ($modules != null){
@@ -75,6 +74,8 @@ class Context extends CoreObject implements ContextInterface{
 				$this->registerModule($module_name);
 			}
 		}
+		/* Call onRegister */
+		rtl::callStaticMethod($module_description_class_name, "onRegister", $args);
 		return $this;
 	}
 	/**
@@ -108,7 +109,8 @@ class Context extends CoreObject implements ContextInterface{
 		$args->push($config);
 		$sz = $this->_modules->count();
 		for ($i = 0; $i < $sz; $i++){
-			$module_description_class_name = $this->_modules->item($i);
+			$module_name = $this->_modules->item($i);
+			$module_description_class_name = rtl::toString($module_name) . ".ModuleDescription";
 			rtl::callStaticMethod($module_description_class_name, "onReadConfig", $args);
 		}
 		return $this;
@@ -121,7 +123,8 @@ class Context extends CoreObject implements ContextInterface{
 		$args->push($this);
 		$sz = $this->_modules->count();
 		for ($i = 0; $i < $sz; $i++){
-			$module_description_class_name = $this->_modules->item($i);
+			$module_name = $this->_modules->item($i);
+			$module_description_class_name = rtl::toString($module_name) . ".ModuleDescription";
 			rtl::callStaticMethod($module_description_class_name, "initContext", $args);
 		}
 		return $this;
@@ -240,12 +243,9 @@ class Context extends CoreObject implements ContextInterface{
 	}
 	/* ======================= Class Init Functions ======================= */
 	public function getClassName(){return "Runtime.Context";}
+	public static function getCurrentClassName(){return "Runtime.Context";}
 	public static function getParentClassName(){return "Runtime.CoreObject";}
 	protected function _init(){
 		parent::_init();
-		$this->_modules = null;
-		$this->_values = null;
-		$this->_drivers = null;
-		$this->_providers_names = null;
 	}
 }

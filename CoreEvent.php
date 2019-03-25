@@ -18,19 +18,40 @@
  */
 namespace Runtime;
 use Runtime\CoreObject;
-use Runtime\Interfaces\CloneableInterface;
-use Runtime\Interfaces\SerializeInterface;
-class CoreEvent extends CoreObject implements CloneableInterface, SerializeInterface{
-	public $sender;
-	function __construct($sender = null){
-		parent::__construct();
-		$this->sender = $sender;
-	}
+use Runtime\CoreStruct;
+use Runtime\rtl;
+class CoreEvent extends CoreStruct{
+	protected $__sender;
 	/* ======================= Class Init Functions ======================= */
 	public function getClassName(){return "Runtime.CoreEvent";}
-	public static function getParentClassName(){return "Runtime.CoreObject";}
+	public static function getCurrentClassName(){return "Runtime.CoreEvent";}
+	public static function getParentClassName(){return "Runtime.CoreStruct";}
 	protected function _init(){
 		parent::_init();
-		$this->sender = null;
+		$this->__sender = null;
 	}
+	public function assignObject($obj){
+		if ($obj instanceof CoreEvent){
+			$this->__sender = $obj->__sender;
+		}
+		parent::assignObject($obj);
+	}
+	public function assignValue($variable_name, $value, $sender = null){
+		if ($variable_name == "sender")$this->__sender = rtl::convert($value,"Runtime.CoreObject",null,"");
+		else parent::assignValue($variable_name, $value, $sender);
+	}
+	public function takeValue($variable_name, $default_value = null){
+		if ($variable_name == "sender") return $this->__sender;
+		return parent::takeValue($variable_name, $default_value);
+	}
+	public static function getFieldsList($names, $flag=0){
+		if (($flag | 3)==3){
+			$names->push("sender");
+		}
+	}
+	public static function getFieldInfoByName($field_name){
+		return null;
+	}
+	public function __get($key){ return $this->takeValue($key); }
+	public function __set($key, $value){throw new \Runtime\Exceptions\AssignStructValueError($key);}
 }

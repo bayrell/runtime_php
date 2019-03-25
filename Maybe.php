@@ -16,22 +16,25 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-namespace Runtime\Interfaces;
-use Runtime\Map;
-use Runtime\Vector;
-interface AssetsInterface{
-	/**
-	 * Returns required assets
-	 * @return Vector<string>
+namespace Runtime;
+use Runtime\Container;
+class Maybe extends Container{
+	/** 
+	 * Returns new instance of this
 	 */
-	static function getRequiredAssets($context);
+	static function of($x){
+		return new Maybe($x);
+	}
 	/**
-	 * Returns sync loaded files
+	 * Apply function and return new container
+	 * @param fun f
+	 * @return Container
 	 */
-	static function assetsSyncLoad($context);
-	/**
-	 * Returns async loaded files
-	 */
-	static function assetsAsyncLoad($context);
+	function map($f){
+		return ($this->_value == null) ? ($this) : ($this->of($f($this->_value)));
+	}
 	/* ======================= Class Init Functions ======================= */
+	public function getClassName(){return "Runtime.Maybe";}
+	public static function getCurrentClassName(){return "Runtime.Maybe";}
+	public static function getParentClassName(){return "Runtime.Container";}
 }

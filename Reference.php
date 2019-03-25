@@ -2,7 +2,7 @@
 /*!
  *  Bayrell Runtime Library
  *
- *  (c) Copyright 2016-2018 "Ildar Bikmamatov" <support@bayrell.org>
+ *  (c) Copyright 2018 "Ildar Bikmamatov" <support@bayrell.org>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -18,14 +18,31 @@
  */
 namespace Runtime;
 use Runtime\CoreObject;
-use Runtime\Vector;
-class AsyncTask extends CoreObject{
-	public $pos;
-	public $f;
-	public $catch_stack;
+use Runtime\rtl;
+class Reference extends CoreObject{
+	public $uq;
+	public $ref;
+	/**
+	 * Constructor
+	 */
+	function __construct($ref = null){
+		parent::__construct();
+		$this->ref = $ref;
+	}
+	/**
+	 * Assign and clone data from other object
+	 * @param CoreObject obj
+	 */
+	function assignObject($obj){
+		if ($obj instanceof Reference){
+			$this->uq = $obj->uq;
+			$this->ref = $this->ref;
+		}
+		parent::assignObject($obj);
+	}
 	/* ======================= Class Init Functions ======================= */
-	public function getClassName(){return "Runtime.AsyncTask";}
-	public static function getCurrentClassName(){return "Runtime.AsyncTask";}
+	public function getClassName(){return "Runtime.Reference";}
+	public static function getCurrentClassName(){return "Runtime.Reference";}
 	public static function getParentClassName(){return "Runtime.CoreObject";}
 	protected function _init(){
 		parent::_init();

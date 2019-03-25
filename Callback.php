@@ -20,16 +20,34 @@
 
 namespace Runtime;
 
-class Callback {
+class Callback 
+{
 	protected $obj;
 	protected $name;
 	
-	function __construct($obj, $name){
+	function __construct($obj, $name)
+	{
+		if (gettype($obj) == "string")
+		{
+			$obj = \Runtime\rtl::find_class($obj);
+			if (!class_exists($obj)){
+				throw new \Exception($obj . " not found ");
+			}
+			if (!method_exists($obj, $name)){
+				throw new \Exception("Method '" . $name . "' not found in " . $obj);
+			}
+		}
 		$this->obj = $obj;
 		$this->name = $name;
 	}
 		
-	function __invoke(){
+	function __invoke()
+	{
 		return call_user_func_array([$this->obj, $this->name], func_get_args());
+	}
+	
+	function invokeArgs($args)
+	{
+		return call_user_func_array([$this->obj, $this->name], $args);
 	}
 }

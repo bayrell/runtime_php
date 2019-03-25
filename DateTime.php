@@ -18,185 +18,36 @@
  */
 namespace Runtime;
 use Runtime\rtl;
-use Runtime\CoreObject;
-use Runtime\Interfaces\CloneableInterface;
-use Runtime\Interfaces\SerializeInterface;
-class DateTime extends CoreObject implements CloneableInterface, SerializeInterface{
-	protected $y;
-	protected $m;
-	protected $d;
-	protected $h;
-	protected $u;
-	protected $s;
-	protected $ms;
-	protected $tz;
-	/**
-	 * Set date
-	 * @param int y - Year
-	 * @param int m - Month
-	 * @param int d - Day
-	 * @return DateTime instance
-	 */
-	function setDate($y, $m, $d){
-		$this->y = $y;
-		$this->m = $m;
-		$this->d = $d;
-		return $this;
-	}
-	/**
-	 * Set time
-	 * @param int h - Hour
-	 * @param int i - Minute
-	 * @param int s - Second
-	 * @return DateTime instance
-	 */
-	function setTime($h, $i, $s){
-		$this->h = $h;
-		$this->i = $i;
-		$this->s = $s;
-		return $this;
-	}
-	/**
-	 * Set year
-	 * @param int y - Year
-	 * @return DateTime instance
-	 */
-	function setYear($y){
-		$this->y = $y;
-		return $this;
-	}
-	/**
-	 * Set month
-	 * @param int m - Month
-	 * @return DateTime instance
-	 */
-	function setMonth($m){
-		$this->m = $m;
-		return $this;
-	}
-	/**
-	 * Set day
-	 * @param int d - Day
-	 * @return DateTime instance
-	 */
-	function setDay($d){
-		$this->d = $d;
-		return $this;
-	}
-	/**
-	 * Set hour
-	 * @param int h - Hour
-	 * @return DateTime instance
-	 */
-	function setHour($h){
-		$this->h = $h;
-		return $this;
-	}
-	/**
-	 * Set minute
-	 * @param int i - Minute
-	 * @return DateTime instance
-	 */
-	function setMinute($i){
-		$this->i = $i;
-		return $this;
-	}
-	/**
-	 * Set second
-	 * @param int s - Second
-	 * @return DateTime instance
-	 */
-	function setSecond($s){
-		$this->s = $s;
-		return $this;
-	}
-	/**
-	 * Set microsecond
-	 * @param int ms - Microsecond
-	 * @return DateTime instance
-	 */
-	function setMicrosecond($ms){
-		$this->ms = $ms;
-		return $this;
-	}
-	/**
-	 * Set time zone
-	 * @param string tz
-	 * @return DateTime instance
-	 */
-	function setTimezone($tz){
-		$this->tz = $tz;
-		return $this;
-	}
-	/**
-	 * Returns year
-	 * @return int
-	 */
-	function getYear(){
-		return $this->y;
-	}
-	/**
-	 * Returns month
-	 * @return int
-	 */
-	function getMonth(){
-		return $this->m;
-	}
-	/**
-	 * Returns day
-	 * @return int
-	 */
-	function getDay(){
-		return $this->d;
-	}
-	/**
-	 * Returns hour
-	 * @return int
-	 */
-	function getHour(){
-		return $this->h;
-	}
-	/**
-	 * Returns minute
-	 * @return int
-	 */
-	function getMinute(){
-		return $this->i;
-	}
-	/**
-	 * Returns second
-	 * @return int
-	 */
-	function getSecond(){
-		return $this->s;
-	}
-	/**
-	 * Returns microsecond
-	 * @return int
-	 */
-	function getMicrosecond(){
-		return $this->ms;
-	}
-	/**
-	 * Returns time zone
-	 * @return string
-	 */
-	function getTimezone(){
-		return $this->tz;
-	}
+use Runtime\CoreStruct;
+class DateTime extends CoreStruct{
+	protected $__y;
+	protected $__m;
+	protected $__d;
+	protected $__h;
+	protected $__u;
+	protected $__s;
+	protected $__ms;
+	protected $__tz;
 	
-	public function assignDatetime($dt){
-		$this->y = (int)$dt->format("Y");
-		$this->m = (int)$dt->format("m");
-		$this->d = (int)$dt->format("d");
-		$this->h = (int)$dt->format("H");
-		$this->i = (int)$dt->format("i");
-		$this->s = (int)$dt->format("s");
+	public static function assignDatetime($dt, $obj)
+	{
+		$y = (int)$dt->format("Y");
+		$m = (int)$dt->format("m");
+		$d = (int)$dt->format("d");
+		$h = (int)$dt->format("H");
+		$i = (int)$dt->format("i");
+		$s = (int)$dt->format("s");
+		return $obj->copy({"y":$y,"m":$m,"d":$d,"h":$h,"i":$i,"s":$s});
 	}
-	public function getDatetime(){
-		$dt = new \DateTime("now", new \DateTimeZone($this->tz));
-		$dt->setDate($this->y, $this->m, $this->d);
-		$dt->setTime($this->h, $this->i, $this->s);
+	public static function createDatetime($dt, $tz="UTC")
+	{
+		return static::assignDatetime($dt, new DateTime({"tz":tz}));
+	}
+	public static function getDatetime($obj)
+	{
+		$dt = new \DateTime("now", new \DateTimeZone($obj->tz));
+		$dt->setDate($obj->y, $obj->m, $obj->d);
+		$dt->setTime($obj->h, $obj->i, $obj->s);
 		return $dt;
 	}
 	/**
@@ -206,127 +57,168 @@ class DateTime extends CoreObject implements CloneableInterface, SerializeInterf
 	 */
 	static function now($tz = "UTC"){
 		
-		$obj = new DateTime();
 		$dt = new \DateTime("now", new \DateTimezone($tz));
-		$obj->assignDatetime($dt);
-		$obj->setTimezone($tz);
-		return $obj;
+		return static::createDatetime($dt, $tz);
 		return null;
 	}
 	/**
 	 * Returns day of week
+	 * @param DateTime obj
 	 * @return int
 	 */
-	function getDayOfWeek(){
+	static function getDayOfWeek($obj){
 		
-		$dt = $this->getDatetime();
+		$dt = static::getDatetime(obj);
 		return $dt->format("w");
 		return null;
 	}
 	/**
 	 * Returns timestamp
+	 * @param DateTime obj
 	 * @return int
 	 */
-	function getTimestamp(){
+	static function getTimestamp($obj){
 		
-		$dt = $this->getDatetime();
+		$dt = static::getDatetime(obj);
 		return $dt->getTimestamp();
 		return null;
 	}
 	/**
 	 * Set timestamp
 	 * @param int timestamp
+	 * @param DateTime obj
 	 * @return DateTime instance
 	 */
-	function setTimestamp($timestamp){
+	static function setTimestamp($timestamp, $obj){
 		
-		$dt = $this->getDatetime();
+		$dt = static::getDatetime($obj);
 		$dt->setTimestamp($timestamp);
-		$this->assignDatetime($dt);
-		return $this;
+		return static::assignDatetime($dt, $obj);
+		return null;
 	}
 	/**
 	 * Change time zone
 	 * @param string tz
+	 * @param DateTime obj
 	 * @return DateTime instance
 	 */
-	function changeTimezone($tz){
+	static function changeTimezone($tz, $obj){
 		
-		$dt = $this->getDatetime();
-		$dt->setTimezone( new \DateTimeZone($tz) );
-		$this->setTimezone($tz);
-		$this->assignDatetime($dt);
-		return $this;
+		$dt = static::getDatetime($obj);
+		$dt->setTimezone(new \DateTimeZone($tz));
+		return static::assignDatetime($dt, $obj);
+		return null;
 	}
 	/**
 	 * Return datetime in RFC822
+	 * @param DateTime obj
 	 * @return string
 	 */
-	function getRFC822(){
+	static function getRFC822($obj){
 		
-		$dt = $this->getDatetime();
+		$dt = static::getDatetime($obj);
 		return $dt->format(\DateTime::RFC822);
 		return "";
 	}
 	/**
 	 * Return datetime in ISO8601
+	 * @param DateTime obj
 	 * @return string
 	 */
-	function getISO8601(){
+	static function getISO8601($obj){
 		
-		$dt = $this->getDatetime();
+		$dt = static::getDatetime($obj);
 		return $dt->format(\DateTime::ISO8601);
 		return "";
 	}
 	/**
 	 * Return datetime by GMT
+	 * @param DateTime obj
 	 * @return string
 	 */
-	function getGMT(){
+	static function getGMT($obj){
 		
-		$dt = $this->getDatetime();
+		$dt = static::getDatetime($obj);
 		return $dt->format("Y-m-d H:i:s");
 		return "";
 	}
 	/**
 	 * Return datetime by UTC
+	 * @param DateTime obj
 	 * @return string
 	 */
-	function getUTC(){
+	static function getUTC($obj){
 		
-		$dt = $this->getDatetime();
+		$dt = static::getDatetime($obj);
 		$dt->setTimezone( new \DateTimeZone("UTC") ); 
 		return $dt->format("Y-m-d H:i:s");
 		return "";
 	}
 	/* ======================= Class Init Functions ======================= */
 	public function getClassName(){return "Runtime.DateTime";}
-	public static function getParentClassName(){return "Runtime.CoreObject";}
+	public static function getCurrentClassName(){return "Runtime.DateTime";}
+	public static function getParentClassName(){return "Runtime.CoreStruct";}
 	protected function _init(){
 		parent::_init();
-		$this->y = 0;
-		$this->m = 0;
-		$this->d = 0;
-		$this->h = 0;
-		$this->u = 0;
-		$this->s = 0;
-		$this->ms = 0;
-		$this->tz = "UTC";
+		$this->__y = 0;
+		$this->__m = 0;
+		$this->__d = 0;
+		$this->__h = 0;
+		$this->__u = 0;
+		$this->__s = 0;
+		$this->__ms = 0;
+		$this->__tz = "UTC";
 	}
 	public function assignObject($obj){
 		if ($obj instanceof DateTime){
+			$this->__y = $obj->__y;
+			$this->__m = $obj->__m;
+			$this->__d = $obj->__d;
+			$this->__h = $obj->__h;
+			$this->__u = $obj->__u;
+			$this->__s = $obj->__s;
+			$this->__ms = $obj->__ms;
+			$this->__tz = $obj->__tz;
 		}
 		parent::assignObject($obj);
 	}
-	public function assignValue($variable_name, $value){
-		parent::assignValue($variable_name, $value);
+	public function assignValue($variable_name, $value, $sender = null){
+		if ($variable_name == "y")$this->__y = rtl::convert($value,"int",0,"");
+		else if ($variable_name == "m")$this->__m = rtl::convert($value,"int",0,"");
+		else if ($variable_name == "d")$this->__d = rtl::convert($value,"int",0,"");
+		else if ($variable_name == "h")$this->__h = rtl::convert($value,"int",0,"");
+		else if ($variable_name == "u")$this->__u = rtl::convert($value,"int",0,"");
+		else if ($variable_name == "s")$this->__s = rtl::convert($value,"int",0,"");
+		else if ($variable_name == "ms")$this->__ms = rtl::convert($value,"int",0,"");
+		else if ($variable_name == "tz")$this->__tz = rtl::convert($value,"string","UTC","");
+		else parent::assignValue($variable_name, $value, $sender);
 	}
 	public function takeValue($variable_name, $default_value = null){
+		if ($variable_name == "y") return $this->__y;
+		else if ($variable_name == "m") return $this->__m;
+		else if ($variable_name == "d") return $this->__d;
+		else if ($variable_name == "h") return $this->__h;
+		else if ($variable_name == "u") return $this->__u;
+		else if ($variable_name == "s") return $this->__s;
+		else if ($variable_name == "ms") return $this->__ms;
+		else if ($variable_name == "tz") return $this->__tz;
 		return parent::takeValue($variable_name, $default_value);
 	}
-	public static function getFieldsList($names){
+	public static function getFieldsList($names, $flag=0){
+		if (($flag | 3)==3){
+			$names->push("y");
+			$names->push("m");
+			$names->push("d");
+			$names->push("h");
+			$names->push("u");
+			$names->push("s");
+			$names->push("ms");
+			$names->push("tz");
+		}
 	}
 	public static function getFieldInfoByName($field_name){
 		return null;
 	}
+	public function __get($key){ return $this->takeValue($key); }
+	public function __set($key, $value){throw new \Runtime\Exceptions\AssignStructValueError($key);}
 }

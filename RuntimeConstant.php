@@ -70,8 +70,10 @@ class RuntimeConstant{
 	const ERROR_RUNTIME = -11;
 	const ERROR_VALIDATION = -12;
 	const ERROR_PARSE_SERIALIZATION_ERROR = -14;
-	const ERROR_FATAL = -15;
+	const ERROR_ASSIGN_DATA_STRUCT_VALUE = -15;
+	const ERROR_FATAL = -99;
 	/* ======================= Class Init Functions ======================= */
 	public function getClassName(){return "Runtime.RuntimeConstant";}
+	public static function getCurrentClassName(){return "Runtime.RuntimeConstant";}
 	public static function getParentClassName(){return "";}
 }

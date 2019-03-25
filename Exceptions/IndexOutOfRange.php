@@ -19,14 +19,14 @@
 namespace Runtime\Exceptions;
 use Runtime\rtl;
 use Runtime\RuntimeConstant;
-use Runtime\RuntimeUtils;
 use Runtime\Exceptions\RuntimeException;
 use Runtime\Interfaces\ContextInterface;
 class IndexOutOfRange extends RuntimeException{
 	function __construct($context = null, $prev = null){
-		parent::__construct(RuntimeUtils::translate("ERROR_INDEX_OUT_OF_RANGE", null, "", $context), RuntimeConstant::ERROR_INDEX_OUT_OF_RANGE, $context, $prev);
+		parent::__construct(rtl::translate("Index out of range", null, "", $context), RuntimeConstant::ERROR_INDEX_OUT_OF_RANGE, $context, $prev);
 	}
 	/* ======================= Class Init Functions ======================= */
 	public function getClassName(){return "Runtime.Exceptions.IndexOutOfRange";}
+	public static function getCurrentClassName(){return "Runtime.Exceptions.IndexOutOfRange";}
 	public static function getParentClassName(){return "Runtime.Exceptions.RuntimeException";}
 }

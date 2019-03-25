@@ -1,6 +1,6 @@
 <?php
 /*!
- *  Bayrell Runtime Library
+ *  Bayrell Runtime Library 
  *
  *  (c) Copyright 2016-2018 "Ildar Bikmamatov" <support@bayrell.org>
  *
@@ -21,13 +21,12 @@ use Runtime\rtl;
 use Runtime\RuntimeConstant;
 use Runtime\Exceptions\RuntimeException;
 use Runtime\Interfaces\ContextInterface;
-class KeyNotFound extends RuntimeException{
-	function __construct($key, $context = null, $prev = null){
-		/* RuntimeUtils::translate("ERROR_KEY_NOT_FOUND", null, "", context),  */
-		parent::__construct("Key '" . rtl::toString($key) . "' not found", RuntimeConstant::ERROR_KEY_NOT_FOUND, $context, $prev);
+class AssignStructValueError extends RuntimeException{
+	function __construct($name, $context = null, $prev = null){
+		parent::__construct(rtl::translate("Can not set key '" . rtl::toString($name) . "' in immutable struct", null, "", $context), RuntimeConstant::ERROR_INDEX_OUT_OF_RANGE, $context, $prev);
 	}
 	/* ======================= Class Init Functions ======================= */
-	public function getClassName(){return "Runtime.Exceptions.KeyNotFound";}
-	public static function getCurrentClassName(){return "Runtime.Exceptions.KeyNotFound";}
+	public function getClassName(){return "Runtime.Exceptions.AssignStructValueError";}
+	public static function getCurrentClassName(){return "Runtime.Exceptions.AssignStructValueError";}
 	public static function getParentClassName(){return "Runtime.Exceptions.RuntimeException";}
 }

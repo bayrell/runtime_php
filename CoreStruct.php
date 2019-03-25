@@ -18,8 +18,9 @@
  */
 namespace Runtime;
 use Runtime\CoreObject;
-use Runtime\Map;
+use Runtime\Dict;
 use Runtime\rtl;
+use Runtime\Vector;
 use Runtime\Interfaces\SerializeInterface;
 class CoreStruct extends CoreObject implements SerializeInterface{
 	/** 
@@ -27,29 +28,43 @@ class CoreStruct extends CoreObject implements SerializeInterface{
 	 */
 	function __construct($obj = null){
 		parent::__construct();
-		$this->assignMap($obj);
-		$this->onCreated();
+		if ($obj != null){
+			$this->assignMap($obj);
+			$this->initData();
+		}
 	}
 	/**
-	 * Struct created 
+	 * Init struct data
 	 */
-	function onCreated(){
+	function initData(){
 	}
 	/**
-	 * Clone this object with new values
+	 * Copy this struct with new values
 	 * @param Map obj = null
 	 * @return CoreStruct
 	 */
-	function clone($obj = null){
-		$instance = rtl::newInstance($this->getClassName());
-		$instance->assignObject($this);
-		if ($obj != null){
-			$instance->setMap($obj);
+	function copy($obj = null){
+		if ($obj == null){
+			return $this;
 		}
-		$instance->onCreated();
-		return $instance;
+		$res = rtl::newInstance($this->getClassName(), (new Vector()));
+		$res->assignObject($this);
+		$res->setMap($obj);
+		$res->initData();
+		/* Return object */
+		return $res;
+	}
+	/**
+	 * Create new struct with new value
+	 * @param string field_name
+	 * @param fun f
+	 * @return CoreStruct
+	 */
+	function map($field_name, $f){
+		return $this->copy((new $Map())->set($field_name, $f($this->takeValue($field_name))));
 	}
 	/* ======================= Class Init Functions ======================= */
 	public function getClassName(){return "Runtime.CoreStruct";}
+	public static function getCurrentClassName(){return "Runtime.CoreStruct";}
 	public static function getParentClassName(){return "Runtime.CoreObject";}
 }

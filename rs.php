@@ -47,7 +47,7 @@ class rs{
 	 * @return string
 	 */
 	static function charAt($s, $pos){
-		$sz = static::strlen($s);
+		$sz = (new \Runtime\Callback(self::class, "strlen"))($s);
 		if ($pos >= 0 && $pos < $sz){
 			return mb_substr($s, $pos, 1);
 		}
@@ -170,9 +170,12 @@ class rs{
 	 */
 	
 	static function htmlEscape($s){
+		if ($s instanceof \Runtime\Collection) return $s;
+		if ($s instanceof \Runtime\UIStruct) return $s;
 		return htmlspecialchars($s, ENT_QUOTES | ENT_HTML401);
 	}
 	/* ======================= Class Init Functions ======================= */
 	public function getClassName(){return "Runtime.rs";}
+	public static function getCurrentClassName(){return "Runtime.rs";}
 	public static function getParentClassName(){return "";}
 }

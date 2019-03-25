@@ -36,7 +36,7 @@ class ModuleDescription implements ModuleDescriptionInterface{
 	 * @return string
 	 */
 	static function getModuleVersion(){
-		return "0.6.2";
+		return "0.7.1";
 	}
 	/**
 	 * Returns required modules
@@ -67,5 +67,6 @@ class ModuleDescription implements ModuleDescriptionInterface{
 	}
 	/* ======================= Class Init Functions ======================= */
 	public function getClassName(){return "Runtime.ModuleDescription";}
+	public static function getCurrentClassName(){return "Runtime.ModuleDescription";}
 	public static function getParentClassName(){return "";}
 }

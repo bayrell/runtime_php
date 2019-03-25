@@ -106,53 +106,24 @@ class rtl{
 	 * Call method
 	 * @return Object
 	 */
-	
-	static function call($f, $args = null){
-		if ($args == null) return call_user_func($f);
-		return call_user_func_array($f, $args);
+	static function f($f){
+		return $f;
 	}
 	/**
-	 * Call method
-	 * @return Object
+	 * Returns callback
+	 * @return fun
 	 */
 	
-	static function callMethod($obj, $method_name, $args = null){
-		if ($args != null)
-			return call_user_func_array([$obj, $method_name], $args->_getArr());
-		return call_user_func([$obj, $method_name]);
+	static function method($obj, $method_name){
+		return new \Runtime\Callback($obj, $method_name);
 	}
 	/**
-	 * Call method
-	 * @return Object
+	 * Returns callback
+	 * @return fun
 	 */
 	
-	static function callStaticMethod($class_name, $method_name, $args=null){
-		$class_name = static::find_class($class_name);
-		if (!class_exists($class_name)){
-			throw new \Exception($class_name . " not found ");
-		}
-		if (!method_exists($class_name, $method_name)){
-			throw new \Exception("Method '" . $method_name . "' not found in " . $class_name);
-		}
-		return call_user_func_array([$class_name, $method_name], ($args!=null)?$args->_getArr():[]);
-	}
-	/**
-	 * Call async method
-	 * @return Object
-	 */
-	
-	static function awaitRun($f){
-	}
-	/**
-	 * Returns value if value instanceof type_value, else returns def_value
-	 * @param var value
-	 * @param string type_value
-	 * @param var def_value
-	 * @param var type_template
-	 * @return var
-	 */
-	static function correct($value, $type_value, $def_value = null, $type_template = ""){
-		return static::convert($value, $type_value, $def_value, $type_template);
+	static function methodAwait($obj, $method_name){
+		return new \Runtime\Callback($obj, $method_name);
 	}
 	/**
 	 * Returns value if value instanceof type_value, else returns def_value
@@ -163,22 +134,14 @@ class rtl{
 	 * @return var
 	 */
 	static function convert($value, $type_value, $def_value = null, $type_template = ""){
-		if ($type_value == "mixed" || $type_value == "var"){
+		if ($type_value == "mixed" || $type_value == "primitive" || $type_value == "var" || $type_value == "fun"){
 			return $value;
 		}
-		if ($value != null && static::checkValue($value, $type_value)){
-			if (($type_value == "Runtime.Vector" || $type_value == "Runtime.Map") && $type_template != ""){
-				
-				return $value->_correctItemsByType($type_template);
-			}
-			return $value;
+		if ($type_value == ""){
+			return $def_value;
 		}
-		else {
-			$is_string = rtl::isString($value);
-			$is_number = rtl::isNumber($value);
-			$is_bool = rtl::isBoolean($value);
-			if ($is_string || $is_bool || $is_number){
-				$s_value = rtl::toString($value);
+		if ($value != null){
+			if ($type_value == "int" || $type_value == "float" || $type_value == "double" || $type_value == "bool" || $type_value == "string"){
 				try{
 					if ($type_value == "int"){
 						$val = rtl::toInt($value);
@@ -192,6 +155,10 @@ class rtl{
 						$val = rtl::toBool($value);
 						return $val;
 					}
+					else if ($type_value == "string"){
+						$val = rtl::toString($value);
+						return $val;
+					}
 				}catch(\Exception $_the_exception){
 					if ($_the_exception instanceof \Exception){
 						$e = $_the_exception;
@@ -199,19 +166,16 @@ class rtl{
 					else { throw $_the_exception; }
 				}
 			}
-		}
-		if (!static::checkValue($def_value, $type_value)){
-			if ($type_value == "int" || $type_value == "float" || $type_value == "double"){
-				$def_value = 0;
+			else if (($type_value == "Runtime.Vector" || $type_value == "Runtime.Map" || $type_value == "Runtime.Collection" || $type_value == "Runtime.Dict") && $type_template != ""){
+				
+				if ($value instanceof \Runtime\Collection or $value instanceof \Runtime\Dict)
+				{
+					return $value->_correctItemsByType($type_template);
+				}
+				return null;
 			}
-			else if ($type_value == "string"){
-				$def_value = "";
-			}
-			else if ($type_value == "bool" || $type_value == "boolean"){
-				$def_value = false;
-			}
-			else {
-				$def_value = null;
+			else if (rtl::is_instanceof($value, $type_value)){
+				return $value;
 			}
 		}
 		return $def_value;
@@ -224,16 +188,16 @@ class rtl{
 	 */
 	static function checkValue($value, $tp){
 		if ($tp == "int"){
-			return static::isInt($value);
+			return (new \Runtime\Callback(self::class, "isInt"))($value);
 		}
 		if ($tp == "float" || $tp == "double"){
-			return static::isDouble($value);
+			return (new \Runtime\Callback(self::class, "isDouble"))($value);
 		}
 		if ($tp == "string"){
-			return static::isString($value);
+			return (new \Runtime\Callback(self::class, "isString"))($value);
 		}
 		if ($tp == "bool" || $tp == "boolean"){
-			return static::isBoolean($value);
+			return (new \Runtime\Callback(self::class, "isBoolean"))($value);
 		}
 		if (rtl::is_instanceof($value, $tp)){
 			return true;
@@ -385,15 +349,6 @@ class rtl{
 		throw new \Exception("Error convert to float");
 	}
 	/**
-	 * Returns unique value
-	 * @param bool flag If true returns as text. Default true
-	 * @return string
-	 */
-	
-	static function unique(){
-		return uniqid();
-	}
-	/**
 	 * Round up
 	 * @param double value
 	 * @return int
@@ -419,34 +374,6 @@ class rtl{
 	
 	static function round($value){
 		return round($value);
-	}
-	/**
-	 * Round down
-	 * @param double value
-	 * @return int
-	 */
-	
-	static function dump($value){
-		var_dump($value);
-	}
-	/**
-	 * Returns random value x, where a <= x <= b
-	 * @param int a
-	 * @param int b
-	 * @return int
-	 */
-	
-	static function random($a, $b){
-		if (PHP_VERSION_ID < 70000) return mt_rand($a, $b);
-		return random_int($a, $b);
-	}
-	/**
-	 * Returns current unix time in seconds
-	 * @return int
-	 */
-	
-	static function time(){
-		return time();
 	}
 	/**
 	 * Convert module name to node js package
@@ -481,7 +408,213 @@ class rtl{
 		$res .= "-nodejs";
 		return $res;
 	}
+	/* ================ Memorize functions ================ */
+	static public $_memorize_cache = null;
+	
+	static $_memorize_not_found = null;
+	static $_memorize_hkey = [];
+	static function _memorizeValidHKey($hkey, $key)
+	{
+		if ( !isset(static::$_memorize_hkey[$hkey]) ) return false;
+		if ( static::$_memorize_hkey[$hkey] == $key ) return true;
+		return false;
+	}
+	/**
+	 * Clear memorize cache
+	 */
+	static function _memorizeClear(){
+		static::$_memorize_cache = null;
+		
+		static::$_memorize_hkey = [];
+	}
+	/**
+	 * Returns cached value
+	 */
+	
+	static function &_memorizeValue($name, $args)
+	{
+		if (static::$_memorize_cache == null) return static::$_memorize_not_found;
+		if (!isset(static::$_memorize_cache[$name])) return static::$_memorize_not_found;
+		
+		$arr = &static::$_memorize_cache[$name];
+		$sz = count($args);
+		for ($i=0; $i<$sz; $i++)
+		{
+			$key = &$args[$i];
+			$hkey = null; 
+			if (gettype($key) == 'object') $hkey = spl_object_hash($key); else $hkey = $key;
+			if ($i == $sz - 1)
+			{
+				if (array_key_exists($hkey, $arr))
+				{
+					return $arr[$hkey];
+				}
+				return static::$_memorize_not_found;
+			}
+			else
+			{
+				if (!isset($arr[$hkey])) return static::$_memorize_not_found;
+				$arr = &$arr[$hkey];
+			}
+		}
+	}
+	/**
+	 * Returns cached value
+	 */
+	
+	static function _memorizeSave($name, $args, $value)
+	{
+		if (static::$_memorize_cache == null) static::$_memorize_cache = [];
+		if (!isset(static::$_memorize_cache[$name])) static::$_memorize_cache[$name] = [];
+		
+		$arr = &static::$_memorize_cache[$name];
+		$sz = count($args);
+		for ($i=0; $i<$sz; $i++)
+		{
+			$key = &$args[$i];
+			$hkey = null; 
+			if (gettype($key) == 'object') $hkey = spl_object_hash($key); else $hkey = $key;
+			if ($i == $sz - 1)
+			{
+				$arr[$hkey] = $value;
+			}
+			else
+			{
+				if (!isset($arr[$hkey])) $arr[$hkey] = [];
+				else if (!static::_memorizeValidHKey($hkey, $key)) $arr[$hkey] = [];
+				$arr = &$arr[$hkey];
+			}
+		}
+	}
+	/* ================ Dirty functions ================ */
+	/**
+	 * Returns unique value
+	 * @param bool flag If true returns as text. Default true
+	 * @return string
+	 */
+	
+	static function unique(){
+		return uniqid();
+	}
+	/**
+	 * Round down
+	 * @param double value
+	 * @return int
+	 */
+	
+	static function dump($value){
+		var_dump($value);
+	}
+	/**
+	 * Returns random value x, where a <= x <= b
+	 * @param int a
+	 * @param int b
+	 * @return int
+	 */
+	
+	static function random($a, $b){
+		if (PHP_VERSION_ID < 70000) return mt_rand($a, $b);
+		return random_int($a, $b);
+	}
+	/**
+	 * Returns current unix time in seconds
+	 * @return int
+	 */
+	
+	static function time(){
+		return time();
+	}
+	/**
+	 * Translate message
+	 * @params string message - message need to be translated
+	 * @params MapInterface params - Messages params. Default null.
+	 * @params string locale - Different locale. Default "".
+	 * @return string - translated string
+	 */
+	static function translate($message, $params = null, $locale = "", $context = null){
+		
+		return self::callStaticMethod("Runtime.RuntimeUtils", "translate", [$message, $params, $locale, $context]);
+	}
+	/**
+	 * Json encode data
+	 * @param mixed data
+	 * @return string
+	 */
+	static function json_encode($data){
+		
+		return self::callStaticMethod("Runtime.RuntimeUtils", "json_encode", [$data]);
+	}
+	/**
+	 * Normalize UIStruct
+	 * @param mixed data
+	 * @return UIStruct
+	 */
+	static function normalizeUI($data){
+		
+		return self::callStaticMethod("Runtime.RuntimeUtils", "normalizeUI", [$data]);
+	}
+	/**
+	 * Normalize UIStruct
+	 * @param mixed data
+	 * @return UIStruct
+	 */
+	static function normalizeUIVector($data){
+		
+		return self::callStaticMethod("Runtime.RuntimeUtils", "normalizeUIVector", [$data]);
+	}
+	/* =================== Deprecated =================== */
+	/**
+	 * Call method
+	 * @return Object
+	 */
+	
+	static function call($f, $args = null){
+		if ($args == null) return call_user_func($f);
+		if ($args instanceof \Runtime\Vector) $args = $args->_getArr();
+		return call_user_func_array($f, $args);
+	}
+	/**
+	 * Call method
+	 * @return Object
+	 */
+	
+	static function callMethod($obj, $method_name, $args = null){
+		if ($args != null)
+			return call_user_func_array([$obj, $method_name], $args->_getArr());
+		return call_user_func([$obj, $method_name]);
+	}
+	/**
+	 * Call method
+	 * @return Object
+	 */
+	
+	static function callStaticMethod($class_name, $method_name, $args=null){
+		$class_name = static::find_class($class_name);
+		if (!class_exists($class_name)){
+			throw new \Exception($class_name . " not found ");
+		}
+		if (!method_exists($class_name, $method_name)){
+			throw new \Exception("Method '" . $method_name . "' not found in " . $class_name);
+		}
+		if (gettype($args) == 'array')
+			return call_user_func_array([$class_name, $method_name], $args);
+		return call_user_func_array([$class_name, $method_name], ($args!=null)?$args->_getArr():[]);
+	}
+	/**
+	 * Returns value if value instanceof type_value, else returns def_value
+	 * @param var value
+	 * @param string type_value
+	 * @param var def_value
+	 * @param var type_template
+	 * @return var
+	 */
+	static function correct($value, $type_value, $def_value = null, $type_template = ""){
+		return static::convert($value, $type_value, $def_value, $type_template);
+	}
 	/* ======================= Class Init Functions ======================= */
 	public function getClassName(){return "Runtime.rtl";}
+	public static function getCurrentClassName(){return "Runtime.rtl";}
 	public static function getParentClassName(){return "";}
 }
+
+rtl::$_memorize_not_found = (object) ['s' => 'memorize_key_not_found'];

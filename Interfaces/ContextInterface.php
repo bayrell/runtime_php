@@ -17,7 +17,6 @@
  *  limitations under the License.
  */
 namespace Runtime\Interfaces;
-use Runtime\CoreObject;
 interface ContextInterface{
 	/**
 	 * Register module

@@ -18,86 +18,156 @@
  */
 namespace Runtime;
 use Runtime\CoreStruct;
+use Runtime\Maybe;
 use Runtime\rtl;
-use Runtime\Vector;
+use Runtime\Collection;
 class IntrospectionInfo extends CoreStruct{
 	const ITEM_CLASS = "class";
 	const ITEM_FIELD = "field";
 	const ITEM_METHOD = "method";
-	public $class_name;
-	public $kind;
-	public $name;
-	public $annotations;
+	protected $__class_name;
+	protected $__kind;
+	protected $__name;
+	protected $__annotations;
+	/* lambda isInstanceOf(string class_name) => bool (CoreStruct item) => rtl::is_instanceof(item, class_name); */
 	/**
 	 * Returns true if has annotations by class_name
 	 * @string class_name
 	 * @return bool
 	 */
-	function hasAnnotation($class_name){
-		if ($this->annotations == null){
+	static function filterAnnotations($class_name, $info){
+		if ($info->annotations == null){
+			return null;
+		}
+		return $info->annotations->filter(function ($item) use (&$class_name){
+			return rtl::is_instanceof($item, $class_name);
+		})->toCollection();
+	}
+	/**
+	 * Returns true if has annotations by class_name
+	 * @string class_name
+	 * @return bool
+	 */
+	function hasAnnotationOld($class_name){
+		/*
+		return Maybe::of(this.annotations)
+			.map( 
+				rtl::findFirst(
+					bool (CoreStruct item) use (class_name)
+					{
+						return rtl::is_instanceof(item, class_name);
+					}
+				) 
+			)
+			.value() != null
+		;
+		
+		*/
+		/* return 
+			( 
+				pipe(this.annotations) >> 
+				rtl::findFirst(self::isInstanceOf(class_name))
+			).value() != null
+		; 
+		*/
+		/* return Maybe.of(this.annotations).map( rtl::findFirst( self::isInstanceOf(class_name) ) ).value() != null; */
+		/*
+		if (this.annotations == null)
+		{
 			return false;
 		}
-		for ($i = 0; $i < $this->annotations->count(); $i++){
-			$item = $this->annotations->item($i);
-			if (rtl::is_instanceof($item, $class_name)){
+		
+		for (int i=0; i<this.annotations.count(); i++)
+		{
+			CoreStruct item = this.annotations.item(i);
+			if (rtl::is_instanceof(item, class_name))
+			{
 				return true;
 			}
 		}
+		
 		return false;
+		*/
 	}
 	/**
 	 * Returns true if has annotations by class_name
 	 * @string class_name
 	 * @return bool
 	 */
-	function filterAnnotations($class_name){
-		if ($this->annotations == null){
+	function filterAnnotationsOld($class_name){
+		/*
+		return Maybe.of(this.annotations)
+			.map( 
+				rtl::filter(
+					bool (CoreStruct item) use (class_name)
+					{
+						return rtl::is_instanceof(item, class_name);
+					}
+				) 
+			)
+			.value()
+		;
+		*/
+		/* return Maybe.of(this.annotations).map( rtl::filter( self::isInstanceOf(class_name) ) ).value() != null; */
+		/*
+		if (this.annotations == null)
+		{
 			return null;
 		}
-		return $this->annotations->filter(function ($item) use (&$class_name){
-			return rtl::is_instanceof($item, $class_name);
-		});
+		
+		return this.annotations.filter(
+			bool (CoreStruct item) use (class_name)
+			{
+				return rtl::is_instanceof(item, class_name);
+			}
+		);
+		*/
 	}
 	/* ======================= Class Init Functions ======================= */
 	public function getClassName(){return "Runtime.IntrospectionInfo";}
+	public static function getCurrentClassName(){return "Runtime.IntrospectionInfo";}
 	public static function getParentClassName(){return "Runtime.CoreStruct";}
 	protected function _init(){
 		parent::_init();
-		$this->class_name = "";
-		$this->kind = "";
-		$this->name = "";
-		$this->annotations = null;
+		$this->__class_name = "";
+		$this->__kind = "";
+		$this->__name = "";
+		$this->__annotations = null;
 	}
 	public function assignObject($obj){
 		if ($obj instanceof IntrospectionInfo){
-			$this->class_name = rtl::_clone($obj->class_name);
-			$this->kind = rtl::_clone($obj->kind);
-			$this->name = rtl::_clone($obj->name);
-			$this->annotations = rtl::_clone($obj->annotations);
+			$this->__class_name = $obj->__class_name;
+			$this->__kind = $obj->__kind;
+			$this->__name = $obj->__name;
+			$this->__annotations = $obj->__annotations;
 		}
 		parent::assignObject($obj);
 	}
-	public function assignValue($variable_name, $value){
-		if ($variable_name == "class_name") $this->class_name = rtl::correct($value, "string", "", "");
-		else if ($variable_name == "kind") $this->kind = rtl::correct($value, "string", "", "");
-		else if ($variable_name == "name") $this->name = rtl::correct($value, "string", "", "");
-		else if ($variable_name == "annotations") $this->annotations = rtl::correct($value, "Runtime.Vector", null, "Runtime.CoreStruct");
-		else parent::assignValue($variable_name, $value);
+	public function assignValue($variable_name, $value, $sender = null){
+		if ($variable_name == "class_name")$this->__class_name = rtl::convert($value,"string","","");
+		else if ($variable_name == "kind")$this->__kind = rtl::convert($value,"string","","");
+		else if ($variable_name == "name")$this->__name = rtl::convert($value,"string","","");
+		else if ($variable_name == "annotations")$this->__annotations = rtl::convert($value,"Runtime.Collection",null,"Runtime.CoreStruct");
+		else parent::assignValue($variable_name, $value, $sender);
 	}
 	public function takeValue($variable_name, $default_value = null){
-		if ($variable_name == "class_name") return $this->class_name;
-		else if ($variable_name == "kind") return $this->kind;
-		else if ($variable_name == "name") return $this->name;
-		else if ($variable_name == "annotations") return $this->annotations;
+		if ($variable_name == "class_name") return $this->__class_name;
+		else if ($variable_name == "kind") return $this->__kind;
+		else if ($variable_name == "name") return $this->__name;
+		else if ($variable_name == "annotations") return $this->__annotations;
 		return parent::takeValue($variable_name, $default_value);
 	}
-	public static function getFieldsList($names){
-		$names->push("class_name");
-		$names->push("kind");
-		$names->push("name");
-		$names->push("annotations");
+	public static function getFieldsList($names, $flag=0){
+		if (($flag | 3)==3){
+			$names->push("class_name");
+			$names->push("kind");
+			$names->push("name");
+			$names->push("annotations");
+		}
 	}
 	public static function getFieldInfoByName($field_name){
 		return null;
 	}
+	public function __get($key){ return $this->takeValue($key); }
+	public function __set($key, $value){throw new \Runtime\Exceptions\AssignStructValueError($key);}
 }

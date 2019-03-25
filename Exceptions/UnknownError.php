@@ -19,14 +19,14 @@
 namespace Runtime\Exceptions;
 use Runtime\rtl;
 use Runtime\RuntimeConstant;
-use Runtime\RuntimeUtils;
 use Runtime\Exceptions\RuntimeException;
 use Runtime\Interfaces\ContextInterface;
 class UnknownError extends RuntimeException{
 	function __construct($context = null, $prev = null){
-		parent::__construct(RuntimeUtils::translate("ERROR_UNKNOWN", null, "", $context), RuntimeConstant::ERROR_UNKNOWN, $context, $prev);
+		parent::__construct(rtl::translate("Unknown error", null, "", $context), RuntimeConstant::ERROR_UNKNOWN, $context, $prev);
 	}
 	/* ======================= Class Init Functions ======================= */
 	public function getClassName(){return "Runtime.Exceptions.UnknownError";}
+	public static function getCurrentClassName(){return "Runtime.Exceptions.UnknownError";}
 	public static function getParentClassName(){return "Runtime.Exceptions.RuntimeException";}
 }

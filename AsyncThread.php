@@ -166,14 +166,9 @@ class AsyncThread extends CoreObject{
 	}
 	/* ======================= Class Init Functions ======================= */
 	public function getClassName(){return "Runtime.AsyncThread";}
+	public static function getCurrentClassName(){return "Runtime.AsyncThread";}
 	public static function getParentClassName(){return "Runtime.CoreObject";}
 	protected function _init(){
 		parent::_init();
-		$this->f = null;
-		$this->pos = "0";
-		$this->res = null;
-		$this->err = null;
-		$this->run_stack = null;
-		$this->catch_stack = null;
 	}
 }

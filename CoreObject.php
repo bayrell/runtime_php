@@ -20,7 +20,6 @@ namespace Runtime;
 use Runtime\rtl;
 use Runtime\Map;
 use Runtime\Vector;
-use Runtime\RuntimeUtils;
 class CoreObject{
 	protected $_is_destroyed;
 	/** 
@@ -59,13 +58,6 @@ class CoreObject{
 	 * @param CoreObject obj
 	 */
 	function assignObject($obj){
-		$this->assignObjectAfter($obj);
-	}
-	/**
-	 * Assign and clone data from other object
-	 * @param CoreObject obj
-	 */
-	function assignObjectAfter($obj){
 	}
 	/**
 	 * Set new value instance by variable name
@@ -73,21 +65,6 @@ class CoreObject{
 	 * @param var value
 	 */
 	function assignValue($variable_name, $value){
-		$this->assignValueAfter($variable_name, $value);
-	}
-	/**
-	 * Calls after assign new value
-	 * @param string variable_name
-	 * @param var value
-	 */
-	function assignValueAfter($variable_name, $value){
-	}
-	/**
-	 * Calls after assign new value
-	 * @param string variable_name
-	 */
-	function callAssignAfter($variable_name){
-		$this->assignValueAfter($variable_name, $this->takeValue($variable_name));
 	}
 	/**
 	 * Set new values instance by Map
@@ -99,7 +76,7 @@ class CoreObject{
 			return ;
 		}
 		$names = new Vector();
-		$this->getVariablesNames($names);
+		$this->getVariablesNames($names, 2);
 		$names->each(function ($name) use (&$values){
 			$this->assignValue($name, $values->get($name, null));
 		});
@@ -123,10 +100,10 @@ class CoreObject{
 	 * Dump serializable object to Map
 	 * @return Map<mixed>
 	 */
-	function takeMap(){
+	function takeMap($flag = 2){
 		$values = new Map();
 		$names = new Vector();
-		$this->getVariablesNames($names);
+		$this->getVariablesNames($names, $flag);
 		$names->each(function ($name) use (&$values){
 			$values->set($name, $this->takeValue($name, null));
 		});
@@ -160,13 +137,13 @@ class CoreObject{
 	 * Returns public fields list
 	 * @param Vector<string> names
 	 */
-	static function getFieldsList($names){
+	static function getFieldsList($names, $flag = 0){
 	}
 	/**
 	 * Returns public virtual fields names
 	 * @param Vector<string> names
 	 */
-	static function getVirtualFieldsList($names){
+	static function getVirtualFieldsList($names, $flag = 0){
 	}
 	/**
 	 * Returns info of the public method by name
@@ -186,8 +163,8 @@ class CoreObject{
 	 * Returns names of variables to serialization
 	 * @param Vector<string>
 	 */
-	function getVariablesNames($names){
-		RuntimeUtils::getVariablesNames($this->getClassName(), $names);
+	function getVariablesNames($names, $flag = 0){
+		rtl::callStaticMethod("Runtime.RuntimeUtils", "getVariablesNames", (new Vector())->push($this->getClassName())->push($names)->push($flag));
 	}
 	/**
 	 * Returns info of the public variable by name
@@ -195,7 +172,7 @@ class CoreObject{
 	 * @return IntrospectionInfo
 	 */
 	function getFieldInfo($variable_name){
-		$classes = RuntimeUtils::getParents($this->getClassName());
+		$classes = rtl::callStaticMethod("Runtime.RuntimeUtils", "getParents", (new Vector())->push($this->getClassName()));
 		for ($i = 0; $i < $classes->count(); $i++){
 			$class_name = $classes->item($i);
 			$info = rtl::callStaticMethod($class_name, "getFieldInfoByName", (new Vector())->push($variable_name));
@@ -221,7 +198,7 @@ class CoreObject{
 	 * @param Vector<string>
 	 */
 	function getMethodsNames($names){
-		$classes = RuntimeUtils::getParents($this->getClassName());
+		$classes = rtl::callStaticMethod("Runtime.RuntimeUtils", "getParents", (new Vector())->push($this->getClassName()));
 		for ($i = 0; $i < $classes->count(); $i++){
 			$class_name = $classes->item($i);
 			rtl::callStaticMethod($class_name, "getMethodsList", (new Vector())->push($names));
@@ -233,7 +210,7 @@ class CoreObject{
 	 * @return IntrospectionInfo
 	 */
 	function getMethodInfo($method_name){
-		$classes = RuntimeUtils::getParents($this->getClassName());
+		$classes = rtl::callStaticMethod("Runtime.RuntimeUtils", "getParents", (new Vector())->push($this->getClassName()));
 		for ($i = 0; $i < $classes->count(); $i++){
 			$class_name = $classes->item($i);
 			$info = rtl::callStaticMethod($class_name, "getMethodInfoByName", (new Vector())->push($method_name));
@@ -245,5 +222,6 @@ class CoreObject{
 	}
 	/* ======================= Class Init Functions ======================= */
 	public function getClassName(){return "Runtime.CoreObject";}
+	public static function getCurrentClassName(){return "Runtime.CoreObject";}
 	public static function getParentClassName(){return "";}
 }

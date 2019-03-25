@@ -68,5 +68,6 @@ class re{
 	}
 	/* ======================= Class Init Functions ======================= */
 	public function getClassName(){return "Runtime.re";}
+	public static function getCurrentClassName(){return "Runtime.re";}
 	public static function getParentClassName(){return "";}
 }

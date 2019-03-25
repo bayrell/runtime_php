@@ -17,10 +17,14 @@
  *  limitations under the License.
  */
 namespace Runtime;
+use Runtime\Collection;
 use Runtime\Context;
+use Runtime\CoreStruct;
+use Runtime\Dict;
 use Runtime\Map;
 use Runtime\rs;
 use Runtime\rtl;
+use Runtime\UIStruct;
 use Runtime\Vector;
 use Runtime\Interfaces\ContextInterface;
 use Runtime\Interfaces\FactoryInterface;
@@ -28,6 +32,7 @@ use Runtime\Interfaces\SerializeInterface;
 class RuntimeUtils{
 	/* ================================ Context Functions ================================ */
 	static protected $_global_context = null;
+	static protected $_variables_names = null;
 	/**
 	 * Returns global context
 	 * @return ContextInterface
@@ -61,9 +66,9 @@ class RuntimeUtils{
 	 * Register global Context
 	 */
 	static function registerGlobalContext($modules = null){
-		$context = static::createContext($modules);
+		$context = (new \Runtime\Callback(self::class, "createContext"))($modules);
 		$context->init();
-		static::setContext($context);
+		(new \Runtime\Callback(self::class, "setContext"))($context);
 		return $context;
 	}
 	/* ========================== Class Introspection Functions ========================== */
@@ -98,12 +103,24 @@ class RuntimeUtils{
 	 * Returns names of variables to serialization
 	 * @param Vector<string>
 	 */
-	static function getVariablesNames($class_name, $names){
-		$classes = static::getParents($class_name);
+	static function getVariablesNames($class_name, $names, $flag = 0){
+		$variables_names = RuntimeUtils::$_variables_names;
+		if ($variables_names == null){
+			RuntimeUtils::$_variables_names = new Map();
+		}
+		if (RuntimeUtils::$_variables_names->has($class_name)){
+			$m = RuntimeUtils::$_variables_names;
+			$v = $m->item($class_name);
+			if ($v->has($flag)){
+				$names->appendVector($v->item($flag));
+				return ;
+			}
+		}
+		$classes = (new \Runtime\Callback(self::class, "getParents"))($class_name);
 		$classes->prepend($class_name);
-		$classes->each(function ($class_name) use (&$names){
+		$classes->each(function ($class_name) use (&$names, &$flag){
 			try{
-				rtl::callStaticMethod($class_name, "getFieldsList", (new Vector())->push($names));
+				rtl::callStaticMethod($class_name, "getFieldsList", (new Vector())->push($names)->push($flag));
 			}catch(\Exception $_the_exception){
 				if ($_the_exception instanceof \Exception){
 					$e = $_the_exception;
@@ -111,7 +128,7 @@ class RuntimeUtils{
 				else { throw $_the_exception; }
 			}
 			try{
-				rtl::callStaticMethod($class_name, "getVirtualFieldsList", (new Vector())->push($names));
+				rtl::callStaticMethod($class_name, "getVirtualFieldsList", (new Vector())->push($names)->push($flag));
 			}catch(\Exception $_the_exception){
 				if ($_the_exception instanceof \Exception){
 					$e = $_the_exception;
@@ -119,7 +136,15 @@ class RuntimeUtils{
 				else { throw $_the_exception; }
 			}
 		});
-		$names->removeDublicates();
+		$names = $names->removeDublicatesIm();
+		$variables_names = RuntimeUtils::$_variables_names;
+		if (!RuntimeUtils::$_variables_names->has($class_name)){
+			RuntimeUtils::$_variables_names->set($class_name, (new Map()));
+		}
+		$v = RuntimeUtils::$_variables_names->item($class_name);
+		$v->set($flag, $names->copy());
+		RuntimeUtils::$_variables_names->set($class_name, $v);
+		/*RuntimeUtils::_variables_names.set(class_name, names.copy());*/
 	}
 	/**
 	 * Returns Introspection of the class name
@@ -128,7 +153,7 @@ class RuntimeUtils{
 	 */
 	static function getIntrospection($class_name){
 		$res = new Vector();
-		$class_names = static::getParents($class_name);
+		$class_names = (new \Runtime\Callback(self::class, "getParents"))($class_name);
 		$class_names->prepend($class_name);
 		$class_names->each(function ($item_class_name) use (&$res){
 			$names = new Vector();
@@ -153,7 +178,7 @@ class RuntimeUtils{
 					else { throw $_the_exception; }
 				}
 				if ($info != null){
-					$info->class_name = $item_class_name;
+					$info = $info->copy( new Map([ "class_name" => $item_class_name ])  );
 					$res->push($info);
 				}
 			});
@@ -179,7 +204,7 @@ class RuntimeUtils{
 					else { throw $_the_exception; }
 				}
 				if ($info != null){
-					$info->class_name = $item_class_name;
+					$info = $info->copy( new Map([ "class_name" => $item_class_name ])  );
 					$res->push($info);
 				}
 			});
@@ -205,11 +230,12 @@ class RuntimeUtils{
 					else { throw $_the_exception; }
 				}
 				if ($info != null){
-					$info->class_name = $item_class_name;
+					$info = $info->copy( new Map([ "class_name" => $item_class_name ])  );
 					$res->push($info);
 				}
 			});
 			/* Get class introspection */
+			$info = null;
 			try{
 				$info = rtl::callStaticMethod($item_class_name, "getClassInfo", (new Vector()));
 			}catch(\Exception $_the_exception){
@@ -220,21 +246,21 @@ class RuntimeUtils{
 				else { throw $_the_exception; }
 			}
 			if ($info != null){
-				$info->class_name = $item_class_name;
+				$info = $info->copy( new Map([ "class_name" => $item_class_name ])  );
 				$res->push($info);
 			}
 		});
-		return $res;
+		return $res->toCollection();
 	}
 	/* ============================= Serialization Functions ============================= */
 	static function ObjectToNative($value, $force_class_name = false){
-		$value = static::ObjectToPrimitive($value, $force_class_name);
-		$value = static::PrimitiveToNative($value);
+		$value = (new \Runtime\Callback(self::class, "ObjectToPrimitive"))($value, $force_class_name);
+		$value = (new \Runtime\Callback(self::class, "PrimitiveToNative"))($value);
 		return $value;
 	}
 	static function NativeToObject($value){
-		$value = static::NativeToPrimitive($value);
-		$value = static::PrimitiveToObject($value);
+		$value = (new \Runtime\Callback(self::class, "NativeToPrimitive"))($value);
+		$value = (new \Runtime\Callback(self::class, "PrimitiveToObject"))($value);
 		return $value;
 	}
 	/**
@@ -249,37 +275,37 @@ class RuntimeUtils{
 		if (rtl::isScalarValue($obj)){
 			return $obj;
 		}
-		if ($obj instanceof Vector){
+		if ($obj instanceof Collection){
 			$res = new Vector();
 			for ($i = 0; $i < $obj->count(); $i++){
 				$value = $obj->item($i);
-				$value = static::ObjectToPrimitive($value, $force_class_name);
+				$value = (new \Runtime\Callback(self::class, "ObjectToPrimitive"))($value, $force_class_name);
 				$res->push($value);
 			}
-			return $res;
+			return $res->toCollection();
 		}
-		if ($obj instanceof Map){
+		if ($obj instanceof Dict){
 			$res = new Map();
 			$keys = $obj->keys();
 			for ($i = 0; $i < $keys->count(); $i++){
 				$key = $keys->item($i);
 				$value = $obj->item($key);
-				$value = static::ObjectToPrimitive($value, $force_class_name);
+				$value = (new \Runtime\Callback(self::class, "ObjectToPrimitive"))($value, $force_class_name);
 				$res->set($key, $value);
 			}
 			if ($force_class_name){
-				$res->set("__class_name__", "Runtime.Map");
+				$res->set("__class_name__", "Runtime.Dict");
 			}
-			return $res;
+			return $res->toDict();
 		}
 		if ($obj instanceof SerializeInterface){
 			$names = new Vector();
 			$values = new Map();
-			$obj->getVariablesNames($names);
+			$obj->getVariablesNames($names, 1);
 			for ($i = 0; $i < $names->count(); $i++){
 				$variable_name = $names->item($i);
 				$value = $obj->takeValue($variable_name, null);
-				$value = static::ObjectToPrimitive($value, $force_class_name);
+				$value = (new \Runtime\Callback(self::class, "ObjectToPrimitive"))($value, $force_class_name);
 				$values->set($variable_name, $value);
 			}
 			$values->set("__class_name__", $obj->getClassName());
@@ -299,30 +325,30 @@ class RuntimeUtils{
 		if (rtl::isScalarValue($obj)){
 			return $obj;
 		}
-		if ($obj instanceof Vector){
+		if ($obj instanceof Collection){
 			$res = new Vector();
 			for ($i = 0; $i < $obj->count(); $i++){
 				$value = $obj->item($i);
-				$value = static::PrimitiveToObject($value);
+				$value = (new \Runtime\Callback(self::class, "PrimitiveToObject"))($value);
 				$res->push($value);
 			}
-			return $res;
+			return $res->toCollection();
 		}
-		if ($obj instanceof Map){
+		if ($obj instanceof Dict){
 			$res = new Map();
 			$keys = $obj->keys();
 			for ($i = 0; $i < $keys->count(); $i++){
 				$key = $keys->item($i);
 				$value = $obj->item($key);
-				$value = static::PrimitiveToObject($value);
+				$value = (new \Runtime\Callback(self::class, "PrimitiveToObject"))($value);
 				$res->set($key, $value);
 			}
 			if (!$res->has("__class_name__")){
 				return $res;
 			}
-			if ($res->item("__class_name__") == "Runtime.Map"){
+			if ($res->item("__class_name__") == "Runtime.Map" || $res->item("__class_name__") == "Runtime.Dict"){
 				$res->remove("__class_name__");
-				return $res;
+				return $res->toDict();
 			}
 			$class_name = $res->item("__class_name__");
 			if (!rtl::class_exists($class_name)){
@@ -333,13 +359,16 @@ class RuntimeUtils{
 			}
 			$instance = rtl::newInstance($class_name, null);
 			$names = new Vector();
-			$instance->getVariablesNames($names);
+			$instance->getVariablesNames($names, 1);
 			for ($i = 0; $i < $names->count(); $i++){
 				$variable_name = $names->item($i);
 				if ($variable_name != "__class_name__"){
 					$value = $res->get($variable_name, null);
 					$instance->assignValue($variable_name, $value);
 				}
+			}
+			if ($instance instanceof CoreStruct){
+				$instance->initData();
 			}
 			return $instance;
 		}
@@ -500,7 +529,7 @@ class RuntimeUtils{
 	 */
 	static function translate($message, $params = null, $locale = "", $context = null){
 		if ($context == null){
-			$context = static::globalContext();
+			$context = (new \Runtime\Callback(self::class, "getContext"))();
 		}
 		if ($context != null){
 			$args = (new Vector())->push($message)->push($params)->push($locale);
@@ -508,7 +537,79 @@ class RuntimeUtils{
 		}
 		return $message;
 	}
+	/**
+	 * Retuns css hash 
+	 * @param string component class name
+	 * @return string hash
+	 */
+	static function getCssHash($s){
+		$arr = "1234567890abcdef";
+		$arr_sz = 16;
+		$arr_mod = 65536;
+		$sz = rs::strlen($s);
+		$hash = 0;
+		for ($i = 0; $i < $sz; $i++){
+			$ch = rs::ord(mb_substr($s, $i, 1));
+			$hash = ($hash << 2) + ($hash >> 14) + $ch & 65535;
+		}
+		$res = "";
+		$pos = 0;
+		$c = 0;
+		while ($hash != 0 || $pos < 4){
+			$c = $hash & 15;
+			$hash = $hash >> 4;
+			$res .= mb_substr($arr, $c, 1);
+			$pos++;
+		}
+		return $res;
+	}
+	/**
+	 * Normalize UIStruct
+	 */
+	static function normalizeUIVector($data){
+		if ($data instanceof Collection){
+			$res = new Vector();
+			for ($i = 0; $i < $data->count(); $i++){
+				$item = $data->item($i);
+				if ($item instanceof Collection){
+					$new_item = static::normalizeUIVector($item);
+					$res->appendVector($new_item);
+				}
+				else if ($item instanceof UIStruct){
+					$res->push($item);
+				}
+				else if (rtl::isString($item)){
+					$res->push(new UIStruct((new Map())->set("kind", UIStruct::TYPE_RAW)->set("content", rtl::toString($item))));
+				}
+			}
+			return $res->toCollection();
+		}
+		else if ($data instanceof UIStruct){
+			return new Collection(static::normalizeUI($data));
+		}
+		else if (rtl::isString($data)){
+			return new Collection(static::normalizeUI($data));
+		}
+		return null;
+	}
+	/**
+	 * Normalize UIStruct
+	 */
+	static function normalizeUI($data){
+		if ($data instanceof UIStruct){
+			$obj = (new Map())->set("children", static::normalizeUIVector($data->children));
+			if ($data->props != null && $data->props instanceof Map){
+				$obj->set("props", $data->props->toDict());
+			}
+			return $data->copy($obj);
+		}
+		else if (rtl::isString($data)){
+			return new UIStruct((new Map())->set("kind", UIStruct::TYPE_RAW)->set("content", rtl::toString($data)));
+		}
+		return null;
+	}
 	/* ======================= Class Init Functions ======================= */
 	public function getClassName(){return "Runtime.RuntimeUtils";}
+	public static function getCurrentClassName(){return "Runtime.RuntimeUtils";}
 	public static function getParentClassName(){return "";}
 }

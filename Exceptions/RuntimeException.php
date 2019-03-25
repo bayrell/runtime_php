@@ -18,7 +18,6 @@
  */
 namespace Runtime\Exceptions;
 use Runtime\rtl;
-use Runtime\RuntimeUtils;
 use Runtime\Interfaces\ContextInterface;
 
 class ClassException extends \Exception {}
@@ -33,9 +32,6 @@ class RuntimeException extends ClassException{
 	protected $pos;
 	function __construct($message = "", $code = 0, $context = null, $prev = null){
 		parent::__construct($message, $code, $prev);
-		if ($context == null){
-			$context = RuntimeUtils::globalContext();
-		}
 		$this->error_str = $message;
 		$this->context = $context;
 		$this->message = $message;
@@ -85,18 +81,38 @@ class RuntimeException extends ClassException{
 	public function __toString (){
 		return $this->toString();
 	}
+	/**
+	 * Apply function and return new container
+	 * @param fun f
+	 * @return RuntimeException
+	 */
+	function map($f){
+		return $this;
+	}
+	/**
+	 * Return values of the container
+	 * @return mixed
+	 */
+	function value(){
+		return null;
+	}
+	/**
+	 * Returns true if value is empty
+	 */
+	function isEmpty(){
+		return true;
+	}
+	/**
+	 * Returns true if is error
+	 */
+	function isError(){
+		return true;
+	}
 	/* ======================= Class Init Functions ======================= */
 	public function getClassName(){return "Runtime.Exceptions.RuntimeException";}
+	public static function getCurrentClassName(){return "Runtime.Exceptions.RuntimeException";}
 	public static function getParentClassName(){return "Runtime.Exceptions.ClassException";}
 	protected function _init(){
 		parent::_init();
-		$this->context = null;
-		$this->prev = null;
-		$this->error_str = "";
-		$this->message = "";
-		$this->code = 0;
-		$this->file = "";
-		$this->line = -1;
-		$this->pos = -1;
 	}
 }

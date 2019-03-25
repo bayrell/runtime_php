@@ -62,9 +62,9 @@ class ContextObject extends CoreObject{
 	}
 	/* ======================= Class Init Functions ======================= */
 	public function getClassName(){return "Runtime.ContextObject";}
+	public static function getCurrentClassName(){return "Runtime.ContextObject";}
 	public static function getParentClassName(){return "Runtime.CoreObject";}
 	protected function _init(){
 		parent::_init();
-		$this->_context = null;
 	}
 }
