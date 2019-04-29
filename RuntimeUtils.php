@@ -2,13 +2,13 @@
 /*!
  *  Bayrell Runtime Library
  *
- *  (c) Copyright 2016-2018 "Ildar Bikmamatov" <support@bayrell.org>
+ *  (c) Copyright 2016-2019 "Ildar Bikmamatov" <support@bayrell.org>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
  *  You may obtain a copy of the License at
  *
- *      https://www.bayrell.org/licenses/APACHE-LICENSE-2.0.html
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  *  Unless required by applicable law or agreed to in writing, software
  *  distributed under the License is distributed on an "AS IS" BASIS,
@@ -79,7 +79,8 @@ class RuntimeUtils{
 	static function getParents($class_name){
 		$res = new Vector();
 		while ($class_name != ""){
-			$class_name = rtl::callStaticMethod($class_name, "getParentClassName");
+			$f = rtl::method($class_name, "getParentClassName");
+			$class_name = $f();
 			if ($class_name != ""){
 				$res->push($class_name);
 			}
@@ -120,7 +121,7 @@ class RuntimeUtils{
 		$classes->prepend($class_name);
 		$classes->each(function ($class_name) use (&$names, &$flag){
 			try{
-				rtl::callStaticMethod($class_name, "getFieldsList", (new Vector())->push($names)->push($flag));
+				rtl::method($class_name, "getFieldsList")($names, $flag);
 			}catch(\Exception $_the_exception){
 				if ($_the_exception instanceof \Exception){
 					$e = $_the_exception;
@@ -128,7 +129,7 @@ class RuntimeUtils{
 				else { throw $_the_exception; }
 			}
 			try{
-				rtl::callStaticMethod($class_name, "getVirtualFieldsList", (new Vector())->push($names)->push($flag));
+				rtl::method($class_name, "getVirtualFieldsList")($names, $flag);
 			}catch(\Exception $_the_exception){
 				if ($_the_exception instanceof \Exception){
 					$e = $_the_exception;
@@ -159,7 +160,7 @@ class RuntimeUtils{
 			$names = new Vector();
 			/* Get fields introspection */
 			try{
-				rtl::callStaticMethod($item_class_name, "getFieldsList", (new Vector())->push($names));
+				rtl::method($item_class_name, "getFieldsList")($names);
 			}catch(\Exception $_the_exception){
 				if ($_the_exception instanceof \Exception){
 					$e = $_the_exception;
@@ -169,7 +170,7 @@ class RuntimeUtils{
 			$names->each(function ($field_name) use (&$res, &$item_class_name){
 				$info = null;
 				try{
-					$info = rtl::callStaticMethod($item_class_name, "getFieldInfoByName", (new Vector())->push($field_name));
+					$info = rtl::method($item_class_name, "getFieldInfoByName")($field_name);
 				}catch(\Exception $_the_exception){
 					if ($_the_exception instanceof \Exception){
 						$e = $_the_exception;
@@ -185,7 +186,7 @@ class RuntimeUtils{
 			/* Get virtual fields introspection */
 			$names->clear();
 			try{
-				rtl::callStaticMethod($item_class_name, "getVirtualFieldsList", (new Vector())->push($names));
+				rtl::method($item_class_name, "getVirtualFieldsList")($names);
 			}catch(\Exception $_the_exception){
 				if ($_the_exception instanceof \Exception){
 					$e = $_the_exception;
@@ -195,7 +196,7 @@ class RuntimeUtils{
 			$names->each(function ($field_name) use (&$res, &$item_class_name){
 				$info = null;
 				try{
-					$info = rtl::callStaticMethod($item_class_name, "getVirtualFieldInfo", (new Vector())->push($field_name));
+					$info = rtl::method($item_class_name, "getVirtualFieldInfo")($field_name);
 				}catch(\Exception $_the_exception){
 					if ($_the_exception instanceof \Exception){
 						$e = $_the_exception;
@@ -211,7 +212,7 @@ class RuntimeUtils{
 			/* Get methods introspection */
 			$names->clear();
 			try{
-				rtl::callStaticMethod($item_class_name, "getMethodsList", (new Vector())->push($names));
+				rtl::method($item_class_name, "getMethodsList")($names);
 			}catch(\Exception $_the_exception){
 				if ($_the_exception instanceof \Exception){
 					$e = $_the_exception;
@@ -221,7 +222,7 @@ class RuntimeUtils{
 			$names->each(function ($method_name) use (&$res, &$item_class_name){
 				$info = null;
 				try{
-					$info = rtl::callStaticMethod($item_class_name, "getMethodInfoByName", (new Vector())->push($method_name));
+					$info = rtl::method($item_class_name, "getMethodInfoByName")($method_name);
 				}catch(\Exception $_the_exception){
 					if ($_the_exception instanceof \Exception){
 						$e = $_the_exception;
@@ -237,7 +238,7 @@ class RuntimeUtils{
 			/* Get class introspection */
 			$info = null;
 			try{
-				$info = rtl::callStaticMethod($item_class_name, "getClassInfo", (new Vector()));
+				$info = rtl::method($item_class_name, "getClassInfo")();
 			}catch(\Exception $_the_exception){
 				if ($_the_exception instanceof \Exception){
 					$e = $_the_exception;
@@ -276,27 +277,18 @@ class RuntimeUtils{
 			return $obj;
 		}
 		if ($obj instanceof Collection){
-			$res = new Vector();
-			for ($i = 0; $i < $obj->count(); $i++){
-				$value = $obj->item($i);
-				$value = (new \Runtime\Callback(self::class, "ObjectToPrimitive"))($value, $force_class_name);
-				$res->push($value);
-			}
-			return $res->toCollection();
+			return $obj->map(function ($value) use (&$force_class_name){
+				return static::ObjectToPrimitive($value, $force_class_name);
+			});
 		}
 		if ($obj instanceof Dict){
-			$res = new Map();
-			$keys = $obj->keys();
-			for ($i = 0; $i < $keys->count(); $i++){
-				$key = $keys->item($i);
-				$value = $obj->item($key);
-				$value = (new \Runtime\Callback(self::class, "ObjectToPrimitive"))($value, $force_class_name);
-				$res->set($key, $value);
-			}
+			$obj = $obj->map(function ($key, $value) use (&$force_class_name){
+				return static::ObjectToPrimitive($value, $force_class_name);
+			});
 			if ($force_class_name){
-				$res->set("__class_name__", "Runtime.Dict");
+				$obj = $obj->setIm("__class_name__", "Runtime.Dict");
 			}
-			return $res->toDict();
+			return $obj->toDict();
 		}
 		if ($obj instanceof SerializeInterface){
 			$names = new Vector();
@@ -510,7 +502,7 @@ class RuntimeUtils{
 	 * @string charset - charset of the bytes vector. Default utf8
 	 * @return string
 	 */
-	function bytesToString($arr, $charset = "utf8"){
+	static function bytesToString($arr, $charset = "utf8"){
 	}
 	/**
 	 * Convert string to bytes
@@ -518,7 +510,7 @@ class RuntimeUtils{
 	 * @param Vector<byte> arr - output vector
 	 * @param charset - Result bytes charset. Default utf8
 	 */
-	function stringToBytes($s, $arr, $charset = "utf8"){
+	static function stringToBytes($s, $arr, $charset = "utf8"){
 	}
 	/**
 	 * Translate message
@@ -612,4 +604,14 @@ class RuntimeUtils{
 	public function getClassName(){return "Runtime.RuntimeUtils";}
 	public static function getCurrentClassName(){return "Runtime.RuntimeUtils";}
 	public static function getParentClassName(){return "";}
+	public static function getFieldsList($names, $flag=0){
+	}
+	public static function getFieldInfoByName($field_name){
+		return null;
+	}
+	public static function getMethodsList($names){
+	}
+	public static function getMethodInfoByName($method_name){
+		return null;
+	}
 }

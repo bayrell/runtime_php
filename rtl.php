@@ -2,13 +2,13 @@
 /*!
  *  Bayrell Runtime Library
  *
- *  (c) Copyright 2016-2018 "Ildar Bikmamatov" <support@bayrell.org>
+ *  (c) Copyright 2016-2019 "Ildar Bikmamatov" <support@bayrell.org>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
  *  You may obtain a copy of the License at
  *
- *      https://www.bayrell.org/licenses/APACHE-LICENSE-2.0.html
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  *  Unless required by applicable law or agreed to in writing, software
  *  distributed under the License is distributed on an "AS IS" BASIS,
@@ -140,10 +140,10 @@ class rtl{
 		if ($type_value == ""){
 			return $def_value;
 		}
-		if ($value != null){
-			if ($type_value == "int" || $type_value == "float" || $type_value == "double" || $type_value == "bool" || $type_value == "string"){
+		if ($value !== null){
+			if ($type_value == "int" || $type_value == "float" || $type_value == "byte" || $type_value == "double" || $type_value == "bool" || $type_value == "string"){
 				try{
-					if ($type_value == "int"){
+					if ($type_value == "int" || $type_value == "byte"){
 						$val = rtl::toInt($value);
 						return $val;
 					}
@@ -327,6 +327,8 @@ class rtl{
 	 */
 	
 	static function toBool($val){
+		if ($val === false || $val === "false") return false;
+		if ($val === true || $val === "true") return true;
 		$res = (bool)$val;
 		$s_res = (string)$res;
 		$s_val = (string)$val;
@@ -615,6 +617,16 @@ class rtl{
 	public function getClassName(){return "Runtime.rtl";}
 	public static function getCurrentClassName(){return "Runtime.rtl";}
 	public static function getParentClassName(){return "";}
+	public static function getFieldsList($names, $flag=0){
+	}
+	public static function getFieldInfoByName($field_name){
+		return null;
+	}
+	public static function getMethodsList($names){
+	}
+	public static function getMethodInfoByName($method_name){
+		return null;
+	}
 }
 
 rtl::$_memorize_not_found = (object) ['s' => 'memorize_key_not_found'];

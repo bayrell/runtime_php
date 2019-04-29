@@ -2,13 +2,13 @@
 /*!
  *  Bayrell Runtime Library
  *
- *  (c) Copyright 2016-2018 "Ildar Bikmamatov" <support@bayrell.org>
+ *  (c) Copyright 2016-2019 "Ildar Bikmamatov" <support@bayrell.org>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
  *  You may obtain a copy of the License at
  *
- *      https://www.bayrell.org/licenses/APACHE-LICENSE-2.0.html
+ *      https://www.apache.org/licenses/LICENSE-2.0
  *
  *  Unless required by applicable law or agreed to in writing, software
  *  distributed under the License is distributed on an "AS IS" BASIS,
@@ -23,7 +23,7 @@ use Runtime\Exceptions\IndexOutOfRange;
 class Collection implements \JsonSerializable
 {
 	
-	protected $_arr = [];
+	public $_arr = [];
 	
 	
 	/**
@@ -31,7 +31,7 @@ class Collection implements \JsonSerializable
 	 */
 	public function toCollection()
 	{
-		return new \Runtime\Collection($this);
+		return \Runtime\Collection::create($this);
 	}
 	
 	
@@ -41,7 +41,7 @@ class Collection implements \JsonSerializable
 	 */
 	public function toVector()
 	{
-		return new \Runtime\Vector($this);
+		return \Runtime\Vector::create($this);
 	}
 	
 	
@@ -51,7 +51,7 @@ class Collection implements \JsonSerializable
 	 */
 	public function copy()
 	{
-		$arr2 = static::createNewInstance();
+		$arr2 = static::create();
 		if ($this->_arr == null) $arr2->_arr = [];
 		else $arr2->_arr = array_slice($this->_arr, 0);
 		return $arr2;
@@ -68,30 +68,7 @@ class Collection implements \JsonSerializable
 		$arr = func_get_args();
 		foreach ($arr as $data)
 		{
-			if (is_array($data))
-			{
-				foreach ($data as $item)
-				{
-					if (!is_array($item))
-					{
-						$this->_arr[] = $item;
-					}
-				}
-			}
-			else if ($data instanceof \Runtime\Collection)
-			{
-				foreach ($data->_arr as $item)
-				{
-					if (!is_array($item))
-					{
-						$this->_arr[] = $item;
-					}
-				}
-			}
-			else
-			{
-				$this->_arr[] = $data;
-			}
+			$this->_arr[] = $data;
 		}
 	}
 	
@@ -130,6 +107,26 @@ class Collection implements \JsonSerializable
 	public function _getArr()
 	{
 		return $this->_arr;
+	}
+	
+	
+	
+	/**
+	 * Returns new Instance
+	 */
+	public static function create($arr = null)
+	{
+		$class_name = static::class;
+		$res = new $class_name();
+		if ($arr != null)
+		{
+			if ($arr instanceof \Runtime\Collection)
+			{
+				$arr = $arr->_arr;
+			}
+			$res->_arr = $arr;
+		}
+		return $res;
 	}
 	
 	
@@ -458,7 +455,7 @@ class Collection implements \JsonSerializable
 	function map($f)
 	{
 		$keys = array_keys($this->_arr);
-		$arr2 = static::createNewInstance();
+		$arr2 = static::create();
 		$arr2->_arr = array_map($f, $this->_arr, $keys);
 		return $arr2;
 	}
@@ -472,7 +469,7 @@ class Collection implements \JsonSerializable
 	 */
 	function filter($f)
 	{
-		$arr2 = static::createNewInstance();
+		$arr2 = static::create();
 		$arr2->_arr = array_values(array_filter($this->_arr, $f));
 		return $arr2;
 	}
@@ -524,7 +521,7 @@ class Collection implements \JsonSerializable
 	 */
 	function concat($v)
 	{
-		$arr2 = static::createNewInstance();
+		$arr2 = static::create();
 		$arr2->_arr = array_merge($this->_arr, $v->_arr);
 		return $arr2;
 	}
@@ -539,7 +536,7 @@ class Collection implements \JsonSerializable
 	 */
 	function slice($offset = 0, $length = null)
 	{
-		$arr2 = static::createNewInstance();
+		$arr2 = static::create();
 		$arr2->_arr = array_slice($this->_arr, $offset, $length);
 		return $arr2;
 	}
@@ -600,8 +597,35 @@ class Collection implements \JsonSerializable
 				$arr[] = $value;
 			}
 		}
-		$res = static::createNewInstance();
+		$res = static::create();
 		$res->_arr = $arr;
 		return $res;
 	}
+	
+	
+	
+	/**
+	 * Find item 
+	 * @param func f - Find function
+	 * @param mixed item - Search item
+	 * @return Collection
+	 */
+	public function find($f, $item)
+	{
+		for ($i=0; $i<$this->count(); $i++)
+		{
+			$elem = $this->item($i);
+			if ($f($elem, $item))
+			{
+				return $i;
+			}
+		}
+		return -1;
+	}
+	
+	
+	public function getClassName(){return "Runtime.Collection";}
+	public static function getCurrentClassName(){return "Runtime.Collection";}
+	public static function getParentClassName(){return "";}
+	
 }
