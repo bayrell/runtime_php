@@ -23,29 +23,11 @@ interface ContextInterface{
 	 */
 	function registerModule($module_name);
 	/**
-	 * Register provider
-	 * @param string provider_name
-	 * @param FactoryInterface factory
-	 */
-	function registerProviderFactory($provider_name, $factory);
-	/**
-	 * Register driver
-	 * @param string driver_name
-	 * @param CoreObject obj
-	 */
-	function registerDriver($driver_name, $obj);
-	/**
 	 * Returns provider
 	 * @params string provider_name
-	 * @return CoreObject
+	 * @return CoreStruct
 	 */
-	function createProvider($provider_name);
-	/**
-	 * Returns driver
-	 * @params string driver_name
-	 * @return CoreObject
-	 */
-	function getDriver($driver_name);
+	function getProvider($provider_name);
 	/**
 	 * Set application locale
 	 * @params string locale
@@ -73,15 +55,4 @@ interface ContextInterface{
 	 * Realease context resources
 	 */
 	function release();
-	/**
-	 * Returns context value
-	 * @param string name
-	 * @return mixed
-	 */
-	function getValue($name, $default_value = null, $type_value = "mixed", $type_template = "");
-	/**
-	 * Set context value
-	 * @param string name
-	 */
-	function setValue($name, $value);
 }

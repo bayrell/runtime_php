@@ -25,7 +25,7 @@ interface ModuleDescriptionInterface{
 	 * Returns module name
 	 * @return string
 	 */
-	static function getName();
+	static function getModuleName();
 	/**
 	 * Returns module name
 	 * @return string
@@ -33,9 +33,18 @@ interface ModuleDescriptionInterface{
 	static function getModuleVersion();
 	/**
 	 * Returns required modules
-	 * @return Map<string, string>
+	 * @return Map<string>
 	 */
-	static function getRequiredModules($context);
+	static function requiredModules();
+	/**
+	 * Returns module files load order
+	 * @return Collection<string>
+	 */
+	static function getModuleFiles();
+	/**
+	 * Returns enities
+	 */
+	static function entities();
 	/**
 	 * Called then module registed in context
 	 * @param ContextInterface context
@@ -51,5 +60,5 @@ interface ModuleDescriptionInterface{
 	 * Init context
 	 * @param ContextInterface context
 	 */
-	static function initContext($context);
+	static function onInitContext($context);
 }

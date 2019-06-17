@@ -27,6 +27,7 @@ class IndexOutOfRange extends RuntimeException{
 	}
 	/* ======================= Class Init Functions ======================= */
 	public function getClassName(){return "Runtime.Exceptions.IndexOutOfRange";}
+	public static function getCurrentNamespace(){return "Runtime.Exceptions";}
 	public static function getCurrentClassName(){return "Runtime.Exceptions.IndexOutOfRange";}
 	public static function getParentClassName(){return "Runtime.Exceptions.RuntimeException";}
 	public static function getFieldsList($names, $flag=0){

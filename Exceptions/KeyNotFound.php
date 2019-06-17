@@ -28,6 +28,7 @@ class KeyNotFound extends RuntimeException{
 	}
 	/* ======================= Class Init Functions ======================= */
 	public function getClassName(){return "Runtime.Exceptions.KeyNotFound";}
+	public static function getCurrentNamespace(){return "Runtime.Exceptions";}
 	public static function getCurrentClassName(){return "Runtime.Exceptions.KeyNotFound";}
 	public static function getParentClassName(){return "Runtime.Exceptions.RuntimeException";}
 	public static function getFieldsList($names, $flag=0){

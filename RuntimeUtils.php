@@ -67,7 +67,6 @@ class RuntimeUtils{
 	 */
 	static function registerGlobalContext($modules = null){
 		$context = (new \Runtime\Callback(self::class, "createContext"))($modules);
-		$context->init();
 		(new \Runtime\Callback(self::class, "setContext"))($context);
 		return $context;
 	}
@@ -252,6 +251,24 @@ class RuntimeUtils{
 			}
 		});
 		return $res->toCollection();
+	}
+	/**
+	 * Returns item
+	 */
+	static function getItem($obj, $path, $default_value, $type_value = "mixed", $type_template = ""){
+		if ($path->count() == 0){
+			return rtl::convert($obj, $type_value, $default_value, $type_template);
+		}
+		if ($obj == null){
+			return $default_value;
+		}
+		if ($obj instanceof Dict || $obj instanceof Collection){
+			$item = $path->first();
+			$path = $path->removeFirstIm();
+			$obj = $obj->get($item, $default_value);
+			return static::getItem($obj, $path, $default_value, $type_value, $type_template);
+		}
+		return $default_value;
 	}
 	/* ============================= Serialization Functions ============================= */
 	static function ObjectToNative($value, $force_class_name = false){
@@ -602,6 +619,7 @@ class RuntimeUtils{
 	}
 	/* ======================= Class Init Functions ======================= */
 	public function getClassName(){return "Runtime.RuntimeUtils";}
+	public static function getCurrentNamespace(){return "Runtime";}
 	public static function getCurrentClassName(){return "Runtime.RuntimeUtils";}
 	public static function getParentClassName(){return "";}
 	public static function getFieldsList($names, $flag=0){

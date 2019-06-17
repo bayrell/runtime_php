@@ -28,7 +28,7 @@ class ModuleDescription implements ModuleDescriptionInterface{
 	 * Returns module name
 	 * @return string
 	 */
-	static function getName(){
+	static function getModuleName(){
 		return "Runtime";
 	}
 	/**
@@ -36,13 +36,38 @@ class ModuleDescription implements ModuleDescriptionInterface{
 	 * @return string
 	 */
 	static function getModuleVersion(){
-		return "0.7.1";
+		return "0.7.3";
 	}
 	/**
 	 * Returns required modules
-	 * @return Map<string, string>
+	 * @return Map<string>
 	 */
-	static function getRequiredModules($context){
+	static function requiredModules(){
+		return null;
+	}
+	/**
+	 * Compatibility with older versions
+	 */
+	static function getRequiredModules(){
+		return static::requiredModules();
+	}
+	/**
+	 * Returns module files load order
+	 * @return Collection<string>
+	 */
+	static function getModuleFiles(){
+		return (new Vector())->push("Runtime.rs")->push("Runtime.re")->push("Runtime.rtl")->push("Runtime.Collection")->push("Runtime.Container")->push("Runtime.CoreObject")->push("Runtime.Dict")->push("Runtime.Emitter")->push("Runtime.RuntimeConstant")->push("Runtime.RuntimeUtils")->push("Runtime.Exceptions.RuntimeException")->push("Runtime.Interfaces.CloneableInterface")->push("Runtime.Interfaces.ContextInterface")->push("Runtime.Interfaces.FactoryInterface")->push("Runtime.Interfaces.ModuleDescriptionInterface")->push("Runtime.Interfaces.SerializeInterface")->push("Runtime.Interfaces.StringInterface")->push("Runtime.Interfaces.SubscribeInterface")->push("Runtime.AsyncTask")->push("Runtime.AsyncThread")->push("Runtime.Context")->push("Runtime.ContextObject")->push("Runtime.CoreStruct")->push("Runtime.CoreEvent")->push("Runtime.Map")->push("Runtime.Maybe")->push("Runtime.ModuleDescription")->push("Runtime.Reference")->push("Runtime.Vector")->push("Runtime.Exceptions.IndexOutOfRange")->push("Runtime.Exceptions.KeyNotFound")->push("Runtime.Exceptions.UnknownError")->push("Runtime.DateTime")->push("Runtime.IntrospectionInfo")->push("Runtime.LambdaChain")->push("Runtime.Provider")->push("Runtime.UIStruct");
+	}
+	/**
+	 * Returns enities
+	 */
+	static function entities(){
+		return null;
+	}
+	/**
+	 * Register lambda filters
+	 */
+	static function lambdaFilters(){
 		return null;
 	}
 	/**
@@ -50,7 +75,6 @@ class ModuleDescription implements ModuleDescriptionInterface{
 	 * @param ContextInterface context
 	 */
 	static function onRegister($context){
-		$context->registerDriver("driver.runtime.config", new Map());
 	}
 	/**
 	 * Called then context read config
@@ -63,10 +87,11 @@ class ModuleDescription implements ModuleDescriptionInterface{
 	 * Init context
 	 * @param ContextInterface context
 	 */
-	static function initContext($context){
+	static function onInitContext($context){
 	}
 	/* ======================= Class Init Functions ======================= */
 	public function getClassName(){return "Runtime.ModuleDescription";}
+	public static function getCurrentNamespace(){return "Runtime";}
 	public static function getCurrentClassName(){return "Runtime.ModuleDescription";}
 	public static function getParentClassName(){return "";}
 	public static function getFieldsList($names, $flag=0){

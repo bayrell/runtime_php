@@ -156,6 +156,7 @@ class DateTime extends CoreStruct{
 	}
 	/* ======================= Class Init Functions ======================= */
 	public function getClassName(){return "Runtime.DateTime";}
+	public static function getCurrentNamespace(){return "Runtime";}
 	public static function getCurrentClassName(){return "Runtime.DateTime";}
 	public static function getParentClassName(){return "Runtime.CoreStruct";}
 	protected function _init(){

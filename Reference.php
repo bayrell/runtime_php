@@ -42,6 +42,7 @@ class Reference extends CoreObject{
 	}
 	/* ======================= Class Init Functions ======================= */
 	public function getClassName(){return "Runtime.Reference";}
+	public static function getCurrentNamespace(){return "Runtime";}
 	public static function getCurrentClassName(){return "Runtime.Reference";}
 	public static function getParentClassName(){return "Runtime.CoreObject";}
 	protected function _init(){

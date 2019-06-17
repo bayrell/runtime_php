@@ -33,11 +33,14 @@ class UIStruct extends CoreStruct{
 	protected $__key;
 	protected $__name;
 	protected $__space;
+	protected $__bind;
 	protected $__kind;
 	protected $__content;
 	protected $__controller;
+	protected $__reference;
 	protected $__model;
 	protected $__props;
+	protected $__annotations;
 	protected $__children;
 	/**
 	 * Returns true if component
@@ -127,6 +130,7 @@ class UIStruct extends CoreStruct{
 	}
 	/* ======================= Class Init Functions ======================= */
 	public function getClassName(){return "Runtime.UIStruct";}
+	public static function getCurrentNamespace(){return "Runtime";}
 	public static function getCurrentClassName(){return "Runtime.UIStruct";}
 	public static function getParentClassName(){return "Runtime.CoreStruct";}
 	protected function _init(){
@@ -135,11 +139,14 @@ class UIStruct extends CoreStruct{
 		$this->__key = "";
 		$this->__name = "";
 		$this->__space = "";
+		$this->__bind = "";
 		$this->__kind = "element";
 		$this->__content = "";
 		$this->__controller = "";
+		$this->__reference = "";
 		$this->__model = null;
 		$this->__props = null;
+		$this->__annotations = null;
 		$this->__children = null;
 	}
 	public function assignObject($obj){
@@ -148,11 +155,14 @@ class UIStruct extends CoreStruct{
 			$this->__key = $obj->__key;
 			$this->__name = $obj->__name;
 			$this->__space = $obj->__space;
+			$this->__bind = $obj->__bind;
 			$this->__kind = $obj->__kind;
 			$this->__content = $obj->__content;
 			$this->__controller = $obj->__controller;
+			$this->__reference = $obj->__reference;
 			$this->__model = $obj->__model;
 			$this->__props = $obj->__props;
+			$this->__annotations = $obj->__annotations;
 			$this->__children = $obj->__children;
 		}
 		parent::assignObject($obj);
@@ -162,11 +172,14 @@ class UIStruct extends CoreStruct{
 		else if ($variable_name == "key")$this->__key = rtl::convert($value,"string","","");
 		else if ($variable_name == "name")$this->__name = rtl::convert($value,"string","","");
 		else if ($variable_name == "space")$this->__space = rtl::convert($value,"string","","");
+		else if ($variable_name == "bind")$this->__bind = rtl::convert($value,"string","","");
 		else if ($variable_name == "kind")$this->__kind = rtl::convert($value,"string","element","");
 		else if ($variable_name == "content")$this->__content = rtl::convert($value,"string","","");
 		else if ($variable_name == "controller")$this->__controller = rtl::convert($value,"string","","");
+		else if ($variable_name == "reference")$this->__reference = rtl::convert($value,"string","","");
 		else if ($variable_name == "model")$this->__model = rtl::convert($value,"Runtime.CoreStruct",null,"");
 		else if ($variable_name == "props")$this->__props = rtl::convert($value,"Runtime.Dict",null,"primitive");
+		else if ($variable_name == "annotations")$this->__annotations = rtl::convert($value,"Runtime.Collection",null,"Runtime.CoreStruct");
 		else if ($variable_name == "children")$this->__children = rtl::convert($value,"Runtime.Collection",null,"Runtime.UIStruct");
 		else parent::assignValue($variable_name, $value, $sender);
 	}
@@ -175,11 +188,14 @@ class UIStruct extends CoreStruct{
 		else if ($variable_name == "key") return $this->__key;
 		else if ($variable_name == "name") return $this->__name;
 		else if ($variable_name == "space") return $this->__space;
+		else if ($variable_name == "bind") return $this->__bind;
 		else if ($variable_name == "kind") return $this->__kind;
 		else if ($variable_name == "content") return $this->__content;
 		else if ($variable_name == "controller") return $this->__controller;
+		else if ($variable_name == "reference") return $this->__reference;
 		else if ($variable_name == "model") return $this->__model;
 		else if ($variable_name == "props") return $this->__props;
+		else if ($variable_name == "annotations") return $this->__annotations;
 		else if ($variable_name == "children") return $this->__children;
 		return parent::takeValue($variable_name, $default_value);
 	}
@@ -189,11 +205,14 @@ class UIStruct extends CoreStruct{
 			$names->push("key");
 			$names->push("name");
 			$names->push("space");
+			$names->push("bind");
 			$names->push("kind");
 			$names->push("content");
 			$names->push("controller");
+			$names->push("reference");
 			$names->push("model");
 			$names->push("props");
+			$names->push("annotations");
 			$names->push("children");
 		}
 	}

@@ -148,9 +148,11 @@ class Collection implements \JsonSerializable
 	 * Returns value from position
 	 * @param int pos - position
 	 */
-	public function get($pos, $default_value)
+	public function get($pos, $default_value, $type_value = "mixed", $type_template = "")
 	{
-		return isset($this->_arr[$pos]) ? $this->_arr[$pos] : $default_value;
+		$val = isset($this->_arr[$pos]) ? $this->_arr[$pos] : $default_value;
+		if ($type_value != "mixed") $val = rtl::convert($val, $type_value, $default_value, $type_template);
+		return $val;
 	}
 	
 	
@@ -235,7 +237,7 @@ class Collection implements \JsonSerializable
 	}
 	public function getLastItem($default_value = null, $pos=-1)
 	{
-		return this.last($default_value, $pos); 
+		return $this->last($default_value, $pos); 
 	}
 	
 	

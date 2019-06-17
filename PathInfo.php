@@ -17,60 +17,26 @@
  *  limitations under the License.
  */
 namespace Runtime;
-use Runtime\Vector;
-class re{
+use Runtime\Interfaces\StringInterface;
+class PathInfo implements StringInterface{
+	public $filepath;
+	public $dirname;
+	public $basename;
+	public $extension;
+	public $filename;
 	/**
-	 * Search regular expression
-	 * @param string r regular expression
-	 * @param string s string
-	 * @return bool
+	 * Returns string
 	 */
-	static function match($r, $s){
-		
-		$matches = [];
-		if (preg_match("/" . $r . "/", $s, $matches)){
-			return $matches != null;
-		}
-		
-		return false;
-	}
-	/**
-	 * Search regular expression
-	 * @param string r regular expression
-	 * @param string s string
-	 * @return Vector result
-	 */
-	static function matchAll($r, $s){
-		
-		$matches = [];
-		if (preg_match_all("/" . $r . "/i", $s, $matches)){
-			$res = new Vector();
-			array_shift($matches);
-			foreach ($matches as $arr){
-				$res->push( (new Vector())->_assignArr($arr) );
-			}
-			return $res;
-		}
-		
-		return null;
-		return null;
-	}
-	/**
-	 * Replace with regular expression
-	 * @param string r - regular expression
-	 * @param string replace - new value
-	 * @param string s - replaceable string
-	 * @return string
-	 */
-	static function replace($r, $replace, $s){
-		
-		return preg_replace("/" . $r . "/", $replace, $s);
+	function toString(){
+		return $this->filepath;
 	}
 	/* ======================= Class Init Functions ======================= */
-	public function getClassName(){return "Runtime.re";}
+	public function getClassName(){return "Runtime.PathInfo";}
 	public static function getCurrentNamespace(){return "Runtime";}
-	public static function getCurrentClassName(){return "Runtime.re";}
+	public static function getCurrentClassName(){return "Runtime.PathInfo";}
 	public static function getParentClassName(){return "";}
+	protected function _init(){
+	}
 	public static function getFieldsList($names, $flag=0){
 	}
 	public static function getFieldInfoByName($field_name){

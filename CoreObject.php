@@ -222,6 +222,7 @@ class CoreObject{
 	}
 	/* ======================= Class Init Functions ======================= */
 	public function getClassName(){return "Runtime.CoreObject";}
+	public static function getCurrentNamespace(){return "Runtime";}
 	public static function getCurrentClassName(){return "Runtime.CoreObject";}
 	public static function getParentClassName(){return "";}
 }

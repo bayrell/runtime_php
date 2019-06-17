@@ -17,37 +17,53 @@
  *  limitations under the License.
  */
 namespace Runtime;
-use Runtime\CoreObject;
 use Runtime\CoreStruct;
+use Runtime\Dict;
+use Runtime\Map;
+use Runtime\rs;
 use Runtime\rtl;
-class CoreEvent extends CoreStruct{
-	protected $__sender;
+use Runtime\Collection;
+use Runtime\Vector;
+class Provider extends CoreStruct{
+	protected $__name;
+	protected $__value;
+	protected $__init;
 	/* ======================= Class Init Functions ======================= */
-	public function getClassName(){return "Runtime.CoreEvent";}
+	public function getClassName(){return "Runtime.Provider";}
 	public static function getCurrentNamespace(){return "Runtime";}
-	public static function getCurrentClassName(){return "Runtime.CoreEvent";}
+	public static function getCurrentClassName(){return "Runtime.Provider";}
 	public static function getParentClassName(){return "Runtime.CoreStruct";}
 	protected function _init(){
 		parent::_init();
-		$this->__sender = null;
+		$this->__name = "";
+		$this->__value = "";
+		$this->__init = null;
 	}
 	public function assignObject($obj){
-		if ($obj instanceof CoreEvent){
-			$this->__sender = $obj->__sender;
+		if ($obj instanceof Provider){
+			$this->__name = $obj->__name;
+			$this->__value = $obj->__value;
+			$this->__init = $obj->__init;
 		}
 		parent::assignObject($obj);
 	}
 	public function assignValue($variable_name, $value, $sender = null){
-		if ($variable_name == "sender")$this->__sender = rtl::convert($value,"Runtime.CoreObject",null,"");
+		if ($variable_name == "name")$this->__name = rtl::convert($value,"string","","");
+		else if ($variable_name == "value")$this->__value = rtl::convert($value,"string","","");
+		else if ($variable_name == "init")$this->__init = rtl::convert($value,"fun",null,"");
 		else parent::assignValue($variable_name, $value, $sender);
 	}
 	public function takeValue($variable_name, $default_value = null){
-		if ($variable_name == "sender") return $this->__sender;
+		if ($variable_name == "name") return $this->__name;
+		else if ($variable_name == "value") return $this->__value;
+		else if ($variable_name == "init") return $this->__init;
 		return parent::takeValue($variable_name, $default_value);
 	}
 	public static function getFieldsList($names, $flag=0){
 		if (($flag | 3)==3){
-			$names->push("sender");
+			$names->push("name");
+			$names->push("value");
+			$names->push("init");
 		}
 	}
 	public static function getFieldInfoByName($field_name){

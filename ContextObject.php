@@ -62,6 +62,7 @@ class ContextObject extends CoreObject{
 	}
 	/* ======================= Class Init Functions ======================= */
 	public function getClassName(){return "Runtime.ContextObject";}
+	public static function getCurrentNamespace(){return "Runtime";}
 	public static function getCurrentClassName(){return "Runtime.ContextObject";}
 	public static function getParentClassName(){return "Runtime.CoreObject";}
 	protected function _init(){

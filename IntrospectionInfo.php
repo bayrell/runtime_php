@@ -125,6 +125,7 @@ class IntrospectionInfo extends CoreStruct{
 	}
 	/* ======================= Class Init Functions ======================= */
 	public function getClassName(){return "Runtime.IntrospectionInfo";}
+	public static function getCurrentNamespace(){return "Runtime";}
 	public static function getCurrentClassName(){return "Runtime.IntrospectionInfo";}
 	public static function getParentClassName(){return "Runtime.CoreStruct";}
 	protected function _init(){

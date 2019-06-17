@@ -18,6 +18,7 @@
  */
 namespace Runtime;
 use Runtime\rtl;
+use Runtime\PathInfo;
 use Runtime\Vector;
 class rs{
 	/**
@@ -26,8 +27,10 @@ class rs{
 	 * @return int
 	 */
 	
-	static function strlen(&$s){
-		return mb_strlen($s);
+	static function strlen(&$s)
+	{
+		if (gettype($s) != "string") return 0;
+		return @mb_strlen($s);
 	}
 	/**
 	 * Returns substring
@@ -47,7 +50,7 @@ class rs{
 	 * @return string
 	 */
 	static function charAt($s, $pos){
-		$sz = (new \Runtime\Callback(self::class, "strlen"))($s);
+		$sz = static::strlen($s);
 		if ($pos >= 0 && $pos < $sz){
 			return mb_substr($s, $pos, 1);
 		}
@@ -104,6 +107,14 @@ class rs{
 		return $res;
 	}
 	/**
+	 * Заменяет одну строку на другую
+	 */
+	
+	static function replace($search, $item, $s)
+	{
+		return str_replace($search, $item, $s);
+	}
+	/**
 	 * Возвращает повторяющуюся строку
 	 * @param {string} s - повторяемая строка
 	 * @param {integer} n - количество раз, которые нужно повторить строку s
@@ -122,7 +133,25 @@ class rs{
 	 * @return Vector<string>
 	 */
 	
-	static function explode($delimiter, $s, $limit = -1){
+	static function split($delimiters, $s, $limit = -1)
+	{
+		$res = new Vector();
+		$pattern = "[".implode("", $delimiters->_getArr())."]";
+		$pattern = str_replace("/", "\/", $pattern);
+		$arr = preg_split("/".$pattern."/", $s, $limit);
+		$res->_assignArr($arr);
+		return $res;
+	}
+	/**
+	 * Разбивает строку на подстроки
+	 * @param string ch - разделитель
+	 * @param string s - строка, которую нужно разбить
+	 * @param integer limit - ограничение 
+	 * @return Vector<string>
+	 */
+	
+	static function explode($delimiter, $s, $limit = -1)
+	{
 		$res = new Vector();
 		$arr = [];
 		if ($limit < 0) $arr = explode($delimiter, $s);
@@ -174,8 +203,112 @@ class rs{
 		if ($s instanceof \Runtime\UIStruct) return $s;
 		return htmlspecialchars($s, ENT_QUOTES | ENT_HTML401);
 	}
+	/**
+	 * Разбивает путь файла на составляющие
+	 * @param {string} filepath путь к файлу
+	 * @return {json} Объект вида:
+	 *         dirname    - папка, в которой находиться файл
+	 *         basename   - полное имя файла
+	 *         extension  - расширение файла
+	 *         filename   - имя файла без расширения
+	 */
+	static function pathinfo($filepath){
+		$arr1 = rs::explode(".", $filepath);
+		$arr2 = rs::explode("/", $filepath);
+		$ret = new PathInfo();
+		$ret->filepath = $filepath;
+		$ret->extension = $arr1->pop();
+		$ret->basename = $arr2->pop();
+		$ret->dirname = rs::implode("/", $arr2);
+		$ext_length = rs::strlen($ret->extension);
+		if ($ext_length > 0){
+			$ext_length++;
+		}
+		$ret->filename = rs::substr($ret->basename, 0, -1 * $ext_length);
+		return $ret;
+	}
+	/**
+	 * Возвращает имя файла без расширения
+	 * @param {string} filepath - путь к файлу
+	 * @return {string} полное имя файла
+	 */
+	static function filename($filepath){
+		$ret = (new \Runtime\Callback(self::class, "pathinfo"))($filepath);
+		$res = $ret->basename;
+		$ext = $ret->extension;
+		if ($ext != ""){
+			$sz = 0 - rs::strlen($ext) - 1;
+			$res = rs::substr($res, 0, $sz);
+		}
+		return $res;
+	}
+	/**
+	 * Возвращает полное имя файла
+	 * @param {string} filepath - путь к файлу
+	 * @return {string} полное имя файла
+	 */
+	static function basename($filepath){
+		$ret = (new \Runtime\Callback(self::class, "pathinfo"))($filepath);
+		$res = $ret->basename;
+		return $res;
+	}
+	/**
+	 * Возвращает расширение файла
+	 * @param {string} filepath - путь к файлу
+	 * @return {string} расширение файла
+	 */
+	static function extname($filepath){
+		$ret = (new \Runtime\Callback(self::class, "pathinfo"))($filepath);
+		$res = $ret->extension;
+		return $res;
+	}
+	/**
+	 * Возвращает путь к папке, содержащий файл
+	 * @param {string} filepath - путь к файлу
+	 * @return {string} путь к папке, содержащий файл
+	 */
+	static function dirname($filepath){
+		$ret = (new \Runtime\Callback(self::class, "pathinfo"))($filepath);
+		$res = $ret->dirname;
+		return $res;
+	}
+	/**
+	 * Returns relative path of the filepath
+	 * @param string filepath
+	 * @param string basepath
+	 * @param string ch - Directory separator
+	 * @return string relative path
+	 */
+	static function relativePath($filepath, $basepath, $ch = "/"){
+		$source = rs::explode($ch, $filepath);
+		$base = rs::explode($ch, $basepath);
+		$source = $source->filter(function ($s){
+			return $s != "";
+		});
+		$base = $base->filter(function ($s){
+			return $s != "";
+		});
+		$i = 0;
+		while ($source->count() > 0 && $base->count() > 0 && $source->item(0) == $base->item(0)){
+			$source->shift();
+			$base->shift();
+		}
+		$base->each(function ($s) use (&$source){
+			$source->unshift("..");
+		});
+		return rs::implode($ch, $source);
+	}
+	/**
+	 * Return normalize path
+	 * @param string filepath - File path
+	 * @return string
+	 */
+	static function normalize($filepath){
+		return $filepath;
+	}
 	/* ======================= Class Init Functions ======================= */
 	public function getClassName(){return "Runtime.rs";}
+	public static function getCurrentNamespace(){return "Runtime";}
 	public static function getCurrentClassName(){return "Runtime.rs";}
 	public static function getParentClassName(){return "";}
 	public static function getFieldsList($names, $flag=0){

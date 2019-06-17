@@ -71,9 +71,11 @@ class RuntimeConstant{
 	const ERROR_VALIDATION = -12;
 	const ERROR_PARSE_SERIALIZATION_ERROR = -14;
 	const ERROR_ASSIGN_DATA_STRUCT_VALUE = -15;
+	const ERROR_FILE_NOT_FOUND = -16;
 	const ERROR_FATAL = -99;
 	/* ======================= Class Init Functions ======================= */
 	public function getClassName(){return "Runtime.RuntimeConstant";}
+	public static function getCurrentNamespace(){return "Runtime";}
 	public static function getCurrentClassName(){return "Runtime.RuntimeConstant";}
 	public static function getParentClassName(){return "";}
 	public static function getFieldsList($names, $flag=0){

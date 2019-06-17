@@ -65,6 +65,7 @@ class CoreStruct extends CoreObject implements SerializeInterface{
 	}
 	/* ======================= Class Init Functions ======================= */
 	public function getClassName(){return "Runtime.CoreStruct";}
+	public static function getCurrentNamespace(){return "Runtime";}
 	public static function getCurrentClassName(){return "Runtime.CoreStruct";}
 	public static function getParentClassName(){return "Runtime.CoreObject";}
 	public static function getFieldsList($names, $flag=0){

@@ -36,6 +36,18 @@ class Dict implements \JsonSerializable
 	}
 	
 	
+	
+	/**
+	 * Returns new Instance
+	 */
+	public static function create($obj=null)
+	{
+		$class_name = static::class;
+		return new $class_name($obj);
+	}
+	
+	
+	
 	/**
 	 * Returns new Instance
 	 */
@@ -249,7 +261,7 @@ class Dict implements \JsonSerializable
 	public function keys()
 	{
 		$keys = array_keys($this->_map);
-		$res = static::createNewInstance($keys);
+		$res = \Runtime\Collection::create($keys);
 		return $res;
 	}
 	
@@ -262,7 +274,7 @@ class Dict implements \JsonSerializable
 	public function values()
 	{
 		$values = array_values($this->_map);
-		$res = static::createNewInstance($values);
+		$res = \Runtime\Collection::create($values);
 		return $res;
 	}
 	

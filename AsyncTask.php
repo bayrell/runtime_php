@@ -25,6 +25,7 @@ class AsyncTask extends CoreObject{
 	public $catch_stack;
 	/* ======================= Class Init Functions ======================= */
 	public function getClassName(){return "Runtime.AsyncTask";}
+	public static function getCurrentNamespace(){return "Runtime";}
 	public static function getCurrentClassName(){return "Runtime.AsyncTask";}
 	public static function getParentClassName(){return "Runtime.CoreObject";}
 	protected function _init(){

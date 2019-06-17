@@ -60,6 +60,7 @@ class Container{
 	}
 	/* ======================= Class Init Functions ======================= */
 	public function getClassName(){return "Runtime.Container";}
+	public static function getCurrentNamespace(){return "Runtime";}
 	public static function getCurrentClassName(){return "Runtime.Container";}
 	public static function getParentClassName(){return "";}
 	protected function _init(){

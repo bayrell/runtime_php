@@ -35,6 +35,7 @@ class Maybe extends Container{
 	}
 	/* ======================= Class Init Functions ======================= */
 	public function getClassName(){return "Runtime.Maybe";}
+	public static function getCurrentNamespace(){return "Runtime";}
 	public static function getCurrentClassName(){return "Runtime.Maybe";}
 	public static function getParentClassName(){return "Runtime.Container";}
 	public static function getFieldsList($names, $flag=0){

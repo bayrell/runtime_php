@@ -20,25 +20,31 @@ namespace Runtime;
 use Runtime\rs;
 use Runtime\rtl;
 use Runtime\CoreObject;
+use Runtime\LambdaChain;
+use Runtime\Provider;
+use Runtime\Dict;
 use Runtime\Map;
 use Runtime\Vector;
 use Runtime\Interfaces\ContextInterface;
 use Runtime\Interfaces\FactoryInterface;
 use Runtime\Interfaces\ModuleDescriptionInterface;
 class Context extends CoreObject implements ContextInterface{
+	protected $base_path;
+	protected $config;
 	protected $_modules;
-	protected $_values;
+	protected $_entities;
 	protected $_drivers;
-	protected $_providers_names;
+	protected $_providers;
+	protected $_providers_obj;
 	/**
 	 * Constructor
 	 */
 	function __construct(){
 		parent::__construct();
+		$this->_entities = new Vector();
 		$this->_modules = new Vector();
-		$this->_providers_names = new Map();
-		$this->_drivers = new Map();
-		$this->_values = new Map();
+		$this->_providers = new Map();
+		$this->_providers_obj = new Map();
 	}
 	/**
 	 * Destructor
@@ -51,7 +57,53 @@ class Context extends CoreObject implements ContextInterface{
 	 * @return Vector<string>
 	 */
 	function getModules(){
-		return $this->_modules->slice();
+		return $this->_modules->toCollection();
+	}
+	/**
+	 * Returns providers names
+	 */
+	function getProviders(){
+		return $this->_providers->keys()->toCollection();
+	}
+	/**
+	 * Returns helper
+	 *
+	 * @params string provider_name
+	 * @return CoreStruct
+	 */
+	function createProvider($provider_name){
+		if ($this->_providers->has($provider_name)){
+			$info = $this->_providers->item($provider_name);
+			$obj = rtl::newInstance($info->value);
+			if ($info->init){
+				$f = $info->init;
+				$obj = $f($this, $obj);
+			}
+			else {
+				$f = rtl::method($info->value, "init");
+				$obj = $f($this, $obj);
+			}
+			$obj = $this->chain($info->value, $obj);
+			return $obj;
+		}
+		return null;
+	}
+	/**
+	 * Returns helper
+	 *
+	 * @params string provider_name
+	 * @return CoreStruct
+	 */
+	function getProvider($provider_name){
+		if ($this->_providers_obj->has($provider_name)){
+			return $this->_providers_obj->item($provider_name);
+		}
+		if ($this->_providers->has($provider_name)){
+			$provider = $this->createProvider($provider_name);
+			$this->_providers_obj->set($provider_name, $provider);
+			return $provider;
+		}
+		return null;
 	}
 	/**
 	 * Register module
@@ -60,12 +112,13 @@ class Context extends CoreObject implements ContextInterface{
 		if ($this->_modules->indexOf($module_name) != -1){
 			return ;
 		}
-		$args = (new Vector())->push($this);
 		$module_description_class_name = rtl::toString($module_name) . ".ModuleDescription";
-		/* Add module */
+		if (!rtl::class_exists($module_description_class_name)){
+			return $this;
+		}
 		$this->_modules->push($module_name);
 		/* Register required Modules*/
-		$modules = rtl::callStaticMethod($module_description_class_name, "getRequiredModules", $args);
+		$modules = rtl::callStaticMethod($module_description_class_name, "requiredModules", (new Vector()));
 		if ($modules != null){
 			$keys = $modules->keys();
 			$sz = $keys->count();
@@ -74,36 +127,47 @@ class Context extends CoreObject implements ContextInterface{
 				$this->registerModule($module_name);
 			}
 		}
-		/* Call onRegister */
-		rtl::callStaticMethod($module_description_class_name, "onRegister", $args);
+		$entities = rtl::callStaticMethod($module_description_class_name, "entities", (new Vector())->push($this));
+		if ($entities != null){
+			$this->_entities = $this->_entities->appendVector($entities);
+		}
+		rtl::callStaticMethod($module_description_class_name, "onRegister", (new Vector())->push($this));
 		return $this;
 	}
 	/**
-	 * Register module
-	 * @param string provider_name
-	 * @param FactoryInterface factory
+	 * Apply Lambda Chain
 	 */
-	function registerProviderFactory($provider_name, $factory){
-		if (!$this->_providers_names->has($provider_name)){
-			$this->_providers_names->set($provider_name, $factory);
+	function chain($filter_name, $obj = null){
+		$entities = $this->_entities->filter(function ($item){
+			return $item instanceof LambdaChain;
+		});
+		$entities = $entities->filter(function ($item) use (&$filter_name){
+			return $item->name == $filter_name;
+		});
+		$entities = $entities->sortIm(function ($a, $b){
+			return $a->pos > $b->pos;
+		});
+		for ($i = 0; $i < $entities->count(); $i++){
+			$item = $entities->item($i);
+			$f = $item->value;
+			$obj = $f($this, $obj);
 		}
-		return $this;
-	}
-	/**
-	 * Register driver
-	 * @param string driver_name
-	 * @param FactoryInterface factory
-	 */
-	function registerDriver($driver_name, $obj){
-		if (!$this->_drivers->has($driver_name)){
-			$this->_drivers->set($driver_name, $obj);
-		}
-		return $this;
+		return $obj;
 	}
 	/**
 	 * Read config
 	 */
 	function readConfig($config){
+		$this->config = $config;
+		/* Set base path */
+		$runtime = $config->get("Runtime", null);
+		if ($runtime != null && $runtime instanceof Dict){
+			$base_path = $runtime->get("base_path", null, "string");
+			if ($base_path != null){
+				$this->base_path = $base_path;
+			}
+		}
+		return $this;
 		$args = new Vector();
 		$args->push($this);
 		$args->push($config);
@@ -115,65 +179,31 @@ class Context extends CoreObject implements ContextInterface{
 		}
 		return $this;
 	}
+	function getConfig(){
+		return $this->config;
+	}
 	/**
 	 * Init context
 	 */
 	function init(){
+		/* Register providers */
+		$providers = $this->_entities->filter(function ($item){
+			return $item instanceof Provider;
+		});
+		for ($i = 0; $i < $providers->count(); $i++){
+			$item = $providers->item($i);
+			$this->_providers->set($item->name, $item);
+		}
+		/* Call onInitContext */
 		$args = new Vector();
 		$args->push($this);
 		$sz = $this->_modules->count();
 		for ($i = 0; $i < $sz; $i++){
 			$module_name = $this->_modules->item($i);
 			$module_description_class_name = rtl::toString($module_name) . ".ModuleDescription";
-			rtl::callStaticMethod($module_description_class_name, "initContext", $args);
+			rtl::callStaticMethod($module_description_class_name, "onInitContext", $args);
 		}
 		return $this;
-	}
-	/**
-	 * Returns provider or driver
-	 *
-	 * @params string name
-	 * @return CoreObject
-	 */
-	function get($name, $params = null){
-		$is_provider = rs::strpos($name, "provider.") === 0;
-		$is_driver = rs::strpos($name, "driver.") === 0;
-		if ($is_provider){
-			return $this->createProvider($name, $params);
-		}
-		if ($is_driver){
-			return $this->getDriver($name);
-		}
-		return null;
-	}
-	/**
-	 * Returns provider
-	 *
-	 * @params string provider_name
-	 * @return CoreObject
-	 */
-	function createProvider($provider_name, $params = null){
-		if (!$this->_providers_names->has($provider_name)){
-			return null;
-		}
-		$factory_obj = $this->_providers_names->item($provider_name);
-		if ($factory_obj == null){
-			return null;
-		}
-		$obj = $factory_obj->newInstance($this, $params);
-		return $obj;
-	}
-	/**
-	 * Returns driver
-	 *
-	 * @params string driver_name
-	 * @return CoreObject
-	 */
-	function getDriver($driver_name){
-		if ($this->_drivers->has($driver_name)){
-			return $this->_drivers->item($driver_name);
-		}
-		return null;
 	}
 	/**
 	 * Set application locale
@@ -218,6 +248,10 @@ class Context extends CoreObject implements ContextInterface{
 		$this->_providers_names->each(function ($key, $value) use (&$obj){
 			$obj->_providers_names->set($key, $value);
 		});
+		/* Add values */
+		$this->_values->each(function ($key, $value) use (&$obj){
+			$obj->_values->set($key, $value);
+		});
 		return $obj;
 	}
 	/**
@@ -226,23 +260,33 @@ class Context extends CoreObject implements ContextInterface{
 	function release(){
 	}
 	/**
-	 * Returns context value
-	 * @param string name
-	 * @return mixed
+	 * Returns base path
+	 * @return string
 	 */
-	function getValue($name, $default_value = null, $type_value = "mixed", $type_template = ""){
-		return $this->_values->get($name, $default_value, $type_value, $type_template);
+	function getBasePath(){
+		return $this->base_path;
 	}
 	/**
-	 * Set context value
-	 * @param string name
-	 * @param mixed value
+	 * Call api
+	 * @param string class_name
+	 * @param string method_name
+	 * @param ApiRequest request
+	 * @return mixed The result of the api
 	 */
-	function setValue($name, $value){
-		$this->_values->set($name, $value);
+	
+	public function callApi($class_name, $interface_name, $method_name, $data)
+	{
+		$app = $this->getProvider("Core.Backend.BackendAppProvider");
+		$app_class_name = $app->getClassName();
+		$app_class_name = rtl::find_class($app_class_name);
+		return call_user_func_array(
+			[ $app_class_name, "callApi" ],
+			[ $this, $app, $class_name, $interface_name, $method_name, $data ]
+		);
 	}
 	/* ======================= Class Init Functions ======================= */
 	public function getClassName(){return "Runtime.Context";}
+	public static function getCurrentNamespace(){return "Runtime";}
 	public static function getCurrentClassName(){return "Runtime.Context";}
 	public static function getParentClassName(){return "Runtime.CoreObject";}
 	protected function _init(){

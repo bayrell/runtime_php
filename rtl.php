@@ -49,7 +49,6 @@ class rtl{
 	
 	static function is_implements($obj, $interface_name){
 		$class_name = get_class($obj);
-		$interface_name = self::find_class($interface_name);
 		return self::class_implements($class_name, $interface_name);
 	}
 	/**
@@ -134,7 +133,7 @@ class rtl{
 	 * @return var
 	 */
 	static function convert($value, $type_value, $def_value = null, $type_template = ""){
-		if ($type_value == "mixed" || $type_value == "primitive" || $type_value == "var" || $type_value == "fun"){
+		if ($type_value == "mixed" || $type_value == "primitive" || $type_value == "var" || $type_value == "fun" || $type_value == "callback"){
 			return $value;
 		}
 		if ($type_value == ""){
@@ -615,6 +614,7 @@ class rtl{
 	}
 	/* ======================= Class Init Functions ======================= */
 	public function getClassName(){return "Runtime.rtl";}
+	public static function getCurrentNamespace(){return "Runtime";}
 	public static function getCurrentClassName(){return "Runtime.rtl";}
 	public static function getParentClassName(){return "";}
 	public static function getFieldsList($names, $flag=0){
