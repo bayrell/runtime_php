@@ -17,7 +17,7 @@
  *  limitations under the License.
  */
 namespace Runtime;
-class CoreStruct extends \Runtime\CoreObject implements \ArrayAccess, \Runtime\Interfaces\SerializeInterface
+class FakeStruct extends \Runtime\CoreObject implements \ArrayAccess, \Runtime\Interfaces\SerializeInterface
 {
 	function __construct($__ctx, $obj=null)
 	{
@@ -26,7 +26,7 @@ class CoreStruct extends \Runtime\CoreObject implements \ArrayAccess, \Runtime\I
 		{
 			if (!($obj instanceof \Runtime\Dict))
 			{
-				$obj = \Runtime\Dict::from($obj);
+				$obj = \Runtime\Dict::create($obj);
 			}
 			foreach ($obj->_map as $key => $value)
 			{
@@ -44,65 +44,64 @@ class CoreStruct extends \Runtime\CoreObject implements \ArrayAccess, \Runtime\I
 	/**
 	 * Copy this struct with new values
 	 * @param Map obj = null
-	 * @return CoreStruct
+	 * @return FakeStruct
 	 */
 	function copy($__ctx, $obj=null)
 	{
-		if ($obj == null)
-		{
-			return $this;
-		}
-		$item = clone $this;
-		if ($obj instanceof \Runtime\Dict)
+		if ($obj == null){}
+		else if ($obj instanceof \Runtime\Dict)
 		{
 			foreach ($obj->_map as $key => $value)
 			{
-				$k = "__".$key;
-				if (property_exists($item, $k))
-					$item->$k = $value;
+				if (property_exists($this, $key))
+					$this->$key = clone $value;
 			}
 		}
 		else if (gettype($obj) == "array")
 		{
 			foreach ($obj as $key => $value)
 			{
-				$k = "__".$key;
-				if (property_exists($item, $k))
-					$item->$k = $value;
+				if (property_exists($this, $key))
+					$this->$key = clone $value;
 			}
 		}
 		
-		return $item;
+		return $this;
 		return $this;
 	}
 	/**
-	 * Copy this struct with new values
+	 * Clone this struct with same values
 	 * @param Map obj = null
-	 * @return CoreStruct
+	 * @return FakeStruct
 	 */
-	function clone($__ctx, $fields)
+	function clone($__ctx, $fields=null)
 	{
 		$obj = new \Runtime\Map($__ctx);
 		if ($fields != null)
 		{
 			$fields->each($__ctx, function ($__ctx, $field_name) use (&$obj)
 			{
-				$obj->set($__ctx, $field_name, $this->takeValue($__ctx, $field_name));
+				$obj->set($__ctx, $field_name, \Runtime\rtl::clone($__ctx, $this->takeValue($__ctx, $field_name)));
 			});
 		}
 		else
 		{
-			return $this;
+			$names = \Runtime\RuntimeUtils::getVariablesNames($__ctx, $this->getClassName($__ctx));
+			for ($i = 0;$i < $names->count($__ctx);$i++)
+			{
+				$field_name = $names->item($__ctx, $i);
+				$obj->set($__ctx, $field_name, \Runtime\rtl::clone($__ctx, $this->takeValue($__ctx, $field_name)));
+			}
 		}
 		/* Return object */
-		$res = \Runtime\rtl::newInstance($__ctx, $this->getClassName($__ctx), \Runtime\Collection::from([$obj->toDict($__ctx)]));
+		$res = static::newInstance($__ctx, $obj->toDict($__ctx));
 		return $res;
 	}
 	/**
 	 * Create new struct with new value
 	 * @param string field_name
 	 * @param fn f
-	 * @return CoreStruct
+	 * @return FakeStruct
 	 */
 	function map($__ctx, $field_name, $f)
 	{
@@ -114,12 +113,12 @@ class CoreStruct extends \Runtime\CoreObject implements \ArrayAccess, \Runtime\I
 	static function newInstance($__ctx, $items)
 	{
 		$class_name = static::class;
-		return new $class_name($__ctx, $items);
+		return new $class_name($items);
 	}
 	/* ======================= Class Init Functions ======================= */
 	function getClassName()
 	{
-		return "Runtime.CoreStruct";
+		return "Runtime.FakeStruct";
 	}
 	static function getCurrentNamespace()
 	{
@@ -127,7 +126,7 @@ class CoreStruct extends \Runtime\CoreObject implements \ArrayAccess, \Runtime\I
 	}
 	static function getCurrentClassName()
 	{
-		return "Runtime.CoreStruct";
+		return "Runtime.FakeStruct";
 	}
 	static function getParentClassName()
 	{
@@ -137,8 +136,8 @@ class CoreStruct extends \Runtime\CoreObject implements \ArrayAccess, \Runtime\I
 	{
 		return new \Runtime\Annotations\IntrospectionInfo($__ctx, [
 			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
-			"class_name"=>"Runtime.CoreStruct",
-			"name"=>"Runtime.CoreStruct",
+			"class_name"=>"Runtime.FakeStruct",
+			"name"=>"Runtime.FakeStruct",
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);

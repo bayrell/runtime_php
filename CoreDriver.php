@@ -17,59 +17,38 @@
  *  limitations under the License.
  */
 namespace Runtime;
-class re
+class CoreDriver extends \Runtime\CoreObject
 {
-	/**
-	 * Search regular expression
-	 * @param string r regular expression
-	 * @param string s string
-	 * @return bool
-	 */
-	static function match($__ctx, $r, $s)
+	public $_context;
+	function __construct($__ctx, $context=null)
 	{
-		$matches = [];
-		if (preg_match("/" . $r . "/", $s, $matches)){
-			return $matches != null;
-		}
-		
-		return false;
+		parent::__construct($__ctx);
+		$this->_context = $context;
 	}
 	/**
-	 * Search regular expression
-	 * @param string r regular expression
-	 * @param string s string
-	 * @return Vector result
+	 * Returns context
+	 *
+	 * @return Context 
 	 */
-	static function matchAll($__ctx, $r, $s)
+	function context($__ctx)
 	{
-		$matches = [];
-		if (preg_match_all("/" . $r . "/i", $s, $matches)){
-			$res = new Vector();
-			array_shift($matches);
-			foreach ($matches as $arr){
-				$res->push( (new Vector())->_assignArr($arr) );
-			}
-			return $res;
-		}
-		
-		return null;
-		return null;
+		return $this->_context;
 	}
 	/**
-	 * Replace with regular expression
-	 * @param string r - regular expression
-	 * @param string replace - new value
-	 * @param string s - replaceable string
-	 * @return string
+	 * Start driver
 	 */
-	static function replace($__ctx, $r, $replace, $s)
+	function startDriver($__ctx)
 	{
-		return preg_replace("/" . $r . "/", $replace, $s);
 	}
 	/* ======================= Class Init Functions ======================= */
+	function _init($__ctx)
+	{
+		parent::_init($__ctx);
+		$this->_context = null;
+	}
 	function getClassName()
 	{
-		return "Runtime.re";
+		return "Runtime.CoreDriver";
 	}
 	static function getCurrentNamespace()
 	{
@@ -77,18 +56,18 @@ class re
 	}
 	static function getCurrentClassName()
 	{
-		return "Runtime.re";
+		return "Runtime.CoreDriver";
 	}
 	static function getParentClassName()
 	{
-		return "";
+		return "Runtime.CoreObject";
 	}
 	static function getClassInfo($__ctx)
 	{
 		return new \Runtime\Annotations\IntrospectionInfo($__ctx, [
 			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
-			"class_name"=>"Runtime.re",
-			"name"=>"Runtime.re",
+			"class_name"=>"Runtime.CoreDriver",
+			"name"=>"Runtime.CoreDriver",
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);

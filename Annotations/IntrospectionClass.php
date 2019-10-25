@@ -16,45 +16,65 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-namespace Runtime;
-class CoreEvent extends \Runtime\CoreStruct
+namespace Runtime\Annotations;
+class IntrospectionClass extends \Runtime\CoreStruct
 {
-	public $__sender;
+	public $__class_name;
+	public $__class_info;
+	public $__fields;
+	public $__methods;
+	public $__interfaces;
 	/* ======================= Class Init Functions ======================= */
 	function _init($__ctx)
 	{
 		parent::_init($__ctx);
-		$this->__sender = null;
+		$this->__class_name = "";
+		$this->__class_info = null;
+		$this->__fields = null;
+		$this->__methods = null;
+		$this->__interfaces = null;
 	}
 	function assignObject($__ctx,$o)
 	{
-		if ($o instanceof \Runtime\CoreEvent)
+		if ($o instanceof \Runtime\Annotations\IntrospectionClass)
 		{
-			$this->__sender = $o->__sender;
+			$this->__class_name = $o->__class_name;
+			$this->__class_info = $o->__class_info;
+			$this->__fields = $o->__fields;
+			$this->__methods = $o->__methods;
+			$this->__interfaces = $o->__interfaces;
 		}
 		parent::assignObject($__ctx,$o);
 	}
 	function assignValue($__ctx,$k,$v)
 	{
-		if ($k == "sender")$this->__sender = $v;
+		if ($k == "class_name")$this->__class_name = $v;
+		else if ($k == "class_info")$this->__class_info = $v;
+		else if ($k == "fields")$this->__fields = $v;
+		else if ($k == "methods")$this->__methods = $v;
+		else if ($k == "interfaces")$this->__interfaces = $v;
 		else parent::assignValue($__ctx,$k,$v);
 	}
 	function takeValue($__ctx,$k,$d=null)
 	{
-		if ($k == "sender")return $this->__sender;
+		if ($k == "class_name")return $this->__class_name;
+		else if ($k == "class_info")return $this->__class_info;
+		else if ($k == "fields")return $this->__fields;
+		else if ($k == "methods")return $this->__methods;
+		else if ($k == "interfaces")return $this->__interfaces;
 		return parent::takeValue($__ctx,$k,$d);
 	}
 	function getClassName()
 	{
-		return "Runtime.CoreEvent";
+		return "Runtime.Annotations.IntrospectionClass";
 	}
 	static function getCurrentNamespace()
 	{
-		return "Runtime";
+		return "Runtime.Annotations";
 	}
 	static function getCurrentClassName()
 	{
-		return "Runtime.CoreEvent";
+		return "Runtime.Annotations.IntrospectionClass";
 	}
 	static function getParentClassName()
 	{
@@ -64,8 +84,8 @@ class CoreEvent extends \Runtime\CoreStruct
 	{
 		return new \Runtime\Annotations\IntrospectionInfo($__ctx, [
 			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
-			"class_name"=>"Runtime.CoreEvent",
-			"name"=>"Runtime.CoreEvent",
+			"class_name"=>"Runtime.Annotations.IntrospectionClass",
+			"name"=>"Runtime.Annotations.IntrospectionClass",
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
@@ -75,7 +95,11 @@ class CoreEvent extends \Runtime\CoreStruct
 		$a = [];
 		if (($f|3)==3)
 		{
-			$a[] = "sender";
+			$a[] = "class_name";
+			$a[] = "class_info";
+			$a[] = "fields";
+			$a[] = "methods";
+			$a[] = "interfaces";
 		}
 		return \Runtime\Collection::from($a);
 	}

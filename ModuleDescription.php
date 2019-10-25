@@ -17,91 +17,105 @@
  *  limitations under the License.
  */
 namespace Runtime;
-use Runtime\Emitter;
-use Runtime\Map;
-use Runtime\rtl;
-use Runtime\Vector;
-use Runtime\Interfaces\ContextInterface;
-use Runtime\Interfaces\ModuleDescriptionInterface;
-class ModuleDescription implements ModuleDescriptionInterface{
+class ModuleDescription implements \Runtime\Interfaces\ModuleDescriptionInterface, \Runtime\Interfaces\AssetsInterface
+{
 	/**
 	 * Returns module name
 	 * @return string
 	 */
-	static function getModuleName(){
+	static function getModuleName($__ctx)
+	{
 		return "Runtime";
 	}
 	/**
 	 * Returns module name
 	 * @return string
 	 */
-	static function getModuleVersion(){
-		return "0.7.3";
+	static function getModuleVersion($__ctx)
+	{
+		return "0.8.0-alpha.9";
 	}
 	/**
 	 * Returns required modules
 	 * @return Map<string>
 	 */
-	static function requiredModules(){
+	static function requiredModules($__ctx)
+	{
 		return null;
 	}
 	/**
 	 * Compatibility with older versions
 	 */
-	static function getRequiredModules(){
-		return static::requiredModules();
+	static function getRequiredModules($__ctx)
+	{
+		return static::requiredModules($__ctx);
 	}
 	/**
 	 * Returns module files load order
 	 * @return Collection<string>
 	 */
-	static function getModuleFiles(){
-		return (new Vector())->push("Runtime.rs")->push("Runtime.re")->push("Runtime.rtl")->push("Runtime.Collection")->push("Runtime.Container")->push("Runtime.CoreObject")->push("Runtime.Dict")->push("Runtime.Emitter")->push("Runtime.RuntimeConstant")->push("Runtime.RuntimeUtils")->push("Runtime.Exceptions.RuntimeException")->push("Runtime.Interfaces.CloneableInterface")->push("Runtime.Interfaces.ContextInterface")->push("Runtime.Interfaces.FactoryInterface")->push("Runtime.Interfaces.ModuleDescriptionInterface")->push("Runtime.Interfaces.SerializeInterface")->push("Runtime.Interfaces.StringInterface")->push("Runtime.Interfaces.SubscribeInterface")->push("Runtime.AsyncTask")->push("Runtime.AsyncThread")->push("Runtime.Context")->push("Runtime.ContextObject")->push("Runtime.CoreStruct")->push("Runtime.CoreEvent")->push("Runtime.Map")->push("Runtime.Maybe")->push("Runtime.ModuleDescription")->push("Runtime.Reference")->push("Runtime.Vector")->push("Runtime.Exceptions.IndexOutOfRange")->push("Runtime.Exceptions.KeyNotFound")->push("Runtime.Exceptions.UnknownError")->push("Runtime.DateTime")->push("Runtime.IntrospectionInfo")->push("Runtime.LambdaChain")->push("Runtime.Provider")->push("Runtime.UIStruct");
+	static function assets($__ctx)
+	{
+		return \Runtime\Collection::from(["Runtime/rtl","Runtime/rs","Runtime/re","Runtime/lib","Runtime/Collection","Runtime/Container","Runtime/CoreObject","Runtime/Dict","Runtime/Emitter","Runtime/RuntimeConstant","Runtime/RuntimeUtils","Runtime/Exceptions/RuntimeException","Runtime/Interfaces/CloneableInterface","Runtime/Interfaces/FactoryInterface","Runtime/Interfaces/LocalBusInterface","Runtime/Interfaces/ModuleDescriptionInterface","Runtime/Interfaces/RemoteBusInterface","Runtime/Interfaces/SerializeInterface","Runtime/Interfaces/StringInterface","Runtime/Interfaces/SubscribeInterface","Runtime/AsyncTask","Runtime/AsyncThread","Runtime/CoreStruct","Runtime/CoreProvider","Runtime/CoreEvent","Runtime/BusResult","Runtime/Map","Runtime/Message","Runtime/MessageRPC","Runtime/PathInfo","Runtime/ModuleDescription","Runtime/Reference","Runtime/Vector","Runtime/Exceptions/ApiException","Runtime/Exceptions/IndexOutOfRange","Runtime/Exceptions/KeyNotFound","Runtime/Exceptions/UnknownError","Runtime/DateTime","Runtime/Annotations/Entity","Runtime/Annotations/IntrospectionClass","Runtime/Annotations/IntrospectionInfo","Runtime/Annotations/LambdaChain","Runtime/Annotations/LambdaChainDeclare","Runtime/Annotations/Driver","Runtime/Annotations/Provider","Runtime/UIStruct","Runtime/Context","Runtime/ContextObject"]);
 	}
 	/**
 	 * Returns enities
 	 */
-	static function entities(){
+	static function entities($__ctx)
+	{
+		return \Runtime\Collection::from([new \Runtime\Annotations\Provider($__ctx, \Runtime\Dict::from(["name"=>"Runtime.Interfaces.LocalBusInterface","kind"=>"interface"])),new \Runtime\Annotations\Provider($__ctx, \Runtime\Dict::from(["name"=>"Runtime.Interfaces.RemoteBusInterface","kind"=>"interface"])),new \Runtime\Annotations\LambdaChainDeclare($__ctx, \Runtime\Dict::from(["name"=>"Runtime.Entities"]))]);
+	}
+	/**
+	 * Returns enities
+	 */
+	static function resources($__ctx)
+	{
 		return null;
-	}
-	/**
-	 * Register lambda filters
-	 */
-	static function lambdaFilters(){
-		return null;
-	}
-	/**
-	 * Called then module registed in context
-	 * @param ContextInterface context
-	 */
-	static function onRegister($context){
-	}
-	/**
-	 * Called then context read config
-	 * @param ContextInterface context
-	 * @param Map<mixed> config
-	 */
-	static function onReadConfig($context, $config){
-	}
-	/**
-	 * Init context
-	 * @param ContextInterface context
-	 */
-	static function onInitContext($context){
 	}
 	/* ======================= Class Init Functions ======================= */
-	public function getClassName(){return "Runtime.ModuleDescription";}
-	public static function getCurrentNamespace(){return "Runtime";}
-	public static function getCurrentClassName(){return "Runtime.ModuleDescription";}
-	public static function getParentClassName(){return "";}
-	public static function getFieldsList($names, $flag=0){
+	function getClassName()
+	{
+		return "Runtime.ModuleDescription";
 	}
-	public static function getFieldInfoByName($field_name){
+	static function getCurrentNamespace()
+	{
+		return "Runtime";
+	}
+	static function getCurrentClassName()
+	{
+		return "Runtime.ModuleDescription";
+	}
+	static function getParentClassName()
+	{
+		return "";
+	}
+	static function getClassInfo($__ctx)
+	{
+		return new \Runtime\Annotations\IntrospectionInfo($__ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
+			"class_name"=>"Runtime.ModuleDescription",
+			"name"=>"Runtime.ModuleDescription",
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+	}
+	static function getFieldsList($__ctx,$f)
+	{
+		$a = [];
+		return \Runtime\Collection::from($a);
+	}
+	static function getFieldInfoByName($__ctx,$field_name)
+	{
 		return null;
 	}
-	public static function getMethodsList($names){
+	static function getMethodsList($__ctx)
+	{
+		$a = [
+		];
+		return \Runtime\Collection::from($a);
 	}
-	public static function getMethodInfoByName($method_name){
+	static function getMethodInfoByName($__ctx,$field_name)
+	{
 		return null;
 	}
 }

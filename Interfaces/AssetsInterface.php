@@ -2,7 +2,7 @@
 /*!
  *  Bayrell Runtime Library
  *
- *  (c) Copyright 2016-2019 "Ildar Bikmamatov" <support@bayrell.org>
+ *  (c) Copyright 2016-2018 "Ildar Bikmamatov" <support@bayrell.org>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,11 +17,25 @@
  *  limitations under the License.
  */
 namespace Runtime\Interfaces;
-use Runtime\CoreObject;
-use Runtime\Interfaces\ContextInterface;
-interface FactoryInterface{
+interface AssetsInterface
+{
 	/**
-	 * Returns new Instance
+	 * Returns module name
+	 * @return string
 	 */
-	function newInstance($context = null, $params = null);
+	static function getModuleName($__ctx);
+	/**
+	 * Returns required modules
+	 * @return Dict<string>
+	 */
+	static function requiredModules($__ctx);
+	/**
+	 * Returns module files load order
+	 * @return Collection<string>
+	 */
+	static function assets($__ctx);
+	/**
+	 * Returns sync loaded files
+	 */
+	static function resources($__ctx);
 }

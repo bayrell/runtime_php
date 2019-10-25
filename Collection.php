@@ -17,46 +17,37 @@
  *  limitations under the License.
  */
 namespace Runtime;
-use Runtime\rtl;
-use Runtime\Exceptions\IndexOutOfRange;
-
-class Collection implements \JsonSerializable
+class _Collection implements \ArrayAccess, \JsonSerializable
 {
-	
 	public $_arr = [];
 	
 	
 	/**
-	 * Convert to Collection
+	 * From
 	 */
-	public function toCollection()
+	static function from($arr)
 	{
-		return \Runtime\Collection::create($this);
+		$class_name = static::class;
+		$res = new $class_name();
+		if ($arr != null)
+		{
+			if ($arr instanceof \Runtime\Collection)
+			{
+				$res->_arr = $arr->_arr;
+			}
+			else if (gettype($arr) == 'array') $res->_arr = $arr;
+		}
+		return $res;	
 	}
-	
 	
 	
 	/**
-	 * Convert to Vector
+	 * JsonSerializable
 	 */
-	public function toVector()
+	public function jsonSerialize()
 	{
-		return \Runtime\Vector::create($this);
+		return $this->_arr;
 	}
-	
-	
-	
-	/**
-	 * Copy collection
-	 */
-	public function copy()
-	{
-		$arr2 = static::create();
-		if ($this->_arr == null) $arr2->_arr = [];
-		else $arr2->_arr = array_slice($this->_arr, 0);
-		return $arr2;
-	}
-	
 	
 	
 	/**
@@ -64,31 +55,8 @@ class Collection implements \JsonSerializable
 	 */
 	public function __construct()
 	{
-		$this->_arr = [];
-		$arr = func_get_args();
-		foreach ($arr as $data)
-		{
-			$this->_arr[] = $data;
-		}
+		$this->_arr = array_slice(func_get_args(), 1);
 	}
-	
-	
-	
-	/**
-	 * Correct items
-	 */
-	public function _correctItemsByType($type)
-	{
-		if ($type == "mixed" or $type == "primitive" or $type == "var") return $this;
-		
-		return $this->map(
-			function($item) use ($type)
-			{
-				return rtl::correct($item, $type, null);
-			}
-		);
-	}
-	
 	
 	
 	/**
@@ -100,7 +68,6 @@ class Collection implements \JsonSerializable
 	}
 	
 	
-	
 	/**
 	 * Get array
 	 */
@@ -110,91 +77,108 @@ class Collection implements \JsonSerializable
 	}
 	
 	
+	/**
+	 * Get and set methods
+	 */
+	function __isset($k){return isset($this->_arr[$k]);}
+	function __get($k){return $this->item($name);}
+	function __set($k,$v){throw new \Runtime\Exceptions\AssignStructValueError(null, $k);}
+	function __unset($k){throw new \Runtime\Exceptions\AssignStructValueError(null, $k);}
+	public function offsetExists($k){return isset($this->_arr[$k]);}
+	public function offsetGet($k){return $this->item($name);}
+	public function offsetSet($k,$v){throw new \Runtime\Exceptions\AssignStructValueError(null, $k);}
+	public function offsetUnset($k){throw new \Runtime\Exceptions\AssignStructValueError(null, $k);}
 	
+	
+	/* Class name */
+	public function getClassName(){return "Runtime._Collection";}
+	public static function getCurrentClassName(){return "Runtime._Collection";}
+	public static function getParentClassName(){return "";}
+	
+}
+class Collection extends \Runtime\_Collection
+{
 	/**
 	 * Returns new Instance
+	 * @return Object
 	 */
-	public static function create($arr = null)
+	static function Instance($__ctx)
 	{
-		$class_name = static::class;
-		$res = new $class_name();
-		if ($arr != null)
-		{
-			if ($arr instanceof \Runtime\Collection)
-			{
-				$arr = $arr->_arr;
-			}
-			$res->_arr = $arr;
-		}
-		return $res;
+		return new \Runtime\Collection($__ctx);
 	}
-	
-	
-	
 	/**
 	 * Returns new Instance
+	 * @return Object
 	 */
-	public static function createNewInstance($arr = null)
+	static function create($__ctx, $arr)
+	{
+		return static::from($arr);
+	}
+	/**
+	 * Returns copy of Collectiom
+	 * @param int pos - position
+	 */
+	function copy($__ctx)
 	{
 		$class_name = static::class;
-		$res = new $class_name();
-		if ($arr != null) $res->_arr = $arr;
-		return $res;
+		$arr2 = new $class_name();
+		if ($this->_arr == null) $arr2->_arr = [];
+		else $arr2->_arr = array_slice($this->_arr, 0);
+		return $arr2;
 	}
-	
-	
-	
+	/**
+	 * Convert to collection
+	 */
+	function toCollection($__ctx)
+	{
+		return \Runtime\Collection::from($this);
+	}
+	/**
+	 * Convert to vector
+	 */
+	function toVector($__ctx)
+	{
+		return \Runtime\Vector::from($this);
+	}
 	/**
 	 * Returns value from position
 	 * @param int pos - position
 	 */
-	public function get($pos, $default_value, $type_value = "mixed", $type_template = "")
+	function get($__ctx, $pos, $default_value)
 	{
 		$val = isset($this->_arr[$pos]) ? $this->_arr[$pos] : $default_value;
-		if ($type_value != "mixed") $val = rtl::convert($val, $type_value, $default_value, $type_template);
 		return $val;
 	}
-	
-	
-	
 	/**
 	 * Returns value from position. Throw exception, if position does not exists
 	 * @param int pos - position
 	 */
-	public function item($pos)
+	function item($__ctx, $pos)
 	{
 		if (!array_key_exists($pos, $this->_arr))
-			throw new IndexOutOfRange();
+		{
+			throw new IndexOutOfRange($__ctx);
+		}
 		return $this->_arr[$pos];
 	}
-	
-	
-	
 	/**
 	 * Returns count items in vector
 	 */
-	public function count()
+	function count($__ctx)
 	{
 		return count($this->_arr);
 	}
-	
-	
-	
 	/**
 	 * Find value in array. Returns -1 if value not found.
 	 * @param T value
 	 * @return  int
 	 */
-	public function indexOf($value)
+	function indexOf($__ctx, $value)
 	{
 		$pos = array_search($value, $this->_arr, true);
-		if ($pos === false)
-			return -1;
+		if ($pos === false) return -1;
 		return $pos;
 	}
-	
-	
-	
 	/**
 	 * Find value in array, and returns position. Returns -1 if value not found.
 	 * @param T value
@@ -202,375 +186,325 @@ class Collection implements \JsonSerializable
 	 * @param int pos_end - end position
 	 * @return  int
 	 */
-	public function indexOfRange($value, $pos_begin, $pos_end)
+	function indexOfRange($__ctx, $value, $pos_begin, $pos_end)
 	{
-		$pos = $this->indexOf($value);
+		$pos = $this->indexOf($__ctx, $value);
 		if ($pos == -1 or $pos > $pos_end or $pos < $pos_begin)
 			return -1;
 		return $pos;
 	}
-	
-	
-	
 	/**
-	 * Get last item
+	 * Get first item
 	 */
-	public function first($default_value = null)
+	function first($__ctx, $default_value=null)
 	{
 		$c = count($this->_arr);
-		if ($c == 0)
-			return $default_value;	
+		if ($c == 0) return $default_value;	
 		return $this->_arr[0];
 	}
-	
-	
-	
 	/**
 	 * Get last item
 	 */
-	public function last($default_value = null, $pos=-1)
+	function last($__ctx, $default_value=null, $pos=-1)
 	{
 		$c = count($this->_arr);
 		if ($c == 0) return $default_value;
 		if ($c + $pos + 1 == 0) return $default_value;
 		return isset( $this->_arr[$c+$pos] ) ? $this->_arr[$c+$pos] : $default_value;
 	}
-	public function getLastItem($default_value = null, $pos=-1)
-	{
-		return $this->last($default_value, $pos); 
-	}
-	
-	
-	
 	/**
-	 * Append value to the end of array
+	 * Get last item
+	 */
+	function getLastItem($__ctx, $default_value=null, $pos=-1)
+	{
+		return $this->last($__ctx, $default_value, $pos);
+	}
+	/**
+	 * Append value to the end of the Collection and return new Collection
 	 * @param T value
 	 */
-	public function pushIm($value)
+	function pushIm($__ctx, $value)
 	{
-		$res = $this->copy();
+		$res = $this->copy($__ctx);
 		$res->_arr[] = $value;
 		return $res;
 	}
-	
-	
-	
 	/**
 	 * Insert first value size_to array
 	 * @return T value
 	 */
-	public function unshiftIm($value)
+	function unshiftIm($__ctx, $value)
 	{
-		$res = $this->copy();
+		$res = $this->copy($__ctx);
 		array_unshift($res->_arr, $value);
 		return $res;
 	}
-	
-	
-	
 	/**
 	 * Extract last value from array
 	 * @return T value
 	 */
-	public function removeLastIm()
+	function removeLastIm($__ctx)
 	{
-		$res = $this->copy();
+		$res = $this->copy($__ctx);
 		array_pop($res->_arr);
 		return $res;
 	}
-	
-	
-	
 	/**
 	 * Extract first value from array
 	 * @return T value
 	 */
-	public function removeFirstIm()
+	function removeFirstIm($__ctx)
 	{
-		$res = $this->copy();
+		$res = $this->copy($__ctx);
 		array_shift($res->_arr);
 		return $res;
 	}
-	
-	
-	
 	/**
-	 * Insert value size_to position
+	 * Insert value to position
 	 * @param T value
 	 * @param int pos - position
 	 */
-	public function insertIm($pos, $value)
+	function insertIm($__ctx, $pos, $value)
 	{
-		$res = $this->copy();
+		$res = $this->copy($__ctx);
 		array_splice($res->_arr, $pos, 0, [$value]);
 		return $res;
 	}
-	
-	
-	
 	/**
 	 * Remove value from position
 	 * @param int pos - position
 	 * @param int count - count remove items
 	 */
-	public function removeIm($pos, $count = 1)
+	function removeIm($__ctx, $pos, $count=1)
 	{
-		$res = $this->copy();
+		$res = $this->copy($__ctx);
 		array_splice($res->_arr, $pos, $count);
 		return $res;
 	}
-	
-	
-	
 	/**
 	 * Remove range
 	 * @param int pos_begin - start position
 	 * @param int pos_end - end position
 	 */
-	public function removeRangeIm($pos_begin, $pos_end)
+	function removeRangeIm($__ctx, $pos_begin, $pos_end)
 	{
-		$res = $this->copy();
+		$res = $this->copy($__ctx);
 		$res->removeIm($pos_begin, $pos_end - $pos_begin + 1);
 		return $res;
 	}
-	
-	
-	
 	/**
 	 * Set value size_to position
 	 * @param int pos - position
 	 * @param T value 
 	 */
-	public function setIm($pos, $value)
+	function setIm($__ctx, $pos, $value)
 	{
 		if (!array_key_exists($pos, $this->_arr))
-			throw new IndexOutOfRange();
-		$res = $this->copy();	
+			throw new IndexOutOfRange($__ctx);
+		$res = $this->copy($__ctx);	
 		$res->_arr[$pos] = $value;
 		return $res;
 	}
-	
-	
-	
 	/**
-	 * Append value to the end of array
+	 * Append value to the end of the vector
 	 * @param T value
 	 */
-	public function appendIm($value)
+	function appendIm($__ctx, $value)
 	{
-		return $this->pushIm($value);
+		return $this->pushIm($__ctx, $value);
 	}
-	
-	
-	
 	/**
-	 * Insert first value size_to array
+	 * Insert first value to begin of the vector
 	 * @return T value
 	 */
-	public function prependIm($value)
+	function prependIm($__ctx, $value)
 	{
-		return $this->unshiftIm($value);
+		return $this->unshiftIm($__ctx, $value);
 	}
-	
-	
-	
 	/**
 	 * Append vector to the end of the vector
 	 * @param Collection<T> arr
 	 */
-	public function appendCollectionIm($arr)
+	function appendCollectionIm($__ctx, $arr)
 	{
 		if (!$arr) return $this;
 		if (count($arr->_arr) == 0) return $this;
-		$res = $this->copy();
+		$res = $this->copy($__ctx);
 		foreach ($arr->_arr as $item)
 		{
 			$res->_arr[] = $item;
 		}
 		return $res;
 	}
-	
-	
-	
 	/**
 	 * Prepend vector to the begin of the vector
 	 * @param Collection<T> arr
 	 */
-	public function prependCollectionIm($arr)
+	function prependCollectionIm($__ctx, $arr)
 	{
 		if (!$arr) return $this;
-		$res = $this->copy();
-		foreach ($arr->_arr as $item)
+		$res = $this->copy($__ctx);
+		$sz = count($arr->_arr);
+		for ($i=$sz-1; $i>=0; $i--)
 		{
-			array_unshift($res->_arr, $item);
+			array_unshift($res->_arr, $arr->_arr[$i]);
 		}
 		return $res;
 	}
-	
-	
-	
 	/**
 	 * Remove value
-	 * @param mixed value
 	 */
-	public function removeValueIm($value)
+	function removeValueIm($__ctx, $value)
 	{
-		$index = $this->indexOf($value);
-		if ($index != -1) return $this->removeIm($index, 1);
+		$index = $this->indexOf($__ctx, $value);
+		if ($index != -1)
+		{
+			return $this->removeIm($__ctx, $index);
+		}
 		return $this;
 	}
-	
-	
-	
 	/**
 	 * Remove value
-	 * @param mixed value
 	 */
-	public function removeItem($value)
+	function removeItemIm($__ctx, $value)
 	{
-		return $this->removeValueIm($value);
+		return $this->removeValueIm($__ctx, $value);
 	}
-	
-	
-	
 	/**
-	 * Remove values
-	 * @param mixed values
+	 * Remove value
 	 */
-	public function removeItems($values)
+	function removeItemsIm($__ctx, $values)
 	{
 		$res = $this;
-		for ($i=0; $i<$values->count(); $i++)
+		for ($i = 0;$i < $values->count($__ctx);$i++)
 		{
-			$res = $res->removeItem( $values->item(i) );
+			$res = $res->removeItem($__ctx, $values->item($__ctx, $i));
 		}
 		return $res;
 	}
-	
-	
-	
 	/**
 	 * Map
-	 * @param func f
+	 * @param fn f
 	 * @return Collection
 	 */
-	function map($f)
+	function map($__ctx, $f)
 	{
-		$keys = array_keys($this->_arr);
-		$arr2 = static::create();
-		$arr2->_arr = array_map($f, $this->_arr, $keys);
+		$arr2 = $this->copy($__ctx);
+		foreach ($this->_arr as $key => $value)
+		{
+			$arr2->_arr[$key] = $f($__ctx, $value, $key);
+		}
 		return $arr2;
 	}
-	
-	
-	
 	/**
 	 * Filter items
-	 * @param func f
+	 * @param fn f
 	 * @return Collection
 	 */
-	function filter($f)
+	function filter($__ctx, $f)
 	{
-		$arr2 = static::create();
-		$arr2->_arr = array_values(array_filter($this->_arr, $f));
+		$arr2 = static::Instance($__ctx);
+		foreach ($this->_arr as $key => $value)
+		{
+			if ( $f($__ctx, $value, $key) )
+			{
+				$arr2->_arr[] = $value;
+			}
+		}
 		return $arr2;
 	}
-	
-	
-	
+	/**
+	 * Transition Collection to Dict
+	 * @param fn f
+	 * @return Dict
+	 */
+	function transition($__ctx, $f)
+	{
+		$d = new \Runtime\Dict();
+		foreach ($this->_arr as $key => $value)
+		{
+			$p = $f(__ctx, $value, $key);
+			$d->map[$p[1]] = $p[0];
+		}
+		return $d;
+	}
 	/**
 	 * Reduce
-	 * @param func f
-	 * @param mixed init_value
+	 * @param fn f
+	 * @param var init_value
 	 * @return init_value
 	 */
-	function reduce($f, $init_value)
+	function reduce($__ctx, $f, $init_value)
 	{
-		return array_reduce($this->_arr, $f, $init_value);
+		foreach ($this->_arr as $key => $value)
+		{
+			$init_value = $f($__ctx, $init_value, $value, $key);
+		}
+		return $init_value;
 	}
-	
-	
-	
 	/**
 	 * Call function for each item
-	 * @param func f
+	 * @param fn f
 	 */
-	function each($f)
+	function each($__ctx, $f)
 	{
-		array_walk($this->_arr, $f);
-		return $this;
+		foreach ($this->_arr as $key => $value)
+		{
+			$f($__ctx, $value, $key);
+		}
 	}
-	
-	
-	
 	/**
-	 * Each item recursive
-	 * @param func f
-	 * @param func childs Returns childs items
-	 * @param func kind. 1 - Node item first, -1 - Node item last
+	 * Returns Collection
+	 * @param Collection<T> arr
+	 * @return Collection<T>
 	 */
-	function recurse($f, $childs, $kind=1)
+	function concat($__ctx, $arr=null)
 	{
-		return $this;
-	}
-	
-	
-	
-	/**
-	 * Returns new concated Collection
-	 * @param Collection v
-	 * @return Collection
-	 */
-	function concat($v)
-	{
-		$arr2 = static::create();
+		if ($arr == null) return $this;
+		$arr2 = static::Instance($__ctx);
 		$arr2->_arr = array_merge($this->_arr, $v->_arr);
 		return $arr2;
 	}
-	
-	
-	
 	/**
 	 * Returns Collection
-	 * @param int offset begin
-	 * @param int length count
+	 * @param Collection<T> arr
 	 * @return Collection<T>
 	 */
-	function slice($offset = 0, $length = null)
+	function intersect($__ctx, $arr)
 	{
-		$arr2 = static::create();
+		return $this->filter($__ctx, function ($__ctx, $item) use (&$arr)
+		{
+			return $arr->indexOf($__ctx, $item) >= 0;
+		});
+	}
+	/**
+	 * Returns new Collection
+	 * @param int offset
+	 * @param int lenght
+	 * @return Collection<T>
+	 */
+	function slice($__ctx, $offset, $length=null)
+	{
+		$arr2 = static::Instance($__ctx);
 		$arr2->_arr = array_slice($this->_arr, $offset, $length);
 		return $arr2;
 	}
-	
-	
-	
-	/**
-	 * JsonSerializable
-	 */
-	public function jsonSerialize(){
-		return $this->_arr;
-	}
-	
-	
-	
 	/**
 	 * Reverse array
 	 */
-	public function reverse(){
-		array_reverse($this->_arr);
-		return $this;
+	function reverseIm($__ctx)
+	{
+		$arr2 = $this->copy($__ctx);
+		array_reverse($arr2->_arr);
+		return $arr2;
 	}
-	
-	
-	
 	/**
 	 * Sort vector
-	 * @param func f - Sort user function
+	 * @param fn f - Sort user function
 	 */
-	public function sortIm($f = null)
+	function sortIm($__ctx, $f=null)
 	{
-		$res = $this->copy();
+		$res = $this->copy($__ctx);
 		if ($f == null)
 		{
 			asort($res->_arr);
@@ -581,53 +515,99 @@ class Collection implements \JsonSerializable
 		}
 		return $res;
 	}
-	
-	
-	
 	/**
 	 * Remove dublicate values
 	 */
-	public function removeDublicatesIm()
+	function removeDublicatesIm($__ctx)
 	{
-		$arr = [];
-		for ($i=0; $i<$this->count(); $i++)
+		$arr = []; $sz = count($this->_arr);
+		for ($i=0; $i<$sz; $i++)
 		{			
-			$value = $this->item($i);
+			$value = $this->_arr[$i];
 			$pos = array_search($value, $arr, true);
 			if ($pos === false)
 			{
 				$arr[] = $value;
 			}
 		}
-		$res = static::create();
+		$res = static::Instance($__ctx);
 		$res->_arr = $arr;
 		return $res;
 	}
-	
-	
-	
 	/**
-	 * Find item 
-	 * @param func f - Find function
-	 * @param mixed item - Search item
-	 * @return Collection
+	 * Find item pos
+	 * @param fn f - Find function
+	 * @return int - position
 	 */
-	public function find($f, $item)
+	function find($__ctx, $f)
 	{
-		for ($i=0; $i<$this->count(); $i++)
+		$sz = count($this->_arr);
+		for ($i=0; $i<$sz; $i++)
 		{
-			$elem = $this->item($i);
-			if ($f($elem, $item))
+			$elem = $this->_arr[$i];
+			if ( $f($__ctx, $elem) )
 			{
 				return $i;
 			}
 		}
 		return -1;
 	}
-	
-	
-	public function getClassName(){return "Runtime.Collection";}
-	public static function getCurrentClassName(){return "Runtime.Collection";}
-	public static function getParentClassName(){return "";}
-	
+	/**
+	 * Find item
+	 * @param var item - Find function
+	 * @param fn f - Find function
+	 * @param T def_value - Find function
+	 * @return item
+	 */
+	function findItem($__ctx, $f, $def_value=null)
+	{
+		$pos = $this->find($__ctx, $f);
+		return $this->get($__ctx, $pos, $def_value);
+	}
+	/* ======================= Class Init Functions ======================= */
+	function getClassName()
+	{
+		return "Runtime.Collection";
+	}
+	static function getCurrentNamespace()
+	{
+		return "Runtime";
+	}
+	static function getCurrentClassName()
+	{
+		return "Runtime.Collection";
+	}
+	static function getParentClassName()
+	{
+		return "Runtime._Collection";
+	}
+	static function getClassInfo($__ctx)
+	{
+		return new \Runtime\Annotations\IntrospectionInfo($__ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
+			"class_name"=>"Runtime.Collection",
+			"name"=>"Runtime.Collection",
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+	}
+	static function getFieldsList($__ctx,$f)
+	{
+		$a = [];
+		return \Runtime\Collection::from($a);
+	}
+	static function getFieldInfoByName($__ctx,$field_name)
+	{
+		return null;
+	}
+	static function getMethodsList($__ctx)
+	{
+		$a = [
+		];
+		return \Runtime\Collection::from($a);
+	}
+	static function getMethodInfoByName($__ctx,$field_name)
+	{
+		return null;
+	}
 }

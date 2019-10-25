@@ -2,7 +2,7 @@
 	"name": "bayrell/runtime",
 	"type": "library",
 	"description": "Bayrell Runtime",
-	"version": "0.7.3",
+	"version": "0.8.0-alpha.9",
 	"license": "Apache-2.0",
 	"authors": [
 		{

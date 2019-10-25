@@ -16,45 +16,76 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-namespace Runtime;
-class CoreEvent extends \Runtime\CoreStruct
+namespace Runtime\Annotations;
+class IntrospectionInfo extends \Runtime\CoreStruct
 {
-	public $__sender;
+	const ITEM_CLASS="class";
+	const ITEM_FIELD="field";
+	const ITEM_METHOD="method";
+	public $__class_name;
+	public $__kind;
+	public $__name;
+	public $__annotations;
+	/**
+	 * Returns true if has annotations by class_name
+	 * @string class_name
+	 * @return bool
+	 */
+	function filterAnnotations($__ctx, $class_name)
+	{
+		if ($this->annotations == null)
+		{
+			return null;
+		}
+		return $this->annotations->filter($__ctx, \Runtime\lib::isInstance($__ctx, $class_name))->toCollection($__ctx);
+	}
 	/* ======================= Class Init Functions ======================= */
 	function _init($__ctx)
 	{
 		parent::_init($__ctx);
-		$this->__sender = null;
+		$this->__class_name = "";
+		$this->__kind = "";
+		$this->__name = "";
+		$this->__annotations = null;
 	}
 	function assignObject($__ctx,$o)
 	{
-		if ($o instanceof \Runtime\CoreEvent)
+		if ($o instanceof \Runtime\Annotations\IntrospectionInfo)
 		{
-			$this->__sender = $o->__sender;
+			$this->__class_name = $o->__class_name;
+			$this->__kind = $o->__kind;
+			$this->__name = $o->__name;
+			$this->__annotations = $o->__annotations;
 		}
 		parent::assignObject($__ctx,$o);
 	}
 	function assignValue($__ctx,$k,$v)
 	{
-		if ($k == "sender")$this->__sender = $v;
+		if ($k == "class_name")$this->__class_name = $v;
+		else if ($k == "kind")$this->__kind = $v;
+		else if ($k == "name")$this->__name = $v;
+		else if ($k == "annotations")$this->__annotations = $v;
 		else parent::assignValue($__ctx,$k,$v);
 	}
 	function takeValue($__ctx,$k,$d=null)
 	{
-		if ($k == "sender")return $this->__sender;
+		if ($k == "class_name")return $this->__class_name;
+		else if ($k == "kind")return $this->__kind;
+		else if ($k == "name")return $this->__name;
+		else if ($k == "annotations")return $this->__annotations;
 		return parent::takeValue($__ctx,$k,$d);
 	}
 	function getClassName()
 	{
-		return "Runtime.CoreEvent";
+		return "Runtime.Annotations.IntrospectionInfo";
 	}
 	static function getCurrentNamespace()
 	{
-		return "Runtime";
+		return "Runtime.Annotations";
 	}
 	static function getCurrentClassName()
 	{
-		return "Runtime.CoreEvent";
+		return "Runtime.Annotations.IntrospectionInfo";
 	}
 	static function getParentClassName()
 	{
@@ -64,8 +95,8 @@ class CoreEvent extends \Runtime\CoreStruct
 	{
 		return new \Runtime\Annotations\IntrospectionInfo($__ctx, [
 			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
-			"class_name"=>"Runtime.CoreEvent",
-			"name"=>"Runtime.CoreEvent",
+			"class_name"=>"Runtime.Annotations.IntrospectionInfo",
+			"name"=>"Runtime.Annotations.IntrospectionInfo",
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
@@ -75,7 +106,10 @@ class CoreEvent extends \Runtime\CoreStruct
 		$a = [];
 		if (($f|3)==3)
 		{
-			$a[] = "sender";
+			$a[] = "class_name";
+			$a[] = "kind";
+			$a[] = "name";
+			$a[] = "annotations";
 		}
 		return \Runtime\Collection::from($a);
 	}

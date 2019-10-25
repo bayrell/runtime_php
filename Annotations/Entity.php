@@ -16,79 +16,61 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-namespace Runtime;
-class re
+namespace Runtime\Annotations;
+class Entity extends \Runtime\CoreStruct
 {
-	/**
-	 * Search regular expression
-	 * @param string r regular expression
-	 * @param string s string
-	 * @return bool
-	 */
-	static function match($__ctx, $r, $s)
-	{
-		$matches = [];
-		if (preg_match("/" . $r . "/", $s, $matches)){
-			return $matches != null;
-		}
-		
-		return false;
-	}
-	/**
-	 * Search regular expression
-	 * @param string r regular expression
-	 * @param string s string
-	 * @return Vector result
-	 */
-	static function matchAll($__ctx, $r, $s)
-	{
-		$matches = [];
-		if (preg_match_all("/" . $r . "/i", $s, $matches)){
-			$res = new Vector();
-			array_shift($matches);
-			foreach ($matches as $arr){
-				$res->push( (new Vector())->_assignArr($arr) );
-			}
-			return $res;
-		}
-		
-		return null;
-		return null;
-	}
-	/**
-	 * Replace with regular expression
-	 * @param string r - regular expression
-	 * @param string replace - new value
-	 * @param string s - replaceable string
-	 * @return string
-	 */
-	static function replace($__ctx, $r, $replace, $s)
-	{
-		return preg_replace("/" . $r . "/", $replace, $s);
-	}
+	public $__name;
+	public $__value;
 	/* ======================= Class Init Functions ======================= */
+	function _init($__ctx)
+	{
+		parent::_init($__ctx);
+		$this->__name = "";
+		$this->__value = "";
+	}
+	function assignObject($__ctx,$o)
+	{
+		if ($o instanceof \Runtime\Annotations\Entity)
+		{
+			$this->__name = $o->__name;
+			$this->__value = $o->__value;
+		}
+		parent::assignObject($__ctx,$o);
+	}
+	function assignValue($__ctx,$k,$v)
+	{
+		if ($k == "name")$this->__name = $v;
+		else if ($k == "value")$this->__value = $v;
+		else parent::assignValue($__ctx,$k,$v);
+	}
+	function takeValue($__ctx,$k,$d=null)
+	{
+		if ($k == "name")return $this->__name;
+		else if ($k == "value")return $this->__value;
+		return parent::takeValue($__ctx,$k,$d);
+	}
 	function getClassName()
 	{
-		return "Runtime.re";
+		return "Runtime.Annotations.Entity";
 	}
 	static function getCurrentNamespace()
 	{
-		return "Runtime";
+		return "Runtime.Annotations";
 	}
 	static function getCurrentClassName()
 	{
-		return "Runtime.re";
+		return "Runtime.Annotations.Entity";
 	}
 	static function getParentClassName()
 	{
-		return "";
+		return "Runtime.CoreStruct";
 	}
 	static function getClassInfo($__ctx)
 	{
 		return new \Runtime\Annotations\IntrospectionInfo($__ctx, [
 			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
-			"class_name"=>"Runtime.re",
-			"name"=>"Runtime.re",
+			"class_name"=>"Runtime.Annotations.Entity",
+			"name"=>"Runtime.Annotations.Entity",
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
@@ -96,6 +78,11 @@ class re
 	static function getFieldsList($__ctx,$f)
 	{
 		$a = [];
+		if (($f|3)==3)
+		{
+			$a[] = "name";
+			$a[] = "value";
+		}
 		return \Runtime\Collection::from($a);
 	}
 	static function getFieldInfoByName($__ctx,$field_name)

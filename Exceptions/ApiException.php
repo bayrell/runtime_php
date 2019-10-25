@@ -1,6 +1,6 @@
 <?php
 /*!
- *  Bayrell Runtime Library
+ *  Bayrell Runtime Library 
  *
  *  (c) Copyright 2016-2019 "Ildar Bikmamatov" <support@bayrell.org>
  *
@@ -16,79 +16,36 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-namespace Runtime;
-class re
+namespace Runtime\Exceptions;
+class ApiException extends \Runtime\Exceptions\RuntimeException
 {
-	/**
-	 * Search regular expression
-	 * @param string r regular expression
-	 * @param string s string
-	 * @return bool
-	 */
-	static function match($__ctx, $r, $s)
+	function __construct($__ctx, $message="", $code=-1, $context=null, $prev=null)
 	{
-		$matches = [];
-		if (preg_match("/" . $r . "/", $s, $matches)){
-			return $matches != null;
-		}
-		
-		return false;
-	}
-	/**
-	 * Search regular expression
-	 * @param string r regular expression
-	 * @param string s string
-	 * @return Vector result
-	 */
-	static function matchAll($__ctx, $r, $s)
-	{
-		$matches = [];
-		if (preg_match_all("/" . $r . "/i", $s, $matches)){
-			$res = new Vector();
-			array_shift($matches);
-			foreach ($matches as $arr){
-				$res->push( (new Vector())->_assignArr($arr) );
-			}
-			return $res;
-		}
-		
-		return null;
-		return null;
-	}
-	/**
-	 * Replace with regular expression
-	 * @param string r - regular expression
-	 * @param string replace - new value
-	 * @param string s - replaceable string
-	 * @return string
-	 */
-	static function replace($__ctx, $r, $replace, $s)
-	{
-		return preg_replace("/" . $r . "/", $replace, $s);
+		parent::__construct($__ctx, $message, $code, $context, $prev);
 	}
 	/* ======================= Class Init Functions ======================= */
 	function getClassName()
 	{
-		return "Runtime.re";
+		return "Runtime.Exceptions.ApiException";
 	}
 	static function getCurrentNamespace()
 	{
-		return "Runtime";
+		return "Runtime.Exceptions";
 	}
 	static function getCurrentClassName()
 	{
-		return "Runtime.re";
+		return "Runtime.Exceptions.ApiException";
 	}
 	static function getParentClassName()
 	{
-		return "";
+		return "Runtime.Exceptions.RuntimeException";
 	}
 	static function getClassInfo($__ctx)
 	{
 		return new \Runtime\Annotations\IntrospectionInfo($__ctx, [
 			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
-			"class_name"=>"Runtime.re",
-			"name"=>"Runtime.re",
+			"class_name"=>"Runtime.Exceptions.ApiException",
+			"name"=>"Runtime.Exceptions.ApiException",
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);

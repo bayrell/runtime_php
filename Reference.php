@@ -17,45 +17,78 @@
  *  limitations under the License.
  */
 namespace Runtime;
-use Runtime\CoreObject;
-use Runtime\rtl;
-class Reference extends CoreObject{
+class Reference extends \Runtime\CoreObject
+{
 	public $uq;
 	public $ref;
-	/**
-	 * Constructor
-	 */
-	function __construct($ref = null){
-		parent::__construct();
+	function __construct($__ctx, $ref=null)
+	{
+		parent::__construct($__ctx);
 		$this->ref = $ref;
 	}
 	/**
 	 * Assign and clone data from other object
 	 * @param CoreObject obj
 	 */
-	function assignObject($obj){
-		if ($obj instanceof Reference){
+	function assignObject($__ctx, $obj)
+	{
+		if ($obj instanceof \Runtime\Reference)
+		{
 			$this->uq = $obj->uq;
 			$this->ref = $this->ref;
 		}
-		parent::assignObject($obj);
+		parent::assignObject($__ctx, $obj);
 	}
 	/* ======================= Class Init Functions ======================= */
-	public function getClassName(){return "Runtime.Reference";}
-	public static function getCurrentNamespace(){return "Runtime";}
-	public static function getCurrentClassName(){return "Runtime.Reference";}
-	public static function getParentClassName(){return "Runtime.CoreObject";}
-	protected function _init(){
-		parent::_init();
+	function _init($__ctx)
+	{
+		parent::_init($__ctx);
+		$this->uq = \Runtime\rtl::unique($__ctx);
+		$this->ref = null;
 	}
-	public static function getFieldsList($names, $flag=0){
+	function getClassName()
+	{
+		return "Runtime.Reference";
 	}
-	public static function getFieldInfoByName($field_name){
+	static function getCurrentNamespace()
+	{
+		return "Runtime";
+	}
+	static function getCurrentClassName()
+	{
+		return "Runtime.Reference";
+	}
+	static function getParentClassName()
+	{
+		return "Runtime.CoreObject";
+	}
+	static function getClassInfo($__ctx)
+	{
+		return new \Runtime\Annotations\IntrospectionInfo($__ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
+			"class_name"=>"Runtime.Reference",
+			"name"=>"Runtime.Reference",
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+	}
+	static function getFieldsList($__ctx,$f)
+	{
+		$a = [];
+		return \Runtime\Collection::from($a);
+	}
+	static function getFieldInfoByName($__ctx,$field_name)
+	{
 		return null;
 	}
-	public static function getMethodsList($names){
+	static function getMethodsList($__ctx)
+	{
+		$a = [
+		];
+		return \Runtime\Collection::from($a);
 	}
-	public static function getMethodInfoByName($method_name){
+	static function getMethodInfoByName($__ctx,$field_name)
+	{
 		return null;
 	}
 }

@@ -17,27 +17,56 @@
  *  limitations under the License.
  */
 namespace Runtime\Exceptions;
-use Runtime\rtl;
-use Runtime\RuntimeConstant;
-use Runtime\Exceptions\RuntimeException;
-use Runtime\Interfaces\ContextInterface;
-class UnknownError extends RuntimeException{
-	function __construct($context = null, $prev = null){
-		parent::__construct(rtl::translate("Unknown error", null, "", $context), RuntimeConstant::ERROR_UNKNOWN, $context, $prev);
+class UnknownError extends \Runtime\Exceptions\RuntimeException
+{
+	function __construct($__ctx, $context=null, $prev=null)
+	{
+		parent::__construct($__ctx, \Runtime\rtl::translate($__ctx, "Unknown error", null, "", $context), \Runtime\RuntimeConstant::ERROR_UNKNOWN, $context, $prev);
 	}
 	/* ======================= Class Init Functions ======================= */
-	public function getClassName(){return "Runtime.Exceptions.UnknownError";}
-	public static function getCurrentNamespace(){return "Runtime.Exceptions";}
-	public static function getCurrentClassName(){return "Runtime.Exceptions.UnknownError";}
-	public static function getParentClassName(){return "Runtime.Exceptions.RuntimeException";}
-	public static function getFieldsList($names, $flag=0){
+	function getClassName()
+	{
+		return "Runtime.Exceptions.UnknownError";
 	}
-	public static function getFieldInfoByName($field_name){
+	static function getCurrentNamespace()
+	{
+		return "Runtime.Exceptions";
+	}
+	static function getCurrentClassName()
+	{
+		return "Runtime.Exceptions.UnknownError";
+	}
+	static function getParentClassName()
+	{
+		return "Runtime.Exceptions.RuntimeException";
+	}
+	static function getClassInfo($__ctx)
+	{
+		return new \Runtime\Annotations\IntrospectionInfo($__ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
+			"class_name"=>"Runtime.Exceptions.UnknownError",
+			"name"=>"Runtime.Exceptions.UnknownError",
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+	}
+	static function getFieldsList($__ctx,$f)
+	{
+		$a = [];
+		return \Runtime\Collection::from($a);
+	}
+	static function getFieldInfoByName($__ctx,$field_name)
+	{
 		return null;
 	}
-	public static function getMethodsList($names){
+	static function getMethodsList($__ctx)
+	{
+		$a = [
+		];
+		return \Runtime\Collection::from($a);
 	}
-	public static function getMethodInfoByName($method_name){
+	static function getMethodInfoByName($__ctx,$field_name)
+	{
 		return null;
 	}
 }

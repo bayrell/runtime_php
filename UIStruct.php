@@ -17,66 +17,81 @@
  *  limitations under the License.
  */
 namespace Runtime;
-use Runtime\CoreStruct;
-use Runtime\Dict;
-use Runtime\Map;
-use Runtime\rs;
-use Runtime\rtl;
-use Runtime\Collection;
-use Runtime\Vector;
-class UIStruct extends CoreStruct{
-	const TYPE_ELEMENT = "element";
-	const TYPE_COMPONENT = "component";
-	const TYPE_STRING = "string";
-	const TYPE_RAW = "raw";
-	protected $__class_name;
-	protected $__key;
-	protected $__name;
-	protected $__space;
-	protected $__bind;
-	protected $__kind;
-	protected $__content;
-	protected $__controller;
-	protected $__reference;
-	protected $__model;
-	protected $__props;
-	protected $__annotations;
-	protected $__children;
+class UIStruct extends \Runtime\CoreStruct
+{
+	const TYPE_ELEMENT="element";
+	const TYPE_COMPONENT="component";
+	const TYPE_STRING="string";
+	const TYPE_RAW="raw";
+	public $__class_name;
+	public $__key;
+	public $__name;
+	public $__bind;
+	public $__kind;
+	public $__content;
+	public $__reference;
+	public $__value;
+	public $__layout;
+	public $__model;
+	public $__props;
+	public $__annotations;
+	public $__children;
 	/**
 	 * Returns true if component
 	 * @return bool
 	 */
-	static function isComponent($ui){
-		return $ui->kind == self::TYPE_COMPONENT;
+	function getTag($__ctx)
+	{
+		if ($this->props == null)
+		{
+			return null;
+		}
+		return $this->props->get($__ctx, "@tag", null);
+	}
+	/**
+	 * Returns true if component
+	 * @return bool
+	 */
+	function isComponent($__ctx)
+	{
+		return $this->kind == \Runtime\UIStruct::TYPE_COMPONENT;
 	}
 	/**
 	 * Returns true if element
 	 * @return bool
 	 */
-	static function isElement($ui){
-		return $ui->kind == self::TYPE_ELEMENT;
+	function isElement($__ctx)
+	{
+		return $this->kind == \Runtime\UIStruct::TYPE_ELEMENT;
 	}
 	/**
 	 * Returns true if string
 	 * @return bool
 	 */
-	static function isString($ui){
-		return $ui->kind == self::TYPE_STRING || $ui->kind == self::TYPE_RAW;
+	function isString($__ctx)
+	{
+		return $this->kind == \Runtime\UIStruct::TYPE_STRING || $this->kind == \Runtime\UIStruct::TYPE_RAW;
 	}
 	/**
 	 * Returns model
 	 * @return CoreStruct
 	 */
-	static function getModel($ui){
-		if ($ui->model != null){
-			return $ui->model;
+	function getModel($__ctx)
+	{
+		return $this->model;
+		if ($this->model != null)
+		{
+			return $this->model;
 		}
-		if ($ui->kind == self::TYPE_COMPONENT){
-			$model_name = rtl::method($ui->name, "modelName")();
-			if ($model_name == ""){
+		if ($this->kind == \Runtime\UIStruct::TYPE_COMPONENT)
+		{
+			$modelName = \Runtime\rtl::method($this->name, "modelName");
+			$model_name = $modelName($__ctx);
+			if ($model_name == "")
+			{
 				return null;
 			}
-			$model = rtl::newInstance($model_name, (new Vector())->push($ui->props));
+			$model = \Runtime\rtl::newInstance($__ctx, $model_name, \Runtime\Collection::from([$this->props]));
 			return $model;
 		}
 		return null;
@@ -85,145 +100,191 @@ class UIStruct extends CoreStruct{
 	 * Returns key path
 	 * @return string
 	 */
-	static function getKey($ui, $index){
-		return ($ui->key !== "") ? ($ui->key) : ($index);
+	function getKey($__ctx, $index)
+	{
+		return ($this->key !== "") ? $this->key : $index;
 	}
 	/**
 	 * Returns key path
 	 * @return string
 	 */
-	static function getKeyPath($ui, $key_path, $index){
-		return ($key_path !== "") ? (rtl::toString($key_path) . "." . rtl::toString(static::getKey($ui, $index))) : (static::getKey($ui, $index));
+	function getKeyPath($__ctx, $key_path, $index)
+	{
+		return ($key_path !== "") ? $key_path . \Runtime\rtl::toStr(".") . \Runtime\rtl::toStr($this->getKey($__ctx, $index)) : $this->getKey($__ctx, $index);
 	}
 	/**
 	 * Returns attrs
 	 */
-	static function getAttrs($ui){
-		if ($ui->props != null){
-			return $ui->props->filter(function ($key, $value){
-				return rs::strpos($key, "@") != 0 || $key == "@class" || $key == "@style";
+	function getAttrs($__ctx)
+	{
+		if ($this->props != null)
+		{
+			return $this->props->filter($__ctx, function ($__ctx, $key, $value)
+			{
+				return \Runtime\rs::strpos($__ctx, $key, "@") != 0 || $key == "@class" || $key == "@style";
 			});
 		}
-		return new Dict();
+		return new \Runtime\Dict($__ctx);
 	}
 	/**
 	 * Returns props
 	 */
-	static function getProps($ui){
-		if ($ui->props != null){
-			return $ui->props->filter(function ($key, $value){
-				return rs::strpos($key, "@") == 0 && rs::strpos($key, "@on") != 0 && $key != "@class";
+	function getProps($__ctx)
+	{
+		if ($this->props != null)
+		{
+			return $this->props->filter($__ctx, function ($__ctx, $key, $value)
+			{
+				return \Runtime\rs::strpos($__ctx, $key, "@") == 0 && \Runtime\rs::strpos($__ctx, $key, "@on") != 0 && $key != "@class";
 			});
 		}
-		return new Dict();
+		return new \Runtime\Dict($__ctx);
 	}
 	/**
 	 * Returns events
 	 */
-	static function getEvents($ui){
-		if ($ui->props != null){
-			return $ui->props->filter(function ($key, $value){
-				return rs::strpos($key, "@on") == 0;
+	function getEvents($__ctx)
+	{
+		if ($this->props != null)
+		{
+			return $this->props->filter($__ctx, function ($__ctx, $key, $value)
+			{
+				return \Runtime\rs::strpos($__ctx, $key, "@on") == 0;
 			});
 		}
-		return new Dict();
+		return new \Runtime\Dict($__ctx);
 	}
 	/* ======================= Class Init Functions ======================= */
-	public function getClassName(){return "Runtime.UIStruct";}
-	public static function getCurrentNamespace(){return "Runtime";}
-	public static function getCurrentClassName(){return "Runtime.UIStruct";}
-	public static function getParentClassName(){return "Runtime.CoreStruct";}
-	protected function _init(){
-		parent::_init();
+	function _init($__ctx)
+	{
+		parent::_init($__ctx);
 		$this->__class_name = "";
 		$this->__key = "";
 		$this->__name = "";
-		$this->__space = "";
 		$this->__bind = "";
 		$this->__kind = "element";
 		$this->__content = "";
-		$this->__controller = "";
 		$this->__reference = "";
+		$this->__value = null;
+		$this->__layout = null;
 		$this->__model = null;
 		$this->__props = null;
 		$this->__annotations = null;
 		$this->__children = null;
 	}
-	public function assignObject($obj){
-		if ($obj instanceof UIStruct){
-			$this->__class_name = $obj->__class_name;
-			$this->__key = $obj->__key;
-			$this->__name = $obj->__name;
-			$this->__space = $obj->__space;
-			$this->__bind = $obj->__bind;
-			$this->__kind = $obj->__kind;
-			$this->__content = $obj->__content;
-			$this->__controller = $obj->__controller;
-			$this->__reference = $obj->__reference;
-			$this->__model = $obj->__model;
-			$this->__props = $obj->__props;
-			$this->__annotations = $obj->__annotations;
-			$this->__children = $obj->__children;
+	function assignObject($__ctx,$o)
+	{
+		if ($o instanceof \Runtime\UIStruct)
+		{
+			$this->__class_name = $o->__class_name;
+			$this->__key = $o->__key;
+			$this->__name = $o->__name;
+			$this->__bind = $o->__bind;
+			$this->__kind = $o->__kind;
+			$this->__content = $o->__content;
+			$this->__reference = $o->__reference;
+			$this->__value = $o->__value;
+			$this->__layout = $o->__layout;
+			$this->__model = $o->__model;
+			$this->__props = $o->__props;
+			$this->__annotations = $o->__annotations;
+			$this->__children = $o->__children;
 		}
-		parent::assignObject($obj);
+		parent::assignObject($__ctx,$o);
 	}
-	public function assignValue($variable_name, $value, $sender = null){
-		if ($variable_name == "class_name")$this->__class_name = rtl::convert($value,"string","","");
-		else if ($variable_name == "key")$this->__key = rtl::convert($value,"string","","");
-		else if ($variable_name == "name")$this->__name = rtl::convert($value,"string","","");
-		else if ($variable_name == "space")$this->__space = rtl::convert($value,"string","","");
-		else if ($variable_name == "bind")$this->__bind = rtl::convert($value,"string","","");
-		else if ($variable_name == "kind")$this->__kind = rtl::convert($value,"string","element","");
-		else if ($variable_name == "content")$this->__content = rtl::convert($value,"string","","");
-		else if ($variable_name == "controller")$this->__controller = rtl::convert($value,"string","","");
-		else if ($variable_name == "reference")$this->__reference = rtl::convert($value,"string","","");
-		else if ($variable_name == "model")$this->__model = rtl::convert($value,"Runtime.CoreStruct",null,"");
-		else if ($variable_name == "props")$this->__props = rtl::convert($value,"Runtime.Dict",null,"primitive");
-		else if ($variable_name == "annotations")$this->__annotations = rtl::convert($value,"Runtime.Collection",null,"Runtime.CoreStruct");
-		else if ($variable_name == "children")$this->__children = rtl::convert($value,"Runtime.Collection",null,"Runtime.UIStruct");
-		else parent::assignValue($variable_name, $value, $sender);
+	function assignValue($__ctx,$k,$v)
+	{
+		if ($k == "class_name")$this->__class_name = $v;
+		else if ($k == "key")$this->__key = $v;
+		else if ($k == "name")$this->__name = $v;
+		else if ($k == "bind")$this->__bind = $v;
+		else if ($k == "kind")$this->__kind = $v;
+		else if ($k == "content")$this->__content = $v;
+		else if ($k == "reference")$this->__reference = $v;
+		else if ($k == "value")$this->__value = $v;
+		else if ($k == "layout")$this->__layout = $v;
+		else if ($k == "model")$this->__model = $v;
+		else if ($k == "props")$this->__props = $v;
+		else if ($k == "annotations")$this->__annotations = $v;
+		else if ($k == "children")$this->__children = $v;
+		else parent::assignValue($__ctx,$k,$v);
 	}
-	public function takeValue($variable_name, $default_value = null){
-		if ($variable_name == "class_name") return $this->__class_name;
-		else if ($variable_name == "key") return $this->__key;
-		else if ($variable_name == "name") return $this->__name;
-		else if ($variable_name == "space") return $this->__space;
-		else if ($variable_name == "bind") return $this->__bind;
-		else if ($variable_name == "kind") return $this->__kind;
-		else if ($variable_name == "content") return $this->__content;
-		else if ($variable_name == "controller") return $this->__controller;
-		else if ($variable_name == "reference") return $this->__reference;
-		else if ($variable_name == "model") return $this->__model;
-		else if ($variable_name == "props") return $this->__props;
-		else if ($variable_name == "annotations") return $this->__annotations;
-		else if ($variable_name == "children") return $this->__children;
-		return parent::takeValue($variable_name, $default_value);
+	function takeValue($__ctx,$k,$d=null)
+	{
+		if ($k == "class_name")return $this->__class_name;
+		else if ($k == "key")return $this->__key;
+		else if ($k == "name")return $this->__name;
+		else if ($k == "bind")return $this->__bind;
+		else if ($k == "kind")return $this->__kind;
+		else if ($k == "content")return $this->__content;
+		else if ($k == "reference")return $this->__reference;
+		else if ($k == "value")return $this->__value;
+		else if ($k == "layout")return $this->__layout;
+		else if ($k == "model")return $this->__model;
+		else if ($k == "props")return $this->__props;
+		else if ($k == "annotations")return $this->__annotations;
+		else if ($k == "children")return $this->__children;
+		return parent::takeValue($__ctx,$k,$d);
 	}
-	public static function getFieldsList($names, $flag=0){
-		if (($flag | 3)==3){
-			$names->push("class_name");
-			$names->push("key");
-			$names->push("name");
-			$names->push("space");
-			$names->push("bind");
-			$names->push("kind");
-			$names->push("content");
-			$names->push("controller");
-			$names->push("reference");
-			$names->push("model");
-			$names->push("props");
-			$names->push("annotations");
-			$names->push("children");
+	function getClassName()
+	{
+		return "Runtime.UIStruct";
+	}
+	static function getCurrentNamespace()
+	{
+		return "Runtime";
+	}
+	static function getCurrentClassName()
+	{
+		return "Runtime.UIStruct";
+	}
+	static function getParentClassName()
+	{
+		return "Runtime.CoreStruct";
+	}
+	static function getClassInfo($__ctx)
+	{
+		return new \Runtime\Annotations\IntrospectionInfo($__ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
+			"class_name"=>"Runtime.UIStruct",
+			"name"=>"Runtime.UIStruct",
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+	}
+	static function getFieldsList($__ctx,$f)
+	{
+		$a = [];
+		if (($f|3)==3)
+		{
+			$a[] = "class_name";
+			$a[] = "key";
+			$a[] = "name";
+			$a[] = "bind";
+			$a[] = "kind";
+			$a[] = "content";
+			$a[] = "reference";
+			$a[] = "value";
+			$a[] = "layout";
+			$a[] = "model";
+			$a[] = "props";
+			$a[] = "annotations";
+			$a[] = "children";
 		}
+		return \Runtime\Collection::from($a);
 	}
-	public static function getFieldInfoByName($field_name){
+	static function getFieldInfoByName($__ctx,$field_name)
+	{
 		return null;
 	}
-	public static function getMethodsList($names){
+	static function getMethodsList($__ctx)
+	{
+		$a = [
+		];
+		return \Runtime\Collection::from($a);
 	}
-	public static function getMethodInfoByName($method_name){
+	static function getMethodInfoByName($__ctx,$field_name)
+	{
 		return null;
 	}
-	public function __get($key){ return $this->takeValue($key); }
-	public function __set($key, $value){throw new \Runtime\Exceptions\AssignStructValueError($key);}
 }

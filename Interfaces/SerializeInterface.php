@@ -17,36 +17,23 @@
  *  limitations under the License.
  */
 namespace Runtime\Interfaces;
-use Runtime\CoreObject;
-use Runtime\Map;
-use Runtime\Vector;
-use Runtime\Interfaces\ContextInterface;
-interface SerializeInterface{
-	/**
-	 * Returns classname of the object
-	 * @return string
-	 */
-	function getClassName();
-	/**
-	 * Returns name of variables to serialization
-	 * @return Vector<string>
-	 */
-	function getVariablesNames($names);
+interface SerializeInterface
+{
 	/**
 	 * Assign and clone data from other object
 	 * @param CoreObject obj
 	 */
-	function assignObject($obj);
+	function assignObject($__ctx, $obj);
 	/**
 	 * Set new value instance by variable name
 	 * @param string variable_name
 	 * @param var value
 	 */
-	function assignValue($variable_name, $value);
+	function assignValue($__ctx, $variable_name, $value);
 	/**
 	 * Returns instance of the value by variable name
 	 * @param string variable_name
 	 * @return var
 	 */
-	function takeValue($variable_name, $default_value = null);
+	function takeValue($__ctx, $variable_name, $default_value=null);
 }

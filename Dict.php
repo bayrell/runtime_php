@@ -17,106 +17,69 @@
  *  limitations under the License.
  */
 namespace Runtime;
-use Runtime\rtl;
-use Runtime\Exceptions\KeyNotFound;
-
-class Dict implements \JsonSerializable
+class _Map implements \ArrayAccess, \JsonSerializable
 {
-	
-	
-	protected $_map = null;
-	
-	
-	/**
-	 * Returns map
-	 */
-	public function _getArr()
-	{
-		return $this->_map;
-	}
-	
+	public $_map = [];
 	
 	
 	/**
-	 * Returns new Instance
+	 * From
 	 */
-	public static function create($obj=null)
+	static function from($map)
 	{
 		$class_name = static::class;
-		return new $class_name($obj);
-	}
-	
-	
-	
-	/**
-	 * Returns new Instance
-	 */
-	public static function createNewInstance($obj=null)
-	{
-		$class_name = static::class;
-		return new $class_name($obj);
-	}
-	
-	
-	
-	/**
-	 * Returns copy of the current Dict
-	 */
-	function copy()
-	{
-		return static::createNewInstance($this->_map);
-	}
-	
-	
-	
-	/**
-	 * Convert to dict
-	 */
-	public function toDict()
-	{
-		return new \Runtime\Dict($this);
-	}
-	
-	
-	
-	/**
-	 * Convert to map
-	 */
-	public function toMap()
-	{
-		return new \Runtime\Map($this);
-	}
-	
-	
-	
-	/**
-	 * Correct items
-	 */
-	public function _correctItemsByType($type)
-	{
-		if ($type == "mixed" or $type == "primitive" or $type == "var") return $this;
-		
-		return $this->map(
-			function($key, $value) use ($type)
+		$res = new $class_name(null);
+		if ($map != null)
+		{
+			foreach ($map as $key => $value)
 			{
-				return rtl::correct($value, $type, null);
+				$key = $res->toStr($key);
+				$res->_map[$key] = $value;
 			}
-		);
+		}
+		else if (is_object($map))
+		{
+			$values = get_object_vars($map);
+			foreach ($values as $key => $value)
+			{
+				$key = $res->toStr($key);
+				$res->_map[$key] = $value;
+			}
+		}
+		return $res;	
 	}
 	
+	
+	/**
+	 * JsonSerializable
+	 */
+	public function toStr($value)
+	{
+		return rtl::toStr($value);
+	}
+	
+	
+	/**
+	 * JsonSerializable
+	 */
+	public function jsonSerialize()
+	{
+		return (object) $this->_map;
+	}
 	
 	
 	/**
 	 * Constructor
 	 */
-	public function __construct($map = null)
+	public function __construct($__ctx, $map=null)
 	{
 		$this->_map = [];
-		if ($map instanceof Dict)
+		if ($map == null) {}
+		else if ($map instanceof Dict)
 		{
 			foreach ($map->_map as $key => $value)
 			{
-				$key = rtl::toString($key);
+				$key = $this->toStr($key);
 				$this->_map[$key] = $value;
 			}		
 		}
@@ -124,21 +87,20 @@ class Dict implements \JsonSerializable
 		{
 			foreach ($map as $key => $value)
 			{
-				$key = rtl::toString($key);
+				$key = $this->toStr($key);
 				$this->_map[$key] = $value;
-			}		
+			}
 		}
 		else if (is_object($map))
 		{
 			$values = get_object_vars($map);
 			foreach ($values as $key => $value)
 			{
-				$key = rtl::toString($key);
+				$key = $this->toStr($key);
 				$this->_map[$key] = $value;
 			}
 		}
 	}
-	
 	
 	
 	/**
@@ -150,257 +112,297 @@ class Dict implements \JsonSerializable
 	}
 	
 	
-	
 	/**
-	 * Return true if key exists
-	 * @param T key
-	 * @return bool var
+	 * Get array
 	 */
-	public function contains($key)
+	public function _getArr()
 	{
-		$key = rtl::toString($key);
-		return isset($this->_map[$key]);
+		return $this->_map;
 	}
-	
-	
-	
-	/**
-	 * Return true if key exists
-	 * @param T key
-	 * @return bool var
-	 */
-	public function has($key)
-	{
-		$key = rtl::toString($key);
-		return isset($this->_map[$key]);
-	}
-	
-	
-	
-	/**
-	 * Returns value from position
-	 * @param T key
-	 * @param T default_value
-	 * @return T
-	 */
-	public function get($key, $default_value, $type_value = "mixed", $type_template = "")
-	{
-		$key = rtl::toString($key);
-		$val = isset($this->_map[$key]) ? $this->_map[$key] : $default_value;
-		$val = rtl::convert($val, $type_value, $default_value, $type_template);
-		return $val;
-	}
-	
-	
-	
-	/**
-	 * Returns value from position. Throw exception, if position does not exists
-	 * @param T key - position
-	 * @return T
-	 */
-	public function item($key, $type_value = "mixed", $type_template = "")
-	{
-		$key = rtl::toString($key);
-		if (!array_key_exists($key, $this->_map)){
-			throw new KeyNotFound($key);
-		}
-		return $this->_map[$key];
-	}
-	
-	
-	
-	/**
-	 * Set value size_to position
-	 * @param T pos - position
-	 * @param T value 
-	 * @return self
-	 */
-	public function setIm($key, $value)
-	{
-		$res = $this->copy();
-		$key = rtl::toString($key);
-		$res->_map[$key] = $value;
-		return $res;
-	}
-	
-	
-	
-	/**
-	 * Remove value from position
-	 * @param T key
-	 * @return self
-	 */
-	public function removeIm($key)
-	{
-		$key = rtl::toString($key);
-		if (isset($this->_map[$key]))
-		{
-			$res = $this->copy();
-			unset($res->_map[$key]);
-			return $res;
-		}
-		return $this;
-	}
-	
-	
-	
-	/**
-	 * Returns count items in vector
-	 */
-	public function count()
-	{
-		return count($this->_map);
-	}
-	
-	
-	
-	/**
-	 * Returns vector of the keys
-	 * @return Vector<T>
-	 */
-	public function keys()
-	{
-		$keys = array_keys($this->_map);
-		$res = \Runtime\Collection::create($keys);
-		return $res;
-	}
-	
-	
-	
-	/**
-	 * Returns vector of the values
-	 * @return Vector<T>
-	 */
-	public function values()
-	{
-		$values = array_values($this->_map);
-		$res = \Runtime\Collection::create($values);
-		return $res;
-	}
-	
-	
-	
-	/**
-	 * Call function for each item
-	 * @param func f
-	 */
-	function each($f)
-	{
-		foreach ($this->_map as $key => $value)
-		{
-			$f( $key, $value );
-		}
-		return $this;
-	}
-	
-	
-	
-	/**
-	 * Call function map
-	 * @param func f
-	 * @return Dict
-	 */
-	function map($f)
-	{
-		$res = [];
-		foreach ($this->_map as $key => $value)
-		{
-			$res[$key] = $f( $key, $value );
-		}
-		return static::createNewInstance($res);
-	}
-	
-	
-	
-	/**
-	 * Filter items
-	 * @param func f
-	 * @return Dict
-	 */
-	function filter($f)
-	{
-		$arr2 = static::createNewInstance();
-		$arr2->_map = [];
-		foreach ($this->_map as $key => $value)
-		{
-			if ($f($key, $value))
-			{
-				$arr2->_map[$key] = $value;
-			}
-		}
-		return $arr2;
-	}
-	
-	
-	
-	/**
-	 * Reduce
-	 * @param func f
-	 * @param mixed init_value
-	 * @return init_value
-	 */
-	function reduce($f, $init_value)
-	{
-		$res = $init_value;
-		foreach ($this->_map as $key => $value)
-		{
-			$res = $f($res, $key, $value );
-		}
-		return $res;
-	}
-	
-	
-	
-	/**
-	 * Add values from other map
-	 * @param Dict<T, T> map
-	 * @return self
-	 */
-	function concat($map)
-	{
-		if ($map != null)
-		{
-			$res = $this->copy();
-			$map->each(
-				function ($key) use ($map, $res)
-				{
-					$res->_map[$key] = $map->item($key);
-				}
-			);
-			return $res;
-		}
-		return $this;
-	}
-	
 	
 	
 	/**
 	 * Get and set methods
 	 */
-	function __set($name, $value){
-		return $this->set($name, $value);
-	}
-	function __get($name){
-		return $this->get($name, null);
-	}
-	function __isset($name){
-		return $this->has($name);
-	}
-	function __unset($name){
-		return $this->remove($name);
-	}
+	function __isset($k){return $this->has($k);}
+	function __get($k){return $this->item($k);}
+	function __set($k,$v){throw new \Runtime\Exceptions\AssignStructValueError($k);}
+	function __unset($k){throw new \Runtime\Exceptions\AssignStructValueError($k);}
+	public function offsetExists($k){return $this->has($k);}
+	public function offsetGet($k){return $this->item($k);}
+	public function offsetSet($k,$v){throw new \Runtime\Exceptions\AssignStructValueError($k);}
+	public function offsetUnset($k){throw new \Runtime\Exceptions\AssignStructValueError($k);}
 	
-	
-	
-	/**
-	 * JsonSerializable
-	 */
-	public function jsonSerialize(){
-		return (object) $this->_map;
-	}
-	
-	
-	public function getClassName(){return "Runtime.Dict";}
-	public static function getCurrentClassName(){return "Runtime.Dict";}
+	/* Class name */
+	public function getClassName(){return "Runtime._Map";}
+	public static function getCurrentClassName(){return "Runtime._Map";}
 	public static function getParentClassName(){return "";}
+}
+class Dict extends \Runtime\_Map
+{
+	/**
+	 * Returns new Instance
+	 * @return Object
+	 */
+	static function Instance($__ctx)
+	{
+		return new \Runtime\Dict($__ctx);
+	}
+	/**
+	 * Returns new Instance
+	 * @return Object
+	 */
+	static function create($__ctx, $obj)
+	{
+		$class_name = static::class;
+		return new $class_name($obj);
+	}
+	/**
+	 * Returns copy of Dict
+	 * @param int pos - position
+	 */
+	function copy($__ctx)
+	{
+		$new_obj = static::Instance($__ctx);
+		$new_obj->_map = $this->_map;
+		return $new_obj;
+	}
+	/**
+	 * Convert to dict
+	 */
+	function toDict($__ctx)
+	{
+		return new \Runtime\Dict($__ctx, $this);
+	}
+	/**
+	 * Convert to dict
+	 */
+	function toMap($__ctx)
+	{
+		return new \Runtime\Map($__ctx, $this);
+	}
+	/**
+	 * Return true if key exists
+	 * @param string key
+	 * @return bool var
+	 */
+	function contains($__ctx, $key)
+	{
+		$key = $this->toStr($key);
+		return isset($this->_map[$key]);
+	}
+	/**
+	 * Return true if key exists
+	 * @param string key
+	 * @return bool var
+	 */
+	function has($__ctx, $key)
+	{
+		return $this->contains($__ctx, $key);
+	}
+	/**
+	 * Returns value from position
+	 * @param string key
+	 * @param T default_value
+	 * @return T
+	 */
+	function get($__ctx, $key, $default_value)
+	{
+		$key = $this->toStr($key);
+		$val = isset($this->_map[$key]) ? $this->_map[$key] : $default_value;
+		return $val;
+	}
+	/**
+	 * Returns value from position. Throw exception, if position does not exists
+	 * @param string key - position
+	 * @return T
+	 */
+	function item($__ctx, $key)
+	{
+		$key = $this->toStr($key);
+		if (!array_key_exists($key, $this->_map))
+		{
+			throw new KeyNotFound($key);
+		}
+		return $this->_map[$key];
+	}
+	/**
+	 * Set value size_to position
+	 * @param string key - position
+	 * @param T value 
+	 * @return self
+	 */
+	function setIm($__ctx, $key, $value)
+	{
+		$res = $this->copy($__ctx);
+		$key = $this->toStr($key);
+		$res->_map[$key] = $value;
+		return $res;
+	}
+	/**
+	 * Remove value from position
+	 * @param string key
+	 * @return self
+	 */
+	function removeIm($__ctx, $key)
+	{
+		$key = $this->toStr($key);
+		if (isset($this->_map[$key]))
+		{
+			$res = $this->copy($__ctx);
+			unset($res->_map[$key]);
+			return $res;
+		}
+		return $this;
+	}
+	/**
+	 * Returns vector of the keys
+	 * @return Collection<string>
+	 */
+	function keys($__ctx)
+	{
+		$keys = array_keys($this->_map);
+		$res = \Runtime\Collection::from($keys);
+		return $res;
+	}
+	/**
+	 * Returns vector of the values
+	 * @return Collection<T>
+	 */
+	function values($__ctx)
+	{
+		$values = array_values($this->_map);
+		$res = \Runtime\Collection::from($values);
+		return $res;
+	}
+	/**
+	 * Call function map
+	 * @param fn f
+	 * @return Dict
+	 */
+	function map($__ctx, $f)
+	{
+		$map2 = static::Instance($__ctx);
+		foreach ($this->_map as $key => $value)
+		{
+			$new_val = $f($__ctx, $value, $key);
+			$map2->_map[$key] = $new_val;
+		}
+		return $map2;
+	}
+	/**
+	 * Filter items
+	 * @param fn f
+	 * @return Collection
+	 */
+	function filter($__ctx, $f)
+	{
+		$map2 = static::Instance($__ctx);
+		foreach ($this->_map as $key => $value)
+		{
+			$flag = $f($__ctx, $value, $key);
+			if ($flag) $map2->_map[$key] = $value;
+		}
+		return $map2;
+	}
+	/**
+	 * Call function for each item
+	 * @param fn f
+	 */
+	function each($__ctx, $f)
+	{
+		foreach ($this->_map as $key => $value)
+		{
+			$f($__ctx, $value, $key);
+		}
+	}
+	/**
+	 * Transition Dict to Collection
+	 * @param fn f
+	 * @return Collection
+	 */
+	function transition($__ctx, $f)
+	{
+		$arr = new \Runtime\Collection($__ctx);
+		foreach ($this->_map as $key => $value)
+		{
+			$arr->_arr[] = $f($__ctx, $value, $key);
+		}
+		return $arr;
+	}
+	/**
+	 * 	
+	 * @param fn f
+	 * @param var init_value
+	 * @return init_value
+	 */
+	function reduce($__ctx, $f, $init_value)
+	{
+		foreach ($this->_map as $key => $value)
+		{
+			$init_value = $f($__ctx, $init_value, $value, $key);
+		}
+		return $init_value;
+	}
+	/**
+	 * Add values from other map
+	 * @param Dict<T> map
+	 * @return self
+	 */
+	function concat($__ctx, $map=null)
+	{
+		if ($map == null) return $this;
+		$res = $this->copy($__ctx);
+		foreach ($this->_map as $key => $value)
+		{
+			$res->_map[$key] = $value;
+		}
+		return $res;
+	}
+	/* ======================= Class Init Functions ======================= */
+	function getClassName()
+	{
+		return "Runtime.Dict";
+	}
+	static function getCurrentNamespace()
+	{
+		return "Runtime";
+	}
+	static function getCurrentClassName()
+	{
+		return "Runtime.Dict";
+	}
+	static function getParentClassName()
+	{
+		return "Runtime._Map";
+	}
+	static function getClassInfo($__ctx)
+	{
+		return new \Runtime\Annotations\IntrospectionInfo($__ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
+			"class_name"=>"Runtime.Dict",
+			"name"=>"Runtime.Dict",
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+	}
+	static function getFieldsList($__ctx,$f)
+	{
+		$a = [];
+		return \Runtime\Collection::from($a);
+	}
+	static function getFieldInfoByName($__ctx,$field_name)
+	{
+		return null;
+	}
+	static function getMethodsList($__ctx)
+	{
+		$a = [
+		];
+		return \Runtime\Collection::from($a);
+	}
+	static function getMethodInfoByName($__ctx,$field_name)
+	{
+		return null;
+	}
 }

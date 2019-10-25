@@ -17,9 +17,10 @@
  *  limitations under the License.
  */
 namespace Runtime\Interfaces;
-interface StringInterface{
+interface StringInterface
+{
 	/**
 	 * Returns string
 	 */
-	function toString();
+	function toString($__ctx);
 }

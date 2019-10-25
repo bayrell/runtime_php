@@ -17,23 +17,17 @@
  *  limitations under the License.
  */
 namespace Runtime;
-use Runtime\rtl;
-use Runtime\Map;
-use Runtime\Vector;
-class CoreObject{
-	protected $_is_destroyed;
-	/** 
-	 * Constructor
-	 */
-	function __construct(){
-		
-		$this->_init();
+class CoreObject
+{
+	function __construct($__ctx)
+	{
+		$this->_init($__ctx);
 	}
-	
-	protected function _init(){}
-	
-	function __destruct() {
-		/*this._is_destroyed = true;*/
+	/**
+	 * Init function
+	 */
+	function _init($__ctx)
+	{
 	}
 	/**
 	 * Returns instance of the value by variable name
@@ -41,8 +35,9 @@ class CoreObject{
 	 * @param string default_value
 	 * @return var
 	 */
-	function takeValue($variable_name, $default_value = null){
-		return $this->takeVirtualValue($variable_name, $default_value);
+	function takeValue($__ctx, $variable_name, $default_value=null)
+	{
+		return $this->takeVirtualValue($__ctx, $variable_name, $default_value);
 	}
 	/**
 	 * Returns virtual values
@@ -50,179 +45,160 @@ class CoreObject{
 	 * @param string default_value
 	 * @return var
 	 */
-	function takeVirtualValue($variable_name, $default_value = null){
+	function takeVirtualValue($__ctx, $variable_name, $default_value=null)
+	{
 		return $default_value;
+	}
+	/**
+	 * Set new value
+	 * @param string variable_name
+	 * @param var value
+	 */
+	function assignValue($__ctx, $variable_name, $value)
+	{
+		$this->assignVirtualValue($__ctx, $variable_name, $value);
+	}
+	/**
+	 * Assign virtual value
+	 * @param string variable_name
+	 * @param var value
+	 */
+	function assignVirtualValue($__ctx, $variable_name, $value)
+	{
 	}
 	/**
 	 * Assign and clone data from other object
 	 * @param CoreObject obj
 	 */
-	function assignObject($obj){
-	}
-	/**
-	 * Set new value instance by variable name
-	 * @param string variable_name
-	 * @param var value
-	 */
-	function assignValue($variable_name, $value){
+	function assignObject($__ctx, $obj)
+	{
 	}
 	/**
 	 * Set new values instance by Map
-	 * @param Map<mixed> map
+	 * @param Map<var> map
 	 * @return CoreObject
 	 */
-	function assignMap($values = null){
-		if ($values == null){
-			return ;
+	function assignDict($__ctx, $values=null)
+	{
+		if ($values == null)
+		{
+			return null;
 		}
-		$names = new Vector();
-		$this->getVariablesNames($names, 2);
-		$names->each(function ($name) use (&$values){
-			$this->assignValue($name, $values->get($name, null));
-		});
+		$f = \Runtime\rtl::method("Runtime.RuntimeUtils", "getVariablesNames");
+		$names = $f($__ctx, $this->getClassName($__ctx), 2);
+		for ($i = 0;$i < $names->count($__ctx);$i++)
+		{
+			$name = $names->item($__ctx, $i);
+			$this->assignValue($__ctx, $name, $values->get($__ctx, $name, null));
+		}
 		return $this;
 	}
 	/**
 	 * Set new values instance by Map
-	 * @param Map<mixed> map
+	 * @param Dict<var> map
 	 * @return CoreObject
 	 */
-	function setMap($values = null){
-		if ($values == null){
-			return ;
+	function setDict($__ctx, $values=null)
+	{
+		if ($values == null)
+		{
+			return null;
 		}
-		$values->each(function ($key, $value){
-			$this->assignValue($key, $value);
-		});
+		$values->each($__ctx, \Runtime\rtl::method($this, "assignValue"));
 		return $this;
 	}
 	/**
 	 * Dump serializable object to Map
-	 * @return Map<mixed>
+	 * @return Map<var>
 	 */
-	function takeMap($flag = 2){
-		$values = new Map();
-		$names = new Vector();
-		$this->getVariablesNames($names, $flag);
-		$names->each(function ($name) use (&$values){
-			$values->set($name, $this->takeValue($name, null));
-		});
-		return $values;
-	}
-	/**
-	 * Call static method of the current class
-	 * @param string method_name
-	 * @param Vector args
-	 * @return mixed
-	 */
-	function callStaticMethod($method_name, $args = null){
-		return rtl::callStaticMethod($this->getClassName(), $method_name, $args);
-	}
-	/**
-	 * Returns field info by field_name
-	 * @param string field_name
-	 * @return IntrospectionInfo
-	 */
-	static function getFieldInfoByName($field_name){
-	}
-	/**
-	 * Returns virtual field info by field_name
-	 * @param string field_name
-	 * @return IntrospectionInfo
-	 */
-	static function getVirtualFieldInfo($field_name){
-		return null;
-	}
-	/**
-	 * Returns public fields list
-	 * @param Vector<string> names
-	 */
-	static function getFieldsList($names, $flag = 0){
-	}
-	/**
-	 * Returns public virtual fields names
-	 * @param Vector<string> names
-	 */
-	static function getVirtualFieldsList($names, $flag = 0){
-	}
-	/**
-	 * Returns info of the public method by name
-	 * @param string method_name
-	 * @return IntrospectionInfo
-	 */
-	static function getMethodInfoByName($method_name){
-		return null;
-	}
-	/**
-	 * Returns list of the public methods
-	 * @param Vector<string> methods
-	 */
-	static function getMethodsList($methods){
-	}
-	/**
-	 * Returns names of variables to serialization
-	 * @param Vector<string>
-	 */
-	function getVariablesNames($names, $flag = 0){
-		rtl::callStaticMethod("Runtime.RuntimeUtils", "getVariablesNames", (new Vector())->push($this->getClassName())->push($names)->push($flag));
-	}
-	/**
-	 * Returns info of the public variable by name
-	 * @param string variable_name
-	 * @return IntrospectionInfo
-	 */
-	function getFieldInfo($variable_name){
-		$classes = rtl::callStaticMethod("Runtime.RuntimeUtils", "getParents", (new Vector())->push($this->getClassName()));
-		for ($i = 0; $i < $classes->count(); $i++){
-			$class_name = $classes->item($i);
-			$info = rtl::callStaticMethod($class_name, "getFieldInfoByName", (new Vector())->push($variable_name));
-			if ($info != null && $item->kind == $IntrospectionInfo::ITEM_FIELD){
-				return $info;
-			}
-			try{
-				$info = rtl::callStaticMethod($class_name, "getVirtualFieldInfo", (new Vector())->push($variable_name));
-				if ($info != null && $item->kind == $IntrospectionInfo::ITEM_FIELD){
-					return $info;
-				}
-			}catch(\Exception $_the_exception){
-				if ($_the_exception instanceof \Exception){
-					$e = $_the_exception;
-				}
-				else { throw $_the_exception; }
+	function takeDict($__ctx, $fields=null, $flag=2)
+	{
+		$values = new \Runtime\Map($__ctx);
+		if ($fields == null)
+		{
+			$f = \Runtime\rtl::method("Runtime.RuntimeUtils", "getVariablesNames");
+			$names = $f($__ctx, $this->getClassName($__ctx), $flag);
+			for ($i = 0;$i < $names->count($__ctx);$i++)
+			{
+				$name = $names->item($__ctx, $i);
+				$values->set($__ctx, $name, $this->takeValue($__ctx, $name, null));
 			}
 		}
-		return null;
-	}
-	/**
-	 * Returns names of methods
-	 * @param Vector<string>
-	 */
-	function getMethodsNames($names){
-		$classes = rtl::callStaticMethod("Runtime.RuntimeUtils", "getParents", (new Vector())->push($this->getClassName()));
-		for ($i = 0; $i < $classes->count(); $i++){
-			$class_name = $classes->item($i);
-			rtl::callStaticMethod($class_name, "getMethodsList", (new Vector())->push($names));
-		}
-	}
-	/**
-	 * Returns info of the public method by name
-	 * @param string method_name
-	 * @return IntrospectionInfo
-	 */
-	function getMethodInfo($method_name){
-		$classes = rtl::callStaticMethod("Runtime.RuntimeUtils", "getParents", (new Vector())->push($this->getClassName()));
-		for ($i = 0; $i < $classes->count(); $i++){
-			$class_name = $classes->item($i);
-			$info = rtl::callStaticMethod($class_name, "getMethodInfoByName", (new Vector())->push($method_name));
-			if ($info != null && $item->kind == $IntrospectionInfo::ITEM_METHOD){
-				return $info;
+		else
+		{
+			for ($i = 0;$i < $fields->count($__ctx);$i++)
+			{
+				$name = $fields->item($__ctx, $i);
+				$values->set($__ctx, $name, $this->takeValue($__ctx, $name, null));
 			}
 		}
+		return $values->toDict($__ctx);
+	}
+	function staticMethod($method_name)
+	{
+		return \Runtime\rtl::method(null, $this->getClassName(), $method_name);
+	}
+	function callStatic($__ctx, $method_name)
+	{
+		$args = func_get_args();
+		$class_name = static::class;
+		$method_name = array_shift($args);
+		return call_user_func_array([$class_name, $method_name], $args);
+		return null;
+	}
+	function callStaticParent($__ctx, $method_name)
+	{
+		$args = func_get_args();
+		$class_name = static::class; 
+		$class_name = $class_name::getParentClassName();
+		$method_name = array_shift($args);
+		return call_user_func_array([$class_name, $method_name], $args);
 		return null;
 	}
 	/* ======================= Class Init Functions ======================= */
-	public function getClassName(){return "Runtime.CoreObject";}
-	public static function getCurrentNamespace(){return "Runtime";}
-	public static function getCurrentClassName(){return "Runtime.CoreObject";}
-	public static function getParentClassName(){return "";}
+	function getClassName()
+	{
+		return "Runtime.CoreObject";
+	}
+	static function getCurrentNamespace()
+	{
+		return "Runtime";
+	}
+	static function getCurrentClassName()
+	{
+		return "Runtime.CoreObject";
+	}
+	static function getParentClassName()
+	{
+		return "";
+	}
+	static function getClassInfo($__ctx)
+	{
+		return new \Runtime\Annotations\IntrospectionInfo($__ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
+			"class_name"=>"Runtime.CoreObject",
+			"name"=>"Runtime.CoreObject",
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+	}
+	static function getFieldsList($__ctx,$f)
+	{
+		$a = [];
+		return \Runtime\Collection::from($a);
+	}
+	static function getFieldInfoByName($__ctx,$field_name)
+	{
+		return null;
+	}
+	static function getMethodsList($__ctx)
+	{
+		$a = [
+		];
+		return \Runtime\Collection::from($a);
+	}
+	static function getMethodInfoByName($__ctx,$field_name)
+	{
+		return null;
+	}
 }

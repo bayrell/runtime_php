@@ -17,59 +17,49 @@
  *  limitations under the License.
  */
 namespace Runtime;
-class re
+class Message extends \Runtime\CoreStruct
 {
-	/**
-	 * Search regular expression
-	 * @param string r regular expression
-	 * @param string s string
-	 * @return bool
-	 */
-	static function match($__ctx, $r, $s)
+	public $__is_external;
+	public $__session;
+	static function isExternal($__ctx, $s)
 	{
-		$matches = [];
-		if (preg_match("/" . $r . "/", $s, $matches)){
-			return $matches != null;
-		}
-		
-		return false;
+		return $s->is_external == true;
 	}
-	/**
-	 * Search regular expression
-	 * @param string r regular expression
-	 * @param string s string
-	 * @return Vector result
-	 */
-	static function matchAll($__ctx, $r, $s)
+	static function isInternal($__ctx, $s)
 	{
-		$matches = [];
-		if (preg_match_all("/" . $r . "/i", $s, $matches)){
-			$res = new Vector();
-			array_shift($matches);
-			foreach ($matches as $arr){
-				$res->push( (new Vector())->_assignArr($arr) );
-			}
-			return $res;
-		}
-		
-		return null;
-		return null;
-	}
-	/**
-	 * Replace with regular expression
-	 * @param string r - regular expression
-	 * @param string replace - new value
-	 * @param string s - replaceable string
-	 * @return string
-	 */
-	static function replace($__ctx, $r, $replace, $s)
-	{
-		return preg_replace("/" . $r . "/", $replace, $s);
+		return $s->is_external == false;
 	}
 	/* ======================= Class Init Functions ======================= */
+	function _init($__ctx)
+	{
+		parent::_init($__ctx);
+		$this->__is_external = false;
+		$this->__session = null;
+	}
+	function assignObject($__ctx,$o)
+	{
+		if ($o instanceof \Runtime\Message)
+		{
+			$this->__is_external = $o->__is_external;
+			$this->__session = $o->__session;
+		}
+		parent::assignObject($__ctx,$o);
+	}
+	function assignValue($__ctx,$k,$v)
+	{
+		if ($k == "is_external")$this->__is_external = $v;
+		else if ($k == "session")$this->__session = $v;
+		else parent::assignValue($__ctx,$k,$v);
+	}
+	function takeValue($__ctx,$k,$d=null)
+	{
+		if ($k == "is_external")return $this->__is_external;
+		else if ($k == "session")return $this->__session;
+		return parent::takeValue($__ctx,$k,$d);
+	}
 	function getClassName()
 	{
-		return "Runtime.re";
+		return "Runtime.Message";
 	}
 	static function getCurrentNamespace()
 	{
@@ -77,18 +67,18 @@ class re
 	}
 	static function getCurrentClassName()
 	{
-		return "Runtime.re";
+		return "Runtime.Message";
 	}
 	static function getParentClassName()
 	{
-		return "";
+		return "Runtime.CoreStruct";
 	}
 	static function getClassInfo($__ctx)
 	{
 		return new \Runtime\Annotations\IntrospectionInfo($__ctx, [
 			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
-			"class_name"=>"Runtime.re",
-			"name"=>"Runtime.re",
+			"class_name"=>"Runtime.Message",
+			"name"=>"Runtime.Message",
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
@@ -96,6 +86,11 @@ class re
 	static function getFieldsList($__ctx,$f)
 	{
 		$a = [];
+		if (($f|3)==3)
+		{
+			$a[] = "is_external";
+			$a[] = "session";
+		}
 		return \Runtime\Collection::from($a);
 	}
 	static function getFieldInfoByName($__ctx,$field_name)

@@ -17,59 +17,93 @@
  *  limitations under the License.
  */
 namespace Runtime;
-use Runtime\rtl;
-use Runtime\Vector;
-use Runtime\Exceptions\KeyNotFound;
-
-class Map extends Dict
+class Map extends \Runtime\Dict
 {
-	
-	
-	protected $_map = null;
-	
-		
-	
+	/**
+	 * Returns new Instance
+	 * @return Object
+	 */
+	static function Instance($__ctx)
+	{
+		return new \Runtime\Map($__ctx);
+	}
 	/**
 	 * Set value size_to position
-	 * @param T pos - position
+	 * @param string key - position
 	 * @param T value 
 	 * @return self
 	 */
-	public function set($key, $value)
+	function set($__ctx, $key, $value)
 	{
-		$key = rtl::toString($key);
+		$key = rtl::toStr($key);
 		$this->_map[$key] = $value;
 		return $this;
 	}
-	
-	
-	
 	/**
 	 * Remove value from position
-	 * @param T key
+	 * @param string key
 	 * @return self
 	 */
-	public function remove($key)
+	function remove($__ctx, $key)
 	{
-		$key = rtl::toString($key);
+		$key = rtl::toStr($key);
 		if (isset($this->_map[$key]))
 			unset($this->_map[$key]);
 		return $this;
 	}
-	
-	
-	
 	/**
 	 * Clear all values from vector
 	 * @return self
 	 */
-	public function clear(){
+	function clear($__ctx)
+	{
 		$this->_map = [];
 		return $this;
 	}
-	
-	
-	function getClassName(){return "Runtime.Map";}
-	public static function getCurrentClassName(){return "Runtime.Map";}
-	public static function getParentClassName(){return "Runtime.Dict";}
+	/* ======================= Class Init Functions ======================= */
+	function getClassName()
+	{
+		return "Runtime.Map";
+	}
+	static function getCurrentNamespace()
+	{
+		return "Runtime";
+	}
+	static function getCurrentClassName()
+	{
+		return "Runtime.Map";
+	}
+	static function getParentClassName()
+	{
+		return "Runtime.Dict";
+	}
+	static function getClassInfo($__ctx)
+	{
+		return new \Runtime\Annotations\IntrospectionInfo($__ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
+			"class_name"=>"Runtime.Map",
+			"name"=>"Runtime.Map",
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+	}
+	static function getFieldsList($__ctx,$f)
+	{
+		$a = [];
+		return \Runtime\Collection::from($a);
+	}
+	static function getFieldInfoByName($__ctx,$field_name)
+	{
+		return null;
+	}
+	static function getMethodsList($__ctx)
+	{
+		$a = [
+		];
+		return \Runtime\Collection::from($a);
+	}
+	static function getMethodInfoByName($__ctx,$field_name)
+	{
+		return null;
+	}
 }

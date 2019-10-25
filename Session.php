@@ -2,7 +2,7 @@
 /*!
  *  Bayrell Runtime Library
  *
- *  (c) Copyright 2016-2019 "Ildar Bikmamatov" <support@bayrell.org>
+ *  (c) Copyright 2018-2019 "Ildar Bikmamatov" <support@bayrell.org>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,59 +17,53 @@
  *  limitations under the License.
  */
 namespace Runtime;
-class re
+class Session extends \Runtime\CoreProvider
 {
-	/**
-	 * Search regular expression
-	 * @param string r regular expression
-	 * @param string s string
-	 * @return bool
-	 */
-	static function match($__ctx, $r, $s)
+	public $__user_id;
+	public $__session_key;
+	static function isApp($__ctx, $s)
 	{
-		$matches = [];
-		if (preg_match("/" . $r . "/", $s, $matches)){
-			return $matches != null;
-		}
-		
-		return false;
+		return $s->user_id < 0;
 	}
-	/**
-	 * Search regular expression
-	 * @param string r regular expression
-	 * @param string s string
-	 * @return Vector result
-	 */
-	static function matchAll($__ctx, $r, $s)
+	static function isUser($__ctx, $s)
 	{
-		$matches = [];
-		if (preg_match_all("/" . $r . "/i", $s, $matches)){
-			$res = new Vector();
-			array_shift($matches);
-			foreach ($matches as $arr){
-				$res->push( (new Vector())->_assignArr($arr) );
-			}
-			return $res;
-		}
-		
-		return null;
-		return null;
+		return $s->user_id > 0;
 	}
-	/**
-	 * Replace with regular expression
-	 * @param string r - regular expression
-	 * @param string replace - new value
-	 * @param string s - replaceable string
-	 * @return string
-	 */
-	static function replace($__ctx, $r, $replace, $s)
+	static function isValid($__ctx, $s)
 	{
-		return preg_replace("/" . $r . "/", $replace, $s);
+		return $s->user_id != 0 && $s->session_key != 0;
 	}
 	/* ======================= Class Init Functions ======================= */
+	function _init($__ctx)
+	{
+		parent::_init($__ctx);
+		$this->__user_id = 0;
+		$this->__session_key = "";
+	}
+	function assignObject($__ctx,$o)
+	{
+		if ($o instanceof \Runtime\Session)
+		{
+			$this->__user_id = $o->__user_id;
+			$this->__session_key = $o->__session_key;
+		}
+		parent::assignObject($__ctx,$o);
+	}
+	function assignValue($__ctx,$k,$v)
+	{
+		if ($k == "user_id")$this->__user_id = $v;
+		else if ($k == "session_key")$this->__session_key = $v;
+		else parent::assignValue($__ctx,$k,$v);
+	}
+	function takeValue($__ctx,$k,$d=null)
+	{
+		if ($k == "user_id")return $this->__user_id;
+		else if ($k == "session_key")return $this->__session_key;
+		return parent::takeValue($__ctx,$k,$d);
+	}
 	function getClassName()
 	{
-		return "Runtime.re";
+		return "Runtime.Session";
 	}
 	static function getCurrentNamespace()
 	{
@@ -77,18 +71,18 @@ class re
 	}
 	static function getCurrentClassName()
 	{
-		return "Runtime.re";
+		return "Runtime.Session";
 	}
 	static function getParentClassName()
 	{
-		return "";
+		return "Runtime.CoreProvider";
 	}
 	static function getClassInfo($__ctx)
 	{
 		return new \Runtime\Annotations\IntrospectionInfo($__ctx, [
 			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
-			"class_name"=>"Runtime.re",
-			"name"=>"Runtime.re",
+			"class_name"=>"Runtime.Session",
+			"name"=>"Runtime.Session",
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
@@ -96,6 +90,11 @@ class re
 	static function getFieldsList($__ctx,$f)
 	{
 		$a = [];
+		if (($f|3)==3)
+		{
+			$a[] = "user_id";
+			$a[] = "session_key";
+		}
 		return \Runtime\Collection::from($a);
 	}
 	static function getFieldInfoByName($__ctx,$field_name)

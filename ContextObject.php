@@ -17,20 +17,25 @@
  *  limitations under the License.
  */
 namespace Runtime;
-use Runtime\rtl;
-use Runtime\CoreObject;
-use Runtime\RuntimeUtils;
-use Runtime\Interfaces\ContextInterface;
-class ContextObject extends CoreObject{
-	protected $_context;
+
+/**
+ * Deprecated
+ */class ContextObject extends \Runtime\CoreObject
+{
+	public $_context;
+	function __construct($__ctx, $context)
+	{
+		parent::__construct($__ctx);
+		$this->_context = $context;
+	}
 	/**
-	 * Returns context provider
+	 * Returns context
 	 *
-	 * @params string provider_name
-	 * @return ContextObject
+	 * @return ContextInterface 
 	 */
-	function createProvider($provider_name){
-		return $this->_context->createProvider($provider_name);
+	function context($__ctx)
+	{
+		return $this->_context;
 	}
 	/**
 	 * Translate message
@@ -39,43 +44,59 @@ class ContextObject extends CoreObject{
 	 * @params string locale - Different locale. Default "".
 	 * @return string - translated string
 	 */
-	function translate($message, $params = null, $locale = ""){
-		return $this->_context->translate($message, $params, $locale);
-	}
-	/**
-	 * Get context
-	 *
-	 * @return ContextInterface 
-	 */
-	function context(){
-		return $this->_context;
-	}
-	/** 
-	 * Constructor
-	 */
-	function __construct($context = null){
-		parent::__construct();
-		$this->_context = $context;
-		if (!rtl::exists($this->_context)){
-			$this->_context = RuntimeUtils::getContext();
-		}
+	function translate($__ctx, $message, $params=null, $locale="")
+	{
+		return $this->_context->translate($__ctx, $message, $params, $locale);
 	}
 	/* ======================= Class Init Functions ======================= */
-	public function getClassName(){return "Runtime.ContextObject";}
-	public static function getCurrentNamespace(){return "Runtime";}
-	public static function getCurrentClassName(){return "Runtime.ContextObject";}
-	public static function getParentClassName(){return "Runtime.CoreObject";}
-	protected function _init(){
-		parent::_init();
+	function _init($__ctx)
+	{
+		parent::_init($__ctx);
+		$this->_context = null;
 	}
-	public static function getFieldsList($names, $flag=0){
+	function getClassName()
+	{
+		return "Runtime.ContextObject";
 	}
-	public static function getFieldInfoByName($field_name){
+	static function getCurrentNamespace()
+	{
+		return "Runtime";
+	}
+	static function getCurrentClassName()
+	{
+		return "Runtime.ContextObject";
+	}
+	static function getParentClassName()
+	{
+		return "Runtime.CoreObject";
+	}
+	static function getClassInfo($__ctx)
+	{
+		return new \Runtime\Annotations\IntrospectionInfo($__ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
+			"class_name"=>"Runtime.ContextObject",
+			"name"=>"Runtime.ContextObject",
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+	}
+	static function getFieldsList($__ctx,$f)
+	{
+		$a = [];
+		return \Runtime\Collection::from($a);
+	}
+	static function getFieldInfoByName($__ctx,$field_name)
+	{
 		return null;
 	}
-	public static function getMethodsList($names){
+	static function getMethodsList($__ctx)
+	{
+		$a = [
+		];
+		return \Runtime\Collection::from($a);
 	}
-	public static function getMethodInfoByName($method_name){
+	static function getMethodInfoByName($__ctx,$field_name)
+	{
 		return null;
 	}
 }

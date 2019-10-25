@@ -17,48 +17,25 @@
  *  limitations under the License.
  */
 namespace Runtime\Interfaces;
-use Runtime\Map;
-use Runtime\Vector;
-use Runtime\Interfaces\ContextInterface;
-interface ModuleDescriptionInterface{
+interface ModuleDescriptionInterface
+{
 	/**
 	 * Returns module name
 	 * @return string
 	 */
-	static function getModuleName();
+	static function getModuleName($__ctx);
 	/**
 	 * Returns module name
 	 * @return string
 	 */
-	static function getModuleVersion();
+	static function getModuleVersion($__ctx);
 	/**
 	 * Returns required modules
 	 * @return Map<string>
 	 */
-	static function requiredModules();
-	/**
-	 * Returns module files load order
-	 * @return Collection<string>
-	 */
-	static function getModuleFiles();
+	static function requiredModules($__ctx);
 	/**
 	 * Returns enities
 	 */
-	static function entities();
-	/**
-	 * Called then module registed in context
-	 * @param ContextInterface context
-	 */
-	static function onRegister($context);
-	/**
-	 * Called then context read config
-	 * @param ContextInterface context
-	 * @param Map<mixed> config
-	 */
-	static function onReadConfig($context, $config);
-	/**
-	 * Init context
-	 * @param ContextInterface context
-	 */
-	static function onInitContext($context);
+	static function entities($__ctx);
 }

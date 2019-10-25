@@ -17,8 +17,8 @@
  *  limitations under the License.
  */
 namespace Runtime;
-use Runtime\Interfaces\StringInterface;
-class PathInfo implements StringInterface{
+class PathInfo implements \Runtime\Interfaces\StringInterface
+{
 	public $filepath;
 	public $dirname;
 	public $basename;
@@ -27,24 +27,62 @@ class PathInfo implements StringInterface{
 	/**
 	 * Returns string
 	 */
-	function toString(){
+	function toString($__ctx)
+	{
 		return $this->filepath;
 	}
 	/* ======================= Class Init Functions ======================= */
-	public function getClassName(){return "Runtime.PathInfo";}
-	public static function getCurrentNamespace(){return "Runtime";}
-	public static function getCurrentClassName(){return "Runtime.PathInfo";}
-	public static function getParentClassName(){return "";}
-	protected function _init(){
+	function _init($__ctx)
+	{
+		$this->filepath = "";
+		$this->dirname = "";
+		$this->basename = "";
+		$this->extension = "";
+		$this->filename = "";
 	}
-	public static function getFieldsList($names, $flag=0){
+	function getClassName()
+	{
+		return "Runtime.PathInfo";
 	}
-	public static function getFieldInfoByName($field_name){
+	static function getCurrentNamespace()
+	{
+		return "Runtime";
+	}
+	static function getCurrentClassName()
+	{
+		return "Runtime.PathInfo";
+	}
+	static function getParentClassName()
+	{
+		return "";
+	}
+	static function getClassInfo($__ctx)
+	{
+		return new \Runtime\Annotations\IntrospectionInfo($__ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
+			"class_name"=>"Runtime.PathInfo",
+			"name"=>"Runtime.PathInfo",
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+	}
+	static function getFieldsList($__ctx,$f)
+	{
+		$a = [];
+		return \Runtime\Collection::from($a);
+	}
+	static function getFieldInfoByName($__ctx,$field_name)
+	{
 		return null;
 	}
-	public static function getMethodsList($names){
+	static function getMethodsList($__ctx)
+	{
+		$a = [
+		];
+		return \Runtime\Collection::from($a);
 	}
-	public static function getMethodInfoByName($method_name){
+	static function getMethodInfoByName($__ctx,$field_name)
+	{
 		return null;
 	}
 }

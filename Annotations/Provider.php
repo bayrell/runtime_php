@@ -16,79 +16,47 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-namespace Runtime;
-class re
+namespace Runtime\Annotations;
+class Provider extends \Runtime\Annotations\Entity
 {
-	/**
-	 * Search regular expression
-	 * @param string r regular expression
-	 * @param string s string
-	 * @return bool
-	 */
-	static function match($__ctx, $r, $s)
-	{
-		$matches = [];
-		if (preg_match("/" . $r . "/", $s, $matches)){
-			return $matches != null;
-		}
-		
-		return false;
-	}
-	/**
-	 * Search regular expression
-	 * @param string r regular expression
-	 * @param string s string
-	 * @return Vector result
-	 */
-	static function matchAll($__ctx, $r, $s)
-	{
-		$matches = [];
-		if (preg_match_all("/" . $r . "/i", $s, $matches)){
-			$res = new Vector();
-			array_shift($matches);
-			foreach ($matches as $arr){
-				$res->push( (new Vector())->_assignArr($arr) );
-			}
-			return $res;
-		}
-		
-		return null;
-		return null;
-	}
-	/**
-	 * Replace with regular expression
-	 * @param string r - regular expression
-	 * @param string replace - new value
-	 * @param string s - replaceable string
-	 * @return string
-	 */
-	static function replace($__ctx, $r, $replace, $s)
-	{
-		return preg_replace("/" . $r . "/", $replace, $s);
-	}
 	/* ======================= Class Init Functions ======================= */
+	function assignObject($__ctx,$o)
+	{
+		if ($o instanceof \Runtime\Annotations\Provider)
+		{
+		}
+		parent::assignObject($__ctx,$o);
+	}
+	function assignValue($__ctx,$k,$v)
+	{
+		parent::assignValue($__ctx,$k,$v);
+	}
+	function takeValue($__ctx,$k,$d=null)
+	{
+		return parent::takeValue($__ctx,$k,$d);
+	}
 	function getClassName()
 	{
-		return "Runtime.re";
+		return "Runtime.Annotations.Provider";
 	}
 	static function getCurrentNamespace()
 	{
-		return "Runtime";
+		return "Runtime.Annotations";
 	}
 	static function getCurrentClassName()
 	{
-		return "Runtime.re";
+		return "Runtime.Annotations.Provider";
 	}
 	static function getParentClassName()
 	{
-		return "";
+		return "Runtime.Annotations.Entity";
 	}
 	static function getClassInfo($__ctx)
 	{
 		return new \Runtime\Annotations\IntrospectionInfo($__ctx, [
 			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
-			"class_name"=>"Runtime.re",
-			"name"=>"Runtime.re",
+			"class_name"=>"Runtime.Annotations.Provider",
+			"name"=>"Runtime.Annotations.Provider",
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
