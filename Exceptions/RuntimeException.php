@@ -2,7 +2,7 @@
 /*!
  *  Bayrell Runtime Library
  *
- *  (c) Copyright 2016-2019 "Ildar Bikmamatov" <support@bayrell.org>
+ *  (c) Copyright 2016-2020 "Ildar Bikmamatov" <support@bayrell.org>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,7 +17,14 @@
  *  limitations under the License.
  */
 namespace Runtime\Exceptions;
-class Error extends \Exception{function _init(){}}
+class ClassException extends \Exception
+{
+	function __construct($ctx, $message="", $code=-1, $prev=null)
+	{
+		parent::__construct($message, (int)$code, $prev);
+	}
+	function _init($ctx){}
+}
 class RuntimeException extends \Runtime\Exceptions\ClassException
 {
 	public $context;
@@ -28,33 +35,32 @@ class RuntimeException extends \Runtime\Exceptions\ClassException
 	public $error_file;
 	public $error_line;
 	public $error_pos;
-	function __construct($__ctx, $message="", $code=-1, $context=null, $prev=null)
+	function __construct($ctx, $message="", $code=-1, $prev=null)
 	{
-		parent::__construct($__ctx, $message, $code, $prev);
-		$this->_init($__ctx);
+		parent::__construct($ctx, $message, $code, $prev);
+		$this->_init($ctx);
 		$this->error_str = $message;
 		$this->error_code = $code;
-		$this->context = $context;
 		$this->prev = $prev;
-		$this->updateError($__ctx);
+		$this->updateError($ctx);
 	}
-	function getPreviousException($__ctx)
+	function getPreviousException($ctx)
 	{
 		return $this->prev;
 	}
-	function getErrorMessage($__ctx)
+	function getErrorMessage($ctx)
 	{
 		return $this->error_message;
 	}
-	function getErrorString($__ctx)
+	function getErrorString($ctx)
 	{
 		return $this->error_str;
 	}
-	function getErrorCode($__ctx)
+	function getErrorCode($ctx)
 	{
 		return $this->error_code;
 	}
-	function getFileName($__ctx)
+	function getFileName($ctx)
 	{
 		if ($this->error_file == "")
 		{
@@ -62,7 +68,7 @@ class RuntimeException extends \Runtime\Exceptions\ClassException
 		}
 		return $this->error_file;
 	}
-	function getErrorLine($__ctx)
+	function getErrorLine($ctx)
 	{
 		if ($this->error_line == "")
 		{
@@ -70,45 +76,36 @@ class RuntimeException extends \Runtime\Exceptions\ClassException
 		}
 		return $this->error_line;
 	}
-	function getErrorPos($__ctx)
+	function getErrorPos($ctx)
 	{
 		return $this->error_pos;
 	}
-	function toString($__ctx)
+	function toString($ctx)
 	{
-		return $this->buildMessage($__ctx);
+		return $this->buildMessage($ctx);
 	}
-	function buildMessage($__ctx)
+	function buildMessage($ctx)
 	{
-		$error_str = $this->error_str;
-		$file = $this->getFileName($__ctx);
-		$line = $this->getErrorLine($__ctx);
-		$pos = $this->getErrorPos($__ctx);
-		if ($line != -1)
-		{
-			$error_str .= \Runtime\rtl::toStr(" at Ln:" . \Runtime\rtl::toStr($line) . \Runtime\rtl::toStr((($pos != "") ? ", Pos:" . \Runtime\rtl::toStr($pos) : "")));
-		}
-		if ($file != "")
-		{
-			$error_str .= \Runtime\rtl::toStr(" in file:'" . \Runtime\rtl::toStr($file) . \Runtime\rtl::toStr("'"));
-		}
-		return $error_str;
+		return $this->error_str;
 	}
-	function updateError($__ctx)
+	function updateError($ctx)
 	{
-		$this->error_message = $this->buildMessage($__ctx);
+		$this->error_message = $this->buildMessage($ctx);
 	}
 	/**
 	 * Returns trace
 	 */
-	function getTraceStr($__ctx)
+	function getTraceStr($ctx)
 	{
 		return $this->getTraceAsString();
 	}
+	public function __toString (){
+		return $this->toString(null);
+	}
 	/* ======================= Class Init Functions ======================= */
-	function _init($__ctx)
+	function _init($ctx)
 	{
-		parent::_init($__ctx);
+		parent::_init($ctx);
 		$this->context = null;
 		$this->prev = null;
 		$this->error_message = "";
@@ -134,9 +131,9 @@ class RuntimeException extends \Runtime\Exceptions\ClassException
 	{
 		return "Runtime.Exceptions.ClassException";
 	}
-	static function getClassInfo($__ctx)
+	static function getClassInfo($ctx)
 	{
-		return new \Runtime\Annotations\IntrospectionInfo($__ctx, [
+		return new \Runtime\Annotations\IntrospectionInfo($ctx, [
 			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
 			"class_name"=>"Runtime.Exceptions.RuntimeException",
 			"name"=>"Runtime.Exceptions.RuntimeException",
@@ -144,27 +141,79 @@ class RuntimeException extends \Runtime\Exceptions\ClassException
 			]),
 		]);
 	}
-	static function getFieldsList($__ctx,$f)
+	static function getFieldsList($ctx,$f)
 	{
 		$a = [];
 		return \Runtime\Collection::from($a);
 	}
-	static function getFieldInfoByName($__ctx,$field_name)
+	static function getFieldInfoByName($ctx,$field_name)
 	{
+		if ($field_name == "context") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.Exceptions.RuntimeException",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "prev") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.Exceptions.RuntimeException",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "error_message") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.Exceptions.RuntimeException",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "error_str") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.Exceptions.RuntimeException",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "error_code") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.Exceptions.RuntimeException",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "error_file") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.Exceptions.RuntimeException",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "error_line") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.Exceptions.RuntimeException",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "error_pos") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.Exceptions.RuntimeException",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
 		return null;
 	}
-	static function getMethodsList($__ctx)
+	static function getMethodsList($ctx)
 	{
 		$a = [
 		];
 		return \Runtime\Collection::from($a);
 	}
-	static function getMethodInfoByName($__ctx,$field_name)
+	static function getMethodInfoByName($ctx,$field_name)
 	{
 		return null;
-	}
-	
-	public function __toString (){
-		return $this->toString();
 	}
 }

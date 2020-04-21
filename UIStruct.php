@@ -2,7 +2,7 @@
 /*!
  *  Bayrell Runtime Library
  *
- *  (c) Copyright 2016-2019 "Ildar Bikmamatov" <support@bayrell.org>
+ *  (c) Copyright 2016-2020 "Ildar Bikmamatov" <support@bayrell.org>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -40,19 +40,19 @@ class UIStruct extends \Runtime\CoreStruct
 	 * Returns true if component
 	 * @return bool
 	 */
-	function getTag($__ctx)
+	function getTag($ctx)
 	{
 		if ($this->props == null)
 		{
 			return null;
 		}
-		return $this->props->get($__ctx, "@tag", null);
+		return $this->props->get($ctx, "@tag", null);
 	}
 	/**
 	 * Returns true if component
 	 * @return bool
 	 */
-	function isComponent($__ctx)
+	function isComponent($ctx)
 	{
 		return $this->kind == \Runtime\UIStruct::TYPE_COMPONENT;
 	}
@@ -60,7 +60,7 @@ class UIStruct extends \Runtime\CoreStruct
 	 * Returns true if element
 	 * @return bool
 	 */
-	function isElement($__ctx)
+	function isElement($ctx)
 	{
 		return $this->kind == \Runtime\UIStruct::TYPE_ELEMENT;
 	}
@@ -68,7 +68,7 @@ class UIStruct extends \Runtime\CoreStruct
 	 * Returns true if string
 	 * @return bool
 	 */
-	function isString($__ctx)
+	function isString($ctx)
 	{
 		return $this->kind == \Runtime\UIStruct::TYPE_STRING || $this->kind == \Runtime\UIStruct::TYPE_RAW;
 	}
@@ -76,7 +76,7 @@ class UIStruct extends \Runtime\CoreStruct
 	 * Returns model
 	 * @return CoreStruct
 	 */
-	function getModel($__ctx)
+	function getModel($ctx)
 	{
 		return $this->model;
 		if ($this->model != null)
@@ -86,12 +86,12 @@ class UIStruct extends \Runtime\CoreStruct
 		if ($this->kind == \Runtime\UIStruct::TYPE_COMPONENT)
 		{
 			$modelName = \Runtime\rtl::method($this->name, "modelName");
-			$model_name = $modelName($__ctx);
+			$model_name = $modelName($ctx);
 			if ($model_name == "")
 			{
 				return null;
 			}
-			$model = \Runtime\rtl::newInstance($__ctx, $model_name, \Runtime\Collection::from([$this->props]));
+			$model = \Runtime\rtl::newInstance($ctx, $model_name, \Runtime\Collection::from([$this->props]));
 			return $model;
 		}
 		return null;
@@ -100,7 +100,7 @@ class UIStruct extends \Runtime\CoreStruct
 	 * Returns key path
 	 * @return string
 	 */
-	function getKey($__ctx, $index)
+	function getKey($ctx, $index)
 	{
 		return ($this->key !== "") ? $this->key : $index;
 	}
@@ -108,56 +108,56 @@ class UIStruct extends \Runtime\CoreStruct
 	 * Returns key path
 	 * @return string
 	 */
-	function getKeyPath($__ctx, $key_path, $index)
+	function getKeyPath($ctx, $key_path, $index)
 	{
-		return ($key_path !== "") ? $key_path . \Runtime\rtl::toStr(".") . \Runtime\rtl::toStr($this->getKey($__ctx, $index)) : $this->getKey($__ctx, $index);
+		return ($key_path !== "") ? $key_path . \Runtime\rtl::toStr(".") . \Runtime\rtl::toStr($this->getKey($ctx, $index)) : $this->getKey($ctx, $index);
 	}
 	/**
 	 * Returns attrs
 	 */
-	function getAttrs($__ctx)
+	function getAttrs($ctx)
 	{
 		if ($this->props != null)
 		{
-			return $this->props->filter($__ctx, function ($__ctx, $key, $value)
+			return $this->props->filter($ctx, function ($ctx, $key, $value)
 			{
-				return \Runtime\rs::strpos($__ctx, $key, "@") != 0 || $key == "@class" || $key == "@style";
+				return \Runtime\rs::strpos($ctx, $key, "@") != 0 || $key == "@class" || $key == "@style";
 			});
 		}
-		return new \Runtime\Dict($__ctx);
+		return new \Runtime\Dict($ctx);
 	}
 	/**
 	 * Returns props
 	 */
-	function getProps($__ctx)
+	function getProps($ctx)
 	{
 		if ($this->props != null)
 		{
-			return $this->props->filter($__ctx, function ($__ctx, $key, $value)
+			return $this->props->filter($ctx, function ($ctx, $key, $value)
 			{
-				return \Runtime\rs::strpos($__ctx, $key, "@") == 0 && \Runtime\rs::strpos($__ctx, $key, "@on") != 0 && $key != "@class";
+				return \Runtime\rs::strpos($ctx, $key, "@") == 0 && \Runtime\rs::strpos($ctx, $key, "@on") != 0 && $key != "@class";
 			});
 		}
-		return new \Runtime\Dict($__ctx);
+		return new \Runtime\Dict($ctx);
 	}
 	/**
 	 * Returns events
 	 */
-	function getEvents($__ctx)
+	function getEvents($ctx)
 	{
 		if ($this->props != null)
 		{
-			return $this->props->filter($__ctx, function ($__ctx, $key, $value)
+			return $this->props->filter($ctx, function ($ctx, $key, $value)
 			{
-				return \Runtime\rs::strpos($__ctx, $key, "@on") == 0;
+				return \Runtime\rs::strpos($ctx, $key, "@on") == 0;
 			});
 		}
-		return new \Runtime\Dict($__ctx);
+		return new \Runtime\Dict($ctx);
 	}
 	/* ======================= Class Init Functions ======================= */
-	function _init($__ctx)
+	function _init($ctx)
 	{
-		parent::_init($__ctx);
+		parent::_init($ctx);
 		$this->__class_name = "";
 		$this->__key = "";
 		$this->__name = "";
@@ -172,7 +172,7 @@ class UIStruct extends \Runtime\CoreStruct
 		$this->__annotations = null;
 		$this->__children = null;
 	}
-	function assignObject($__ctx,$o)
+	function assignObject($ctx,$o)
 	{
 		if ($o instanceof \Runtime\UIStruct)
 		{
@@ -190,9 +190,9 @@ class UIStruct extends \Runtime\CoreStruct
 			$this->__annotations = $o->__annotations;
 			$this->__children = $o->__children;
 		}
-		parent::assignObject($__ctx,$o);
+		parent::assignObject($ctx,$o);
 	}
-	function assignValue($__ctx,$k,$v)
+	function assignValue($ctx,$k,$v)
 	{
 		if ($k == "class_name")$this->__class_name = $v;
 		else if ($k == "key")$this->__key = $v;
@@ -207,9 +207,9 @@ class UIStruct extends \Runtime\CoreStruct
 		else if ($k == "props")$this->__props = $v;
 		else if ($k == "annotations")$this->__annotations = $v;
 		else if ($k == "children")$this->__children = $v;
-		else parent::assignValue($__ctx,$k,$v);
+		else parent::assignValue($ctx,$k,$v);
 	}
-	function takeValue($__ctx,$k,$d=null)
+	function takeValue($ctx,$k,$d=null)
 	{
 		if ($k == "class_name")return $this->__class_name;
 		else if ($k == "key")return $this->__key;
@@ -224,7 +224,7 @@ class UIStruct extends \Runtime\CoreStruct
 		else if ($k == "props")return $this->__props;
 		else if ($k == "annotations")return $this->__annotations;
 		else if ($k == "children")return $this->__children;
-		return parent::takeValue($__ctx,$k,$d);
+		return parent::takeValue($ctx,$k,$d);
 	}
 	function getClassName()
 	{
@@ -242,9 +242,9 @@ class UIStruct extends \Runtime\CoreStruct
 	{
 		return "Runtime.CoreStruct";
 	}
-	static function getClassInfo($__ctx)
+	static function getClassInfo($ctx)
 	{
-		return new \Runtime\Annotations\IntrospectionInfo($__ctx, [
+		return new \Runtime\Annotations\IntrospectionInfo($ctx, [
 			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
 			"class_name"=>"Runtime.UIStruct",
 			"name"=>"Runtime.UIStruct",
@@ -252,7 +252,7 @@ class UIStruct extends \Runtime\CoreStruct
 			]),
 		]);
 	}
-	static function getFieldsList($__ctx,$f)
+	static function getFieldsList($ctx,$f)
 	{
 		$a = [];
 		if (($f|3)==3)
@@ -273,17 +273,136 @@ class UIStruct extends \Runtime\CoreStruct
 		}
 		return \Runtime\Collection::from($a);
 	}
-	static function getFieldInfoByName($__ctx,$field_name)
+	static function getFieldInfoByName($ctx,$field_name)
 	{
+		if ($field_name == "TYPE_ELEMENT") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.UIStruct",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "TYPE_COMPONENT") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.UIStruct",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "TYPE_STRING") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.UIStruct",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "TYPE_RAW") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.UIStruct",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "class_name") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.UIStruct",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "key") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.UIStruct",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "name") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.UIStruct",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "bind") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.UIStruct",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "kind") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.UIStruct",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "content") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.UIStruct",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "reference") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.UIStruct",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "value") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.UIStruct",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "layout") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.UIStruct",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "model") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.UIStruct",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "props") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.UIStruct",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "annotations") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.UIStruct",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "children") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.UIStruct",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
 		return null;
 	}
-	static function getMethodsList($__ctx)
+	static function getMethodsList($ctx)
 	{
 		$a = [
 		];
 		return \Runtime\Collection::from($a);
 	}
-	static function getMethodInfoByName($__ctx,$field_name)
+	static function getMethodInfoByName($ctx,$field_name)
 	{
 		return null;
 	}

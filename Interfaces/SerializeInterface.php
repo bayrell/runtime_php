@@ -2,7 +2,7 @@
 /*!
  *  Bayrell Runtime Library
  *
- *  (c) Copyright 2016-2019 "Ildar Bikmamatov" <support@bayrell.org>
+ *  (c) Copyright 2016-2020 "Ildar Bikmamatov" <support@bayrell.org>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -23,17 +23,17 @@ interface SerializeInterface
 	 * Assign and clone data from other object
 	 * @param CoreObject obj
 	 */
-	function assignObject($__ctx, $obj);
+	function assignObject($ctx, $obj);
 	/**
 	 * Set new value instance by variable name
 	 * @param string variable_name
 	 * @param var value
 	 */
-	function assignValue($__ctx, $variable_name, $value);
+	function assignValue($ctx, $variable_name, $value);
 	/**
 	 * Returns instance of the value by variable name
 	 * @param string variable_name
 	 * @return var
 	 */
-	function takeValue($__ctx, $variable_name, $default_value=null);
+	function takeValue($ctx, $variable_name, $default_value=null);
 }

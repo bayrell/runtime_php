@@ -2,7 +2,7 @@
 /*!
  *  Bayrell Runtime Library
  *
- *  (c) Copyright 2016-2019 "Ildar Bikmamatov" <support@bayrell.org>
+ *  (c) Copyright 2016-2020 "Ildar Bikmamatov" <support@bayrell.org>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -23,19 +23,19 @@ interface ModuleDescriptionInterface
 	 * Returns module name
 	 * @return string
 	 */
-	static function getModuleName($__ctx);
+	static function getModuleName($ctx);
 	/**
 	 * Returns module name
 	 * @return string
 	 */
-	static function getModuleVersion($__ctx);
+	static function getModuleVersion($ctx);
 	/**
 	 * Returns required modules
 	 * @return Map<string>
 	 */
-	static function requiredModules($__ctx);
+	static function requiredModules($ctx);
 	/**
 	 * Returns enities
 	 */
-	static function entities($__ctx);
+	static function entities($ctx);
 }

@@ -2,7 +2,7 @@
 /*!
  *  Bayrell Runtime Library
  *
- *  (c) Copyright 2016-2019 "Ildar Bikmamatov" <support@bayrell.org>
+ *  (c) Copyright 2016-2020 "Ildar Bikmamatov" <support@bayrell.org>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -17,11 +17,11 @@
  *  limitations under the License.
  */
 namespace Runtime;
-class FakeStruct extends \Runtime\CoreObject implements \ArrayAccess, \Runtime\Interfaces\SerializeInterface
+class FakeStructOld extends \Runtime\CoreObject implements \ArrayAccess, \Runtime\Interfaces\SerializeInterface
 {
-	function __construct($__ctx, $obj=null)
+	function __construct($ctx, $obj=null)
 	{
-		parent::__construct($__ctx);
+		parent::__construct($ctx);
 		if ($obj != null)
 		{
 			if (!($obj instanceof \Runtime\Dict))
@@ -30,23 +30,23 @@ class FakeStruct extends \Runtime\CoreObject implements \ArrayAccess, \Runtime\I
 			}
 			foreach ($obj->_map as $key => $value)
 			{
-				$this->assignValue($__ctx, $key, $value);
+				$this->assignValue($ctx, $key, $value);
 			}
-			$this->initData($__ctx, null, $obj);
+			$this->initData($ctx, null, $obj);
 		}
 	}
 	/**
 	 * Init struct data
 	 */
-	function initData($__ctx, $old, $changed=null)
+	function initData($ctx, $old, $changed=null)
 	{
 	}
 	/**
 	 * Copy this struct with new values
 	 * @param Map obj = null
-	 * @return FakeStruct
+	 * @return FakeStructOld
 	 */
-	function copy($__ctx, $obj=null)
+	function copy($ctx, $obj=null)
 	{
 		if ($obj == null){}
 		else if ($obj instanceof \Runtime\Dict)
@@ -72,53 +72,59 @@ class FakeStruct extends \Runtime\CoreObject implements \ArrayAccess, \Runtime\I
 	/**
 	 * Clone this struct with same values
 	 * @param Map obj = null
-	 * @return FakeStruct
+	 * @return FakeStructOld
 	 */
-	function clone($__ctx, $fields=null)
+	function clone($ctx, $fields=null)
 	{
-		$obj = new \Runtime\Map($__ctx);
+		$obj = new \Runtime\Map($ctx);
 		if ($fields != null)
 		{
-			$fields->each($__ctx, function ($__ctx, $field_name) use (&$obj)
+			$fields->each($ctx, function ($ctx, $field_name) use (&$obj)
 			{
-				$obj->set($__ctx, $field_name, \Runtime\rtl::clone($__ctx, $this->takeValue($__ctx, $field_name)));
+				$obj->set($ctx, $field_name, \Runtime\rtl::clone($ctx, $this->takeValue($ctx, $field_name)));
 			});
 		}
 		else
 		{
-			$names = \Runtime\RuntimeUtils::getVariablesNames($__ctx, $this->getClassName($__ctx));
-			for ($i = 0;$i < $names->count($__ctx);$i++)
+			$names = \Runtime\RuntimeUtils::getVariablesNames($ctx, $this->getClassName($ctx));
+			for ($i = 0;$i < $names->count($ctx);$i++)
 			{
-				$field_name = $names->item($__ctx, $i);
-				$obj->set($__ctx, $field_name, \Runtime\rtl::clone($__ctx, $this->takeValue($__ctx, $field_name)));
+				$field_name = $names->item($ctx, $i);
+				$obj->set($ctx, $field_name, \Runtime\rtl::clone($ctx, $this->takeValue($ctx, $field_name)));
 			}
 		}
 		/* Return object */
-		$res = static::newInstance($__ctx, $obj->toDict($__ctx));
+		$res = static::newInstance($ctx, $obj->toDict($ctx));
 		return $res;
 	}
 	/**
 	 * Create new struct with new value
 	 * @param string field_name
 	 * @param fn f
-	 * @return FakeStruct
+	 * @return FakeStructOld
 	 */
-	function map($__ctx, $field_name, $f)
+	function map($ctx, $field_name, $f)
 	{
-		return $this->copy($__ctx, (new \Runtime\Map($__ctx))->set($__ctx, $field_name, $f($__ctx, $this->takeValue($__ctx, $field_name)))->toDict($__ctx));
+		return $this->copy($ctx, (new \Runtime\Map($ctx))->set($ctx, $field_name, $f($ctx, $this->takeValue($ctx, $field_name)))->toDict($ctx));
 	}
 	/**
 	 * Returns new instance
 	 */
-	static function newInstance($__ctx, $items)
+	static function newInstance($ctx, $items)
 	{
 		$class_name = static::class;
 		return new $class_name($items);
 	}
+	function __get($k){$k="__".$k;return isset($this->$k)?$this->$k:null;}
+	function __set($k,$v){throw new \Runtime\Exceptions\AssignStructValueError(null, $k);}
+	function offsetExists($k){$k="__".$k;return isset($this->$k);}
+	function offsetGet($k){$k="__".$k;return isset($this->$k)?$this->$k:null;}
+	function offsetSet($k,$v){throw new \Runtime\Exceptions\AssignStructValueError(null, $k);}
+	function offsetUnset($k){throw new \Runtime\Exceptions\AssignStructValueError(null, $k);}
 	/* ======================= Class Init Functions ======================= */
 	function getClassName()
 	{
-		return "Runtime.FakeStruct";
+		return "Runtime.FakeStructOld";
 	}
 	static function getCurrentNamespace()
 	{
@@ -126,46 +132,39 @@ class FakeStruct extends \Runtime\CoreObject implements \ArrayAccess, \Runtime\I
 	}
 	static function getCurrentClassName()
 	{
-		return "Runtime.FakeStruct";
+		return "Runtime.FakeStructOld";
 	}
 	static function getParentClassName()
 	{
 		return "Runtime.CoreObject";
 	}
-	static function getClassInfo($__ctx)
+	static function getClassInfo($ctx)
 	{
-		return new \Runtime\Annotations\IntrospectionInfo($__ctx, [
+		return new \Runtime\Annotations\IntrospectionInfo($ctx, [
 			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
-			"class_name"=>"Runtime.FakeStruct",
-			"name"=>"Runtime.FakeStruct",
+			"class_name"=>"Runtime.FakeStructOld",
+			"name"=>"Runtime.FakeStructOld",
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
 	}
-	static function getFieldsList($__ctx,$f)
+	static function getFieldsList($ctx,$f)
 	{
 		$a = [];
 		return \Runtime\Collection::from($a);
 	}
-	static function getFieldInfoByName($__ctx,$field_name)
+	static function getFieldInfoByName($ctx,$field_name)
 	{
 		return null;
 	}
-	static function getMethodsList($__ctx)
+	static function getMethodsList($ctx)
 	{
 		$a = [
 		];
 		return \Runtime\Collection::from($a);
 	}
-	static function getMethodInfoByName($__ctx,$field_name)
+	static function getMethodInfoByName($ctx,$field_name)
 	{
 		return null;
 	}
-	
-	function __get($k){$k="__".$k;return isset($this->$k)?$this->$k:null;}
-	function __set($k,$v){throw new \Runtime\Exceptions\AssignStructValueError(null, $k);}
-	function offsetExists($k){$k="__".$k;return isset($this->$k);}
-	function offsetGet($k){$k="__".$k;return isset($this->$k)?$this->$k:null;}
-	function offsetSet($k,$v){throw new \Runtime\Exceptions\AssignStructValueError(null, $k);}
-	function offsetUnset($k){throw new \Runtime\Exceptions\AssignStructValueError(null, $k);}
 }

@@ -1,4 +1,5 @@
 <?php
+
 /*!
  *  Bayrell Runtime Library
  *
@@ -16,26 +17,19 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-namespace Runtime\Interfaces;
-interface AssetsInterface
+
+namespace Runtime;
+
+class RawString 
 {
-	/**
-	 * Returns module name
-	 * @return string
-	 */
-	static function getModuleName($ctx);
-	/**
-	 * Returns required modules
-	 * @return Dict<string>
-	 */
-	static function requiredModules($ctx);
-	/**
-	 * Returns module files load order
-	 * @return Collection<string>
-	 */
-	static function assets($ctx);
-	/**
-	 * Returns sync loaded files
-	 */
-	static function resources($ctx);
+	protected $s;
+	function __construct($s)
+	{
+		$this->s = $s;
+	}
+	function __toString(){ return $this->s; }
+	function toString()
+	{
+		return $this->s;
+	}
 }

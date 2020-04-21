@@ -2,7 +2,7 @@
 /*!
  *  Bayrell Runtime Library 
  *
- *  (c) Copyright 2016-2019 "Ildar Bikmamatov" <support@bayrell.org>
+ *  (c) Copyright 2016-2020 "Ildar Bikmamatov" <support@bayrell.org>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -19,9 +19,9 @@
 namespace Runtime\Exceptions;
 class AssignStructValueError extends \Runtime\Exceptions\RuntimeException
 {
-	function __construct($__ctx, $name, $context=null, $prev=null)
+	function __construct($ctx, $name, $context=null, $prev=null)
 	{
-		parent::__construct($__ctx, \Runtime\rtl::translate($__ctx, "Can not set key '" . \Runtime\rtl::toStr($name) . \Runtime\rtl::toStr("' in immutable struct"), null, "", $context), \Runtime\RuntimeConstant::ERROR_INDEX_OUT_OF_RANGE, $context, $prev);
+		parent::__construct($ctx, \Runtime\rtl::translate($ctx, "Can not set key '" . \Runtime\rtl::toStr($name) . \Runtime\rtl::toStr("' in immutable struct"), null, "", $context), \Runtime\RuntimeConstant::ERROR_INDEX_OUT_OF_RANGE, $context, $prev);
 	}
 	/* ======================= Class Init Functions ======================= */
 	function getClassName()
@@ -40,9 +40,9 @@ class AssignStructValueError extends \Runtime\Exceptions\RuntimeException
 	{
 		return "Runtime.Exceptions.RuntimeException";
 	}
-	static function getClassInfo($__ctx)
+	static function getClassInfo($ctx)
 	{
-		return new \Runtime\Annotations\IntrospectionInfo($__ctx, [
+		return new \Runtime\Annotations\IntrospectionInfo($ctx, [
 			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
 			"class_name"=>"Runtime.Exceptions.AssignStructValueError",
 			"name"=>"Runtime.Exceptions.AssignStructValueError",
@@ -50,22 +50,22 @@ class AssignStructValueError extends \Runtime\Exceptions\RuntimeException
 			]),
 		]);
 	}
-	static function getFieldsList($__ctx,$f)
+	static function getFieldsList($ctx,$f)
 	{
 		$a = [];
 		return \Runtime\Collection::from($a);
 	}
-	static function getFieldInfoByName($__ctx,$field_name)
+	static function getFieldInfoByName($ctx,$field_name)
 	{
 		return null;
 	}
-	static function getMethodsList($__ctx)
+	static function getMethodsList($ctx)
 	{
 		$a = [
 		];
 		return \Runtime\Collection::from($a);
 	}
-	static function getMethodInfoByName($__ctx,$field_name)
+	static function getMethodInfoByName($ctx,$field_name)
 	{
 		return null;
 	}

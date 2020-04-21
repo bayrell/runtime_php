@@ -2,7 +2,7 @@
 /*!
  *  Bayrell Runtime Library
  *
- *  (c) Copyright 2016-2019 "Ildar Bikmamatov" <support@bayrell.org>
+ *  (c) Copyright 2016-2020 "Ildar Bikmamatov" <support@bayrell.org>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -50,7 +50,7 @@ class rtl
 	 * Returns true if class instanceof class_name
 	 * @return bool
 	 */
-	static function is_instanceof($__ctx, $obj, $class_name)
+	static function is_instanceof($ctx, $obj, $class_name)
 	{
 		$class_name = self::find_class($class_name);
 		if ($obj == null) return false;
@@ -62,7 +62,7 @@ class rtl
 	 * Returns true if obj implements interface_name
 	 * @return bool
 	 */
-	static function is_implements($__ctx, $obj, $interface_name)
+	static function is_implements($ctx, $obj, $interface_name)
 	{
 		$class_name = get_class($obj);
 		return self::class_implements($class_name, $interface_name);
@@ -71,7 +71,7 @@ class rtl
 	 * Returns true if class exists
 	 * @return bool
 	 */
-	static function class_exists($__ctx, $class_name)
+	static function class_exists($ctx, $class_name)
 	{
 		$class_name = static::find_class($class_name);
 		return class_exists($class_name);
@@ -80,7 +80,7 @@ class rtl
 	 * Returns true if class exists
 	 * @return bool
 	 */
-	static function class_implements($__ctx, $class_name, $interface_name)
+	static function class_implements($ctx, $class_name, $interface_name)
 	{
 		$class_name = self::find_class($class_name);
 		$interface_name = self::find_class($interface_name);
@@ -99,7 +99,7 @@ class rtl
 	 * @param string class_name
 	 * @return Collection<string>
 	 */
-	static function getInterfaces($__ctx, $class_name)
+	static function getInterfaces($ctx, $class_name)
 	{
 		$arr = array_values(class_implements(rtl::find_class($class_name)));
 		$arr = array_map
@@ -113,7 +113,7 @@ class rtl
 	 * Returns true if class exists
 	 * @return bool
 	 */
-	static function method_exists($__ctx, $class_name, $method_name)
+	static function method_exists($ctx, $class_name, $method_name)
 	{
 		$class_name = static::find_class($class_name);
 		if (!class_exists($class_name)) return false;
@@ -124,21 +124,21 @@ class rtl
 	 * Create object by class_name. If class name does not exists return null
 	 * @return Object
 	 */
-	static function newInstance($__ctx, $class_name, $args)
+	static function newInstance($ctx, $class_name, $args=null)
 	{
 		$class_name = static::find_class($class_name);
 		if ($args == null)
-			return new $class_name();
+			return new $class_name($ctx);
 		$r = new \ReflectionClass($class_name);
 		$arr = $args->_arr;
-		array_unshift($arr, $__ctx);
+		array_unshift($arr, $ctx);
 		return $r->newInstanceArgs($arr);
 	}
 	/**
 	 * Returns callback
 	 * @return fn
 	 */
-	static function method($__ctx, $obj, $method_name)
+	static function method($ctx, $obj, $method_name)
 	{
 		return new \Runtime\Callback($obj, $method_name);
 	}
@@ -146,10 +146,10 @@ class rtl
 	 * Returns callback
 	 * @return fn
 	 */
-	static function apply($__ctx, $f, $args)
+	static function apply($ctx, $f, $args)
 	{
-		$arr = $args->_getArr();
-		array_unshift($arr, $__ctx);
+		$arr = ($args != null) ? $args->_getArr() : [];
+		array_unshift($arr, $ctx);
 		if ($f instanceof \Runtime\Callback)
 		{
 			return $f->invokeArgs($arr);
@@ -161,10 +161,10 @@ class rtl
 	 * Call await method
 	 * @return fn
 	 */
-	static function applyAwait($__ctx, $f, $args)
+	static function applyAwait($ctx, $f, $args)
 	{
 		$arr = $args->_getArr();
-		array_unshift($arr, $__ctx);
+		array_unshift($arr, $ctx);
 		if ($f instanceof \Runtime\Callback)
 		{
 			return $f->invokeArgs($arr);
@@ -175,29 +175,70 @@ class rtl
 	 * Returns callback
 	 * @return var
 	 */
-	static function attr($__ctx, $item, $path, $def_val=null)
+	static function attr($ctx, $item, $path, $def_val=null)
 	{
 		if ($item == null) return $def_val;
 		if (count($path->_arr) == 0) 
 		{
 			return $item;
 		}
-		$key = $path->first($__ctx);
-		$path = $path->removeFirstIm($__ctx);
+		$key = $path->first($ctx);
+		$path = $path->removeFirstIm($ctx);
 		$val = $def_val;
 		if ($item instanceof \Runtime\Dict or $item instanceof \Runtime\Collection)
 		{
-			$item = $item->get($__ctx, $key, $def_val);
-			$val = static::attr($__ctx, $item, $path, $def_val);
+			$item = $item->get($ctx, $key, $def_val);
+			$val = static::attr($ctx, $item, $path, $def_val);
 			return $val;
 		}
 		else if ($item instanceof \Runtime\CoreStruct)
 		{
-			$item = $item->takeValue($__ctx, $key, $def_val);
-			$val = static::attr($__ctx, $item, $path, $def_val);
+			$item = $item->takeValue($ctx, $key, $def_val);
+			$val = static::attr($ctx, $item, $path, $def_val);
 			return $val;
 		}
 		return $val;
+	}
+	/**
+	 * Update current item
+	 * @return var
+	 */
+	static function setAttr($ctx, $item, $attrs, $new_value)
+	{
+		$f = function ($ctx, $attrs, $data, $new_value, $f)
+		{
+			if ($attrs->count($ctx) == 0)
+			{
+				return $new_value;
+			}
+			if ($data == null)
+			{
+				return null;
+			}
+			$new_data = null;
+			$attr_name = $attrs->first($ctx);
+			if ($data instanceof \Runtime\CoreStruct)
+			{
+				$attr_data = $data->get($ctx, $attr_name, null);
+				$res = $f($ctx, $attrs->removeFirstIm($ctx), $attr_data, $new_value, $f);
+				$new_data = $data->copy($ctx, (new \Runtime\Map($ctx))->set($ctx, $attr_name, $res));
+			}
+			else if ($data instanceof \Runtime\Dict)
+			{
+				$attr_data = $data->get($ctx, $attr_name, null);
+				$res = $f($ctx, $attrs->removeFirstIm($ctx), $attr_data, $new_value, $f);
+				$new_data = $data->setIm($ctx, $attr_name, $res);
+			}
+			else if ($data instanceof \Runtime\Collection)
+			{
+				$attr_data = $data->get($ctx, $attr_name, null);
+				$res = $f($ctx, $attrs->removeFirstIm($ctx), $attr_data, $new_value, $f);
+				$new_data = $data->setIm($ctx, $attr_name, $res);
+			}
+			return $new_data;
+		};
+		$new_item = $f($ctx, $attrs, $item, $new_value, $f);
+		return $new_item;
 	}
 	/**
 	 * Returns value
@@ -206,34 +247,34 @@ class rtl
 	 * @param var obj
 	 * @return var
 	 */
-	static function to($v, $d, $o)
+	static function to($v, $o)
 	{
-		$t = $o->e;
-		if ($t == "mixed" || $t == "primitive" || $t == "var" || $t == "fn" || $t == "callback")
+		$e = $o["e"];
+		if ($e == "mixed" || $e == "primitive" || $e == "var" || $e == "fn" || $e == "callback")
 		{
 			return $v;
 		}
-		if ($t == "bool")
+		if ($e == "bool")
 		{
-			return static::toBool(null, $v, $d);
+			return static::toBool(null, $v);
 		}
-		else if ($t == "string")
+		else if ($e == "string")
 		{
-			return static::toString($v, $d);
+			return static::toString(null, $v);
 		}
-		else if ($t == "int")
+		else if ($e == "int")
 		{
-			return static::toInt(null, $v, $d);
+			return static::toInt(null, $v);
 		}
-		else if ($t == "float")
+		else if ($e == "float")
 		{
-			return static::toFloat(null, $v, $d);
+			return static::toFloat(null, $v);
 		}
-		else if (\Runtime\rtl::is_instanceof(null, $v, $t))
+		else if (\Runtime\rtl::is_instanceof(null, $v, $e))
 		{
 			return $v;
 		}
-		return $d;
+		return $v;
 	}
 	/**
 	 * Returns value if value instanceof type_value, else returns def_value
@@ -253,25 +294,25 @@ class rtl
 	 * @param string tp
 	 * @return bool
 	 */
-	static function checkValue($__ctx, $value, $tp)
+	static function checkValue($ctx, $value, $tp)
 	{
 		if ($tp == "int")
 		{
-			return \Runtime\rtl::isInt($__ctx, $value);
+			return \Runtime\rtl::isInt($ctx, $value);
 		}
 		if ($tp == "float" || $tp == "double")
 		{
-			return \Runtime\rtl::isDouble($__ctx, $value);
+			return \Runtime\rtl::isDouble($ctx, $value);
 		}
 		if ($tp == "string")
 		{
-			return \Runtime\rtl::isString($__ctx, $value);
+			return \Runtime\rtl::isString($ctx, $value);
 		}
 		if ($tp == "bool" || $tp == "boolean")
 		{
-			return \Runtime\rtl::isBoolean($__ctx, $value);
+			return \Runtime\rtl::isBoolean($ctx, $value);
 		}
-		if (\Runtime\rtl::is_instanceof($__ctx, $value, $tp))
+		if (\Runtime\rtl::is_instanceof($ctx, $value, $tp))
 		{
 			return true;
 		}
@@ -282,7 +323,7 @@ class rtl
 	 * @param var value
 	 * @return bool
 	 */
-	static function exists($__ctx, $value)
+	static function exists($ctx, $value)
 	{
 		return isset($value);
 	}
@@ -290,21 +331,21 @@ class rtl
 	 * Returns true if value is scalar value
 	 * @return bool 
 	 */
-	static function isScalarValue($__ctx, $value)
+	static function isScalarValue($ctx, $value)
 	{
 		if ($value == null)
 		{
 			return true;
 		}
-		if (\Runtime\rtl::isString($__ctx, $value))
+		if (\Runtime\rtl::isString($ctx, $value))
 		{
 			return true;
 		}
-		if (\Runtime\rtl::isNumber($__ctx, $value))
+		if (\Runtime\rtl::isNumber($ctx, $value))
 		{
 			return true;
 		}
-		if (\Runtime\rtl::isBoolean($__ctx, $value))
+		if (\Runtime\rtl::isBoolean($ctx, $value))
 		{
 			return true;
 		}
@@ -315,7 +356,7 @@ class rtl
 	 * @param var value
 	 * @return bool
 	 */
-	static function isBoolean($__ctx, $value)
+	static function isBoolean($ctx, $value)
 	{
 		if ($value === false || $value === true)
 		{
@@ -328,7 +369,7 @@ class rtl
 	 * @param var value
 	 * @return bool
 	 */
-	static function isInt($__ctx, $value)
+	static function isInt($ctx, $value)
 	{
 		return is_int($value);
 	}
@@ -337,7 +378,7 @@ class rtl
 	 * @param var value
 	 * @return bool
 	 */
-	static function isDouble($__ctx, $value)
+	static function isDouble($ctx, $value)
 	{
 		return is_int($value) or is_float($value);
 	}
@@ -346,7 +387,7 @@ class rtl
 	 * @param var value
 	 * @return bool
 	 */
-	static function isNumber($__ctx, $value)
+	static function isNumber($ctx, $value)
 	{
 		return is_int($value) or is_float($value);
 	}
@@ -355,7 +396,7 @@ class rtl
 	 * @param var value
 	 * @return bool
 	 */
-	static function isString($__ctx, $value)
+	static function isString($ctx, $value)
 	{
 		return is_string($value);
 	}
@@ -364,8 +405,9 @@ class rtl
 	 * @param var value
 	 * @return string
 	 */
-	static function toString($value)
+	static function toString($ctx, $value)
 	{
+		if ($value == null) return "";
 		if ($value instanceof StringInterface) return $value->toString();
 		return (string)$value;
 	}
@@ -376,29 +418,28 @@ class rtl
 	 */
 	static function toStr($value)
 	{
-		return static::toString($value);
+		return static::toString(null, $value);
 	}
 	/**
 	 * Convert value to int
 	 * @param var value
 	 * @return int
 	 */
-	static function toInt($__ctx, $val)
+	static function toInt($ctx, $val)
 	{
 		$res = (int)$val;
 		$s_res = (string)$res;
 		$s_val = (string)$val;
 		if ($s_res == $s_val)
 			return $res;
-		
-		throw new \Exception("Error convert to int");
+		return 0;
 	}
 	/**
 	 * Convert value to boolean
 	 * @param var value
 	 * @return bool
 	 */
-	static function toBool($__ctx, $val)
+	static function toBool($ctx, $val)
 	{
 		if ($val === false || $val === "false") return false;
 		if ($val === true || $val === "true") return true;
@@ -407,28 +448,28 @@ class rtl
 		$s_val = (string)$val;
 		if ($s_res == $s_val)
 			return $res;
-		throw new \Exception("Error convert to boolean");
+		return false;
 	}
 	/**
 	 * Convert value to float
 	 * @param var value
 	 * @return float
 	 */
-	static function toFloat($__ctx, $val)
+	static function toFloat($ctx, $val)
 	{
 		$res = floatval($val);
 		$s_res = (string)$res;
 		$s_val = (string)$val;
 		if ($s_res == $s_val)
 			return $res;
-		throw new \Exception("Error convert to float");
+		return 0;
 	}
 	/**
 	 * Round up
 	 * @param double value
 	 * @return int
 	 */
-	static function ceil($__ctx, $value)
+	static function ceil($ctx, $value)
 	{
 		return ceil($value);
 	}
@@ -437,7 +478,7 @@ class rtl
 	 * @param double value
 	 * @return int
 	 */
-	static function floor($__ctx, $value)
+	static function floor($ctx, $value)
 	{
 		return floor($value);
 	}
@@ -446,7 +487,7 @@ class rtl
 	 * @param double value
 	 * @return int
 	 */
-	static function round($__ctx, $value)
+	static function round($ctx, $value)
 	{
 		return round($value);
 	}
@@ -454,24 +495,24 @@ class rtl
 	/**
 	 * Apply async chain
 	 */
-	static function chainAwait($__ctx, $chain, $args)
+	static function chainAwait($ctx, $chain, $args)
 	{
-		for ($i = 0;$i < $chain->count($__ctx);$i++)
+		for ($i = 0;$i < $chain->count($ctx);$i++)
 		{
-			$chain_name = $chain->item($__ctx, $i);
-			$args = \Runtime\rtl::apply($__ctx, $chain_name, $args);
+			$chain_name = $chain->item($ctx, $i);
+			$args = \Runtime\rtl::apply($ctx, $chain_name, $args);
 		}
 		return $args;
 	}
 	/**
 	 * Apply chain
 	 */
-	static function chain($__ctx, $chain, $args)
+	static function chain($ctx, $chain, $args)
 	{
-		for ($i = 0;$i < $chain->count($__ctx);$i++)
+		for ($i = 0;$i < $chain->count($ctx);$i++)
 		{
-			$chain_name = $chain->item($__ctx, $i);
-			$args = \Runtime\rtl::apply($__ctx, $chain_name, $args);
+			$chain_name = $chain->item($ctx, $i);
+			$args = \Runtime\rtl::apply($ctx, $chain_name, $args);
 		}
 		return $args;
 	}
@@ -555,18 +596,9 @@ class rtl
 	 * @param bool flag If true returns as text. Default true
 	 * @return string
 	 */
-	static function unique($__ctx, $flag=true)
+	static function unique($ctx, $flag=true)
 	{
 		return uniqid();
-	}
-	/**
-	 * Round down
-	 * @param double value
-	 * @return int
-	 */
-	static function dump($__ctx, $value)
-	{
-		var_dump($value);
 	}
 	/**
 	 * Returns random value x, where a <= x <= b
@@ -574,7 +606,7 @@ class rtl
 	 * @param int b
 	 * @return int
 	 */
-	static function random($__ctx, $a, $b)
+	static function random($ctx, $a, $b)
 	{
 		if (PHP_VERSION_ID < 70000) return mt_rand($a, $b);
 		return random_int($a, $b);
@@ -583,7 +615,7 @@ class rtl
 	 * Returns current unix time in seconds
 	 * @return int
 	 */
-	static function time($__ctx)
+	static function time($ctx)
 	{
 		return time();
 	}
@@ -592,7 +624,7 @@ class rtl
 	 * @param {var} value - Variable
 	 * @return {var} result
 	 */
-	static function clone($__ctx, $val)
+	static function clone($ctx, $val)
 	{
 		if ($val == null) return null;
 		if (self::isScalarValue($val)) return $val;
@@ -600,13 +632,22 @@ class rtl
 	}
 	/* =================== Deprecated =================== */
 	/**
+	 * Round down
+	 * @param double value
+	 * @return int
+	 */
+	static function dump($ctx, $value)
+	{
+		var_dump($value);
+	}
+	/**
 	 * Translate message
 	 * @params string message - message need to be translated
 	 * @params MapInterface params - Messages params. Default null.
 	 * @params string locale - Different locale. Default "".
 	 * @return string - translated string
 	 */
-	static function translate($__ctx, $message, $params=null, $locale="", $context=null)
+	static function translate($ctx, $message, $params=null, $locale="", $context=null)
 	{
 		return self::callStaticMethod("Runtime.RuntimeUtils", "translate", [$message, $params, $locale, $context]);
 	}
@@ -615,33 +656,15 @@ class rtl
 	 * @param var data
 	 * @return string
 	 */
-	static function json_encode($__ctx, $data)
+	static function json_encode($ctx, $data)
 	{
 		return self::callStaticMethod("Runtime.RuntimeUtils", "json_encode", [$data]);
-	}
-	/**
-	 * Normalize UIStruct
-	 * @param var data
-	 * @return var
-	 */
-	static function normalizeUI($__ctx, $data)
-	{
-		return self::callStaticMethod("Runtime.RuntimeUtils", "normalizeUI", [$data]);
-	}
-	/**
-	 * Normalize UIStruct
-	 * @param var data
-	 * @return var
-	 */
-	static function normalizeUIVector($__ctx, $data)
-	{
-		return self::callStaticMethod("Runtime.RuntimeUtils", "normalizeUIVector", [$data]);
 	}
 	/**
 	 * Call method
 	 * @return Object
 	 */
-	static function f($__ctx, $f)
+	static function f($ctx, $f)
 	{
 		return $f;
 	}
@@ -653,14 +676,14 @@ class rtl
 	 * @param var type_template
 	 * @return var
 	 */
-	static function correct($__ctx, $value, $def_value=null, $type_value, $type_template="")
+	static function correct($ctx, $value, $def_value=null, $type_value, $type_template="")
 	{
-		return static::convert($__ctx, $value, $type_value, $def_value, $type_template);
+		return static::convert($ctx, $value, $type_value, $def_value, $type_template);
 	}
 	/**
 	 * Convert module name to node js package
 	 */
-	static function convertNodeJSModuleName($__ctx, $name)
+	static function convertNodeJSModuleName($ctx, $name)
 	{
 		$arr1 = "qazwsxedcrfvtgbyhnujmikolp";
 		$arr2 = "0123456789";
@@ -690,6 +713,34 @@ class rtl
 		$res .= "-nodejs";
 		return $res;
 	}
+	/**
+	 * Returns module path. For backend only
+	 */
+	static function getModulePath($ctx, $module_name)
+	{
+		$class = "\\" . preg_replace("/\\./", "\\", $module_name . ".ModuleDescription");
+		$reflector = new \ReflectionClass($class);
+		$path = $reflector->getFileName();
+		return dirname( dirname($path) );
+		return "";
+	}
+	/**
+	 * Read local file
+	 */
+	static function readLocalFile($ctx, $path, $ch="utf8", $chroot="")
+	{
+		if (\Runtime\rs::substr($ctx, $chroot, -1) != "/")
+		{
+			$chroot .= \Runtime\rtl::toStr("/");
+		}
+		$filepath = $chroot . \Runtime\rtl::toStr($path);
+		$filepath = realpath($filepath);
+		if ($filepath == false) return "";
+		if ($chroot != "" && strpos($filepath, $chroot) !== 0) return "";
+		if (!file_exists($filepath)) return "";
+		return file_get_contents($filepath);
+		return "";
+	}
 	/* ======================= Class Init Functions ======================= */
 	function getClassName()
 	{
@@ -707,9 +758,9 @@ class rtl
 	{
 		return "";
 	}
-	static function getClassInfo($__ctx)
+	static function getClassInfo($ctx)
 	{
-		return new \Runtime\Annotations\IntrospectionInfo($__ctx, [
+		return new \Runtime\Annotations\IntrospectionInfo($ctx, [
 			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
 			"class_name"=>"Runtime.rtl",
 			"name"=>"Runtime.rtl",
@@ -717,22 +768,45 @@ class rtl
 			]),
 		]);
 	}
-	static function getFieldsList($__ctx,$f)
+	static function getFieldsList($ctx,$f)
 	{
 		$a = [];
 		return \Runtime\Collection::from($a);
 	}
-	static function getFieldInfoByName($__ctx,$field_name)
+	static function getFieldInfoByName($ctx,$field_name)
 	{
+		if ($field_name == "_memorize_cache") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.rtl",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "_memorize_not_found") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.rtl",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "_memorize_hkey") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.rtl",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
 		return null;
 	}
-	static function getMethodsList($__ctx)
+	static function getMethodsList($ctx)
 	{
 		$a = [
+			"getModulePath",
+			"readLocalFile",
 		];
 		return \Runtime\Collection::from($a);
 	}
-	static function getMethodInfoByName($__ctx,$field_name)
+	static function getMethodInfoByName($ctx,$field_name)
 	{
 		return null;
 	}

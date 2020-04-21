@@ -2,7 +2,7 @@
 /*!
  *  Bayrell Runtime Library
  *
- *  (c) Copyright 2016-2019 "Ildar Bikmamatov" <support@bayrell.org>
+ *  (c) Copyright 2016-2020 "Ildar Bikmamatov" <support@bayrell.org>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ class rs
 	 * @param string s The string
 	 * @return int
 	 */
-	static function strlen($__ctx, $s)
+	static function strlen($ctx, $s)
 	{
 		if (gettype($s) != "string") return 0;
 		return @mb_strlen($s);
@@ -32,7 +32,7 @@ class rs
 	/**
 	 * Search 'search' in s.
 	 */
-	static function search($__ctx, $s, $search, $offset=0)
+	static function search($ctx, $s, $search, $offset=0)
 	{
 		if ($search == ""){
 			return -1;
@@ -49,7 +49,7 @@ class rs
 	 * @param int length
 	 * @return string
 	 */
-	static function substr($__ctx, $s, $start, $length=null)
+	static function substr($ctx, $s, $start, $length=null)
 	{
 		if ($length === null)
 		{
@@ -63,12 +63,12 @@ class rs
 	 * @param int pos The position
 	 * @return string
 	 */
-	static function charAt($__ctx, $s, $pos)
+	static function charAt($ctx, $s, $pos)
 	{
-		$sz = static::strlen($__ctx, $s);
+		$sz = static::strlen($ctx, $s);
 		if ($pos >= 0 && $pos < $sz)
 		{
-			return static::substr($__ctx, $s, $pos, 1);
+			return static::substr($ctx, $s, $pos, 1);
 		}
 		return "";
 	}
@@ -76,7 +76,7 @@ class rs
 	 * Returns ASCII symbol code
 	 * @param char ch
 	 */
-	static function ord($__ctx, $ch)
+	static function ord($ctx, $ch)
 	{
 		if ($ch == "") return 0;
 		$ch = mb_convert_encoding($ch, 'UCS-4LE', 'UTF-8');
@@ -89,7 +89,7 @@ class rs
 	 * @param string s 
 	 * @return string
 	 */
-	static function strtolower($__ctx, $s)
+	static function strtolower($ctx, $s)
 	{
 		return mb_strtolower($s);
 	}
@@ -98,14 +98,14 @@ class rs
 	 * @param string s
 	 * @return string
 	 */
-	static function strtoupper($__ctx, $s)
+	static function strtoupper($ctx, $s)
 	{
 		return mb_strtoupper($s);
 	}
 	/**
 	 * Заменяет одну строку на другую
 	 */
-	static function replace($__ctx, $search, $item, $s)
+	static function replace($ctx, $search, $item, $s)
 	{
 		return str_replace($search, $item, $s);
 	}
@@ -115,7 +115,7 @@ class rs
 	 * @param {integer} n - количество раз, которые нужно повторить строку s
 	 * @return {string} строка
 	 */
-	static function str_repeat($__ctx, $s, $n)
+	static function str_repeat($ctx, $s, $n)
 	{
 		if ($n <= 0) return "";
 		return str_repeat($s, $n);
@@ -127,7 +127,7 @@ class rs
 	 * @param integer limit - ограничение 
 	 * @return Collection<string>
 	 */
-	static function split($__ctx, $delimiter, $s, $limit=-1)
+	static function split($ctx, $delimiter, $s, $limit=-1)
 	{
 		$arr = preg_split("/".$delimiter."/", $s, $limit);
 		return Collection::from($arr);
@@ -139,7 +139,7 @@ class rs
 	 * @param integer limit - ограничение 
 	 * @return Collection<string>
 	 */
-	static function splitArr($__ctx, $delimiters, $s, $limit=-1)
+	static function splitArr($ctx, $delimiters, $s, $limit=-1)
 	{
 		$pattern = "[".implode("", $delimiters->_getArr())."]";
 		$pattern = str_replace("/", "\/", $pattern);
@@ -153,7 +153,7 @@ class rs
 	 * @param integer limit - ограничение 
 	 * @return Vector<string>
 	 */
-	static function join($__ctx, $ch, $arr)
+	static function join($ctx, $ch, $arr)
 	{
 		if ($arr == null) return "";
 		return implode($ch, $arr->_getArr());
@@ -163,7 +163,7 @@ class rs
 	 * @param {string} s - входная строка
 	 * @return {integer} новая строка
 	 */
-	static function trim($__ctx, $s, $ch="")
+	static function trim($ctx, $s, $ch="")
 	{
 		if ($ch=="")
 			return trim($s);
@@ -175,7 +175,7 @@ class rs
 	 * @param {int} flags - Флаги
 	 * @return {string} json строка
 	 */
-	static function json_encode($__ctx, $s, $flags)
+	static function json_encode($ctx, $s, $flags)
 	{
 		$flags = $flags || JSON_UNESCAPED_UNICODE;
 		return json_encode($s, JSON_UNESCAPED_UNICODE);
@@ -185,15 +185,15 @@ class rs
 	 * @param string s
 	 * @return string
 	 */
-	static function htmlEscape($__ctx, $s)
+	static function htmlEscape($ctx, $s)
 	{
 		if ($s instanceof \Runtime\Collection) return $s;
 		if ($s instanceof \Runtime\UIStruct) return $s;
 		return htmlspecialchars($s, ENT_QUOTES | ENT_HTML401);
 	}
-	static function escapeHtml($__ctx, $s)
+	static function escapeHtml($ctx, $s)
 	{
-		return static::htmlEscape($__ctx, $s);
+		return static::htmlEscape($ctx, $s);
 	}
 	/**
 	 * Разбивает путь файла на составляющие
@@ -204,21 +204,21 @@ class rs
 	 *         extension  - расширение файла
 	 *         filename   - имя файла без расширения
 	 */
-	static function pathinfo($__ctx, $filepath)
+	static function pathinfo($ctx, $filepath)
 	{
-		$arr1 = \Runtime\rs::explode($__ctx, ".", $filepath)->toVector($__ctx);
-		$arr2 = \Runtime\rs::explode($__ctx, "/", $filepath)->toVector($__ctx);
-		$ret = new \Runtime\PathInfo($__ctx);
+		$arr1 = \Runtime\rs::explode($ctx, ".", $filepath)->toVector($ctx);
+		$arr2 = \Runtime\rs::explode($ctx, "/", $filepath)->toVector($ctx);
+		$ret = new \Runtime\PathInfo($ctx);
 		$ret->filepath = $filepath;
-		$ret->extension = $arr1->pop($__ctx);
-		$ret->basename = $arr2->pop($__ctx);
-		$ret->dirname = \Runtime\rs::implode($__ctx, "/", $arr2);
-		$ext_length = \Runtime\rs::strlen($__ctx, $ret->extension);
+		$ret->extension = $arr1->pop($ctx);
+		$ret->basename = $arr2->pop($ctx);
+		$ret->dirname = \Runtime\rs::implode($ctx, "/", $arr2);
+		$ext_length = \Runtime\rs::strlen($ctx, $ret->extension);
 		if ($ext_length > 0)
 		{
 			$ext_length++;
 		}
-		$ret->filename = \Runtime\rs::substr($__ctx, $ret->basename, 0, -1 * $ext_length);
+		$ret->filename = \Runtime\rs::substr($ctx, $ret->basename, 0, -1 * $ext_length);
 		return $ret;
 	}
 	/**
@@ -226,15 +226,15 @@ class rs
 	 * @param {string} filepath - путь к файлу
 	 * @return {string} полное имя файла
 	 */
-	static function filename($__ctx, $filepath)
+	static function filename($ctx, $filepath)
 	{
-		$ret = \Runtime\rs::pathinfo($__ctx, $filepath);
+		$ret = \Runtime\rs::pathinfo($ctx, $filepath);
 		$res = $ret->basename;
 		$ext = $ret->extension;
 		if ($ext != "")
 		{
-			$sz = 0 - \Runtime\rs::strlen($__ctx, $ext) - 1;
-			$res = \Runtime\rs::substr($__ctx, $res, 0, $sz);
+			$sz = 0 - \Runtime\rs::strlen($ctx, $ext) - 1;
+			$res = \Runtime\rs::substr($ctx, $res, 0, $sz);
 		}
 		return $res;
 	}
@@ -243,9 +243,9 @@ class rs
 	 * @param {string} filepath - путь к файлу
 	 * @return {string} полное имя файла
 	 */
-	static function basename($__ctx, $filepath)
+	static function basename($ctx, $filepath)
 	{
-		$ret = \Runtime\rs::pathinfo($__ctx, $filepath);
+		$ret = \Runtime\rs::pathinfo($ctx, $filepath);
 		$res = $ret->basename;
 		return $res;
 	}
@@ -254,9 +254,9 @@ class rs
 	 * @param {string} filepath - путь к файлу
 	 * @return {string} расширение файла
 	 */
-	static function extname($__ctx, $filepath)
+	static function extname($ctx, $filepath)
 	{
-		$ret = \Runtime\rs::pathinfo($__ctx, $filepath);
+		$ret = \Runtime\rs::pathinfo($ctx, $filepath);
 		$res = $ret->extension;
 		return $res;
 	}
@@ -265,9 +265,9 @@ class rs
 	 * @param {string} filepath - путь к файлу
 	 * @return {string} путь к папке, содержащий файл
 	 */
-	static function dirname($__ctx, $filepath)
+	static function dirname($ctx, $filepath)
 	{
-		$ret = \Runtime\rs::pathinfo($__ctx, $filepath);
+		$ret = \Runtime\rs::pathinfo($ctx, $filepath);
 		$res = $ret->dirname;
 		return $res;
 	}
@@ -278,45 +278,45 @@ class rs
 	 * @param string ch - Directory separator
 	 * @return string relative path
 	 */
-	static function relativePath($__ctx, $filepath, $basepath, $ch="/")
+	static function relativePath($ctx, $filepath, $basepath, $ch="/")
 	{
-		$source = \Runtime\rs::explode($__ctx, $ch, $filepath);
-		$base = \Runtime\rs::explode($__ctx, $ch, $basepath);
-		$source = $source->filter($__ctx, function ($__ctx, $s)
+		$source = \Runtime\rs::explode($ctx, $ch, $filepath);
+		$base = \Runtime\rs::explode($ctx, $ch, $basepath);
+		$source = $source->filter($ctx, function ($ctx, $s)
 		{
 			return $s != "";
 		});
-		$base = $base->filter($__ctx, function ($__ctx, $s)
+		$base = $base->filter($ctx, function ($ctx, $s)
 		{
 			return $s != "";
 		});
 		$i = 0;
-		while ($source->count($__ctx) > 0 && $base->count($__ctx) > 0 && $source->item($__ctx, 0) == $base->item($__ctx, 0))
+		while ($source->count($ctx) > 0 && $base->count($ctx) > 0 && $source->item($ctx, 0) == $base->item($ctx, 0))
 		{
-			$source->shift($__ctx);
-			$base->shift($__ctx);
+			$source->shift($ctx);
+			$base->shift($ctx);
 		}
-		$base->each($__ctx, function ($__ctx, $s) use (&$source)
+		$base->each($ctx, function ($ctx, $s) use (&$source)
 		{
-			$source->unshift($__ctx, "..");
+			$source->unshift($ctx, "..");
 		});
-		return \Runtime\rs::implode($__ctx, $ch, $source);
+		return \Runtime\rs::implode($ctx, $ch, $source);
 	}
 	/**
 	 * Return normalize path
 	 * @param string filepath - File path
 	 * @return string
 	 */
-	static function normalize($__ctx, $filepath)
+	static function normalize($ctx, $filepath)
 	{
 		return $filepath;
 	}
 	/**
 	 * New line to br
 	 */
-	static function nl2br($__ctx, $s)
+	static function nl2br($ctx, $s)
 	{
-		return static::replace($__ctx, "\n", "<br/>", $s);
+		return static::replace($ctx, "\n", "<br/>", $s);
 	}
 	/* =================== Deprecated =================== */
 	/**
@@ -326,7 +326,7 @@ class rs
 	 * @param integer limit - ограничение 
 	 * @return Vector<string>
 	 */
-	static function explode($__ctx, $delimiter, $s, $limit=-1)
+	static function explode($ctx, $delimiter, $s, $limit=-1)
 	{
 		$arr = [];
 		if ($limit < 0) $arr = explode($delimiter, $s);
@@ -340,7 +340,7 @@ class rs
 	 * @param integer limit - ограничение 
 	 * @return Vector<string>
 	 */
-	static function implode($__ctx, $ch, $arr)
+	static function implode($ctx, $ch, $arr)
 	{
 		return implode($s, $arr->_getArr());
 	}
@@ -353,7 +353,7 @@ class rs
 	 * @return {variable} Если строка найдена, то возвращает позицию вхождения, начиная с 0.
 	 *                    Если строка не найдена, то вернет -1
 	 */
-	static function strpos($__ctx, $s, $search, $offset=0)
+	static function strpos($ctx, $s, $search, $offset=0)
 	{
 		if ($search == ""){
 			return -1;
@@ -380,9 +380,9 @@ class rs
 	{
 		return "";
 	}
-	static function getClassInfo($__ctx)
+	static function getClassInfo($ctx)
 	{
-		return new \Runtime\Annotations\IntrospectionInfo($__ctx, [
+		return new \Runtime\Annotations\IntrospectionInfo($ctx, [
 			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
 			"class_name"=>"Runtime.rs",
 			"name"=>"Runtime.rs",
@@ -390,22 +390,22 @@ class rs
 			]),
 		]);
 	}
-	static function getFieldsList($__ctx,$f)
+	static function getFieldsList($ctx,$f)
 	{
 		$a = [];
 		return \Runtime\Collection::from($a);
 	}
-	static function getFieldInfoByName($__ctx,$field_name)
+	static function getFieldInfoByName($ctx,$field_name)
 	{
 		return null;
 	}
-	static function getMethodsList($__ctx)
+	static function getMethodsList($ctx)
 	{
 		$a = [
 		];
 		return \Runtime\Collection::from($a);
 	}
-	static function getMethodInfoByName($__ctx,$field_name)
+	static function getMethodInfoByName($ctx,$field_name)
 	{
 		return null;
 	}

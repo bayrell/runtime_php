@@ -2,7 +2,7 @@
 /*!
  *  Bayrell Runtime Library
  *
- *  (c) Copyright 2016-2019 "Ildar Bikmamatov" <support@bayrell.org>
+ *  (c) Copyright 2016-2020 "Ildar Bikmamatov" <support@bayrell.org>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -25,10 +25,11 @@ class re
 	 * @param string s string
 	 * @return bool
 	 */
-	static function match($__ctx, $r, $s)
+	static function match($ctx, $r, $s)
 	{
 		$matches = [];
-		if (preg_match("/" . $r . "/", $s, $matches)){
+		if (preg_match("/" . $r . "/", $s, $matches))
+		{
 			return $matches != null;
 		}
 		
@@ -40,14 +41,16 @@ class re
 	 * @param string s string
 	 * @return Vector result
 	 */
-	static function matchAll($__ctx, $r, $s)
+	static function matchAll($ctx, $r, $s)
 	{
 		$matches = [];
-		if (preg_match_all("/" . $r . "/i", $s, $matches)){
+		if (preg_match_all("/" . $r . "/i", $s, $matches))
+		{
 			$res = new Vector();
 			array_shift($matches);
-			foreach ($matches as $arr){
-				$res->push( (new Vector())->_assignArr($arr) );
+			foreach ($matches as $arr)
+			{
+				$res->push($ctx, Vector::from($arr) );
 			}
 			return $res;
 		}
@@ -62,7 +65,7 @@ class re
 	 * @param string s - replaceable string
 	 * @return string
 	 */
-	static function replace($__ctx, $r, $replace, $s)
+	static function replace($ctx, $r, $replace, $s)
 	{
 		return preg_replace("/" . $r . "/", $replace, $s);
 	}
@@ -83,9 +86,9 @@ class re
 	{
 		return "";
 	}
-	static function getClassInfo($__ctx)
+	static function getClassInfo($ctx)
 	{
-		return new \Runtime\Annotations\IntrospectionInfo($__ctx, [
+		return new \Runtime\Annotations\IntrospectionInfo($ctx, [
 			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
 			"class_name"=>"Runtime.re",
 			"name"=>"Runtime.re",
@@ -93,22 +96,22 @@ class re
 			]),
 		]);
 	}
-	static function getFieldsList($__ctx,$f)
+	static function getFieldsList($ctx,$f)
 	{
 		$a = [];
 		return \Runtime\Collection::from($a);
 	}
-	static function getFieldInfoByName($__ctx,$field_name)
+	static function getFieldInfoByName($ctx,$field_name)
 	{
 		return null;
 	}
-	static function getMethodsList($__ctx)
+	static function getMethodsList($ctx)
 	{
 		$a = [
 		];
 		return \Runtime\Collection::from($a);
 	}
-	static function getMethodInfoByName($__ctx,$field_name)
+	static function getMethodInfoByName($ctx,$field_name)
 	{
 		return null;
 	}

@@ -2,7 +2,7 @@
 /*!
  *  Bayrell Runtime Library
  *
- *  (c) Copyright 2016-2019 "Ildar Bikmamatov" <support@bayrell.org>
+ *  (c) Copyright 2016-2020 "Ildar Bikmamatov" <support@bayrell.org>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -19,14 +19,14 @@
 namespace Runtime;
 class CoreObject
 {
-	function __construct($__ctx)
+	function __construct($ctx)
 	{
-		$this->_init($__ctx);
+		$this->_init($ctx);
 	}
 	/**
 	 * Init function
 	 */
-	function _init($__ctx)
+	function _init($ctx)
 	{
 	}
 	/**
@@ -35,9 +35,19 @@ class CoreObject
 	 * @param string default_value
 	 * @return var
 	 */
-	function takeValue($__ctx, $variable_name, $default_value=null)
+	function get($ctx, $variable_name, $default_value=null)
 	{
-		return $this->takeVirtualValue($__ctx, $variable_name, $default_value);
+		return $this->takeValue($ctx, $variable_name, $default_value);
+	}
+	/**
+	 * Returns instance of the value by variable name
+	 * @param string variable_name
+	 * @param string default_value
+	 * @return var
+	 */
+	function takeValue($ctx, $variable_name, $default_value=null)
+	{
+		return $this->takeVirtualValue($ctx, $variable_name, $default_value);
 	}
 	/**
 	 * Returns virtual values
@@ -45,7 +55,7 @@ class CoreObject
 	 * @param string default_value
 	 * @return var
 	 */
-	function takeVirtualValue($__ctx, $variable_name, $default_value=null)
+	function takeVirtualValue($ctx, $variable_name, $default_value=null)
 	{
 		return $default_value;
 	}
@@ -54,23 +64,23 @@ class CoreObject
 	 * @param string variable_name
 	 * @param var value
 	 */
-	function assignValue($__ctx, $variable_name, $value)
+	function assignValue($ctx, $variable_name, $value)
 	{
-		$this->assignVirtualValue($__ctx, $variable_name, $value);
+		$this->assignVirtualValue($ctx, $variable_name, $value);
 	}
 	/**
 	 * Assign virtual value
 	 * @param string variable_name
 	 * @param var value
 	 */
-	function assignVirtualValue($__ctx, $variable_name, $value)
+	function assignVirtualValue($ctx, $variable_name, $value)
 	{
 	}
 	/**
 	 * Assign and clone data from other object
 	 * @param CoreObject obj
 	 */
-	function assignObject($__ctx, $obj)
+	function assignObject($ctx, $obj)
 	{
 	}
 	/**
@@ -78,18 +88,18 @@ class CoreObject
 	 * @param Map<var> map
 	 * @return CoreObject
 	 */
-	function assignDict($__ctx, $values=null)
+	function assignDict($ctx, $values=null)
 	{
 		if ($values == null)
 		{
 			return null;
 		}
 		$f = \Runtime\rtl::method("Runtime.RuntimeUtils", "getVariablesNames");
-		$names = $f($__ctx, $this->getClassName($__ctx), 2);
-		for ($i = 0;$i < $names->count($__ctx);$i++)
+		$names = $f($ctx, $this->getClassName($ctx), 2);
+		for ($i = 0;$i < $names->count($ctx);$i++)
 		{
-			$name = $names->item($__ctx, $i);
-			$this->assignValue($__ctx, $name, $values->get($__ctx, $name, null));
+			$name = $names->item($ctx, $i);
+			$this->assignValue($ctx, $name, $values->get($ctx, $name, null));
 		}
 		return $this;
 	}
@@ -98,47 +108,50 @@ class CoreObject
 	 * @param Dict<var> map
 	 * @return CoreObject
 	 */
-	function setDict($__ctx, $values=null)
+	function setDict($ctx, $values=null)
 	{
 		if ($values == null)
 		{
 			return null;
 		}
-		$values->each($__ctx, \Runtime\rtl::method($this, "assignValue"));
+		$values->each($ctx, function ($ctx, $v, $k)
+		{
+			return $this->assignValue($ctx, $k, $v);
+		});
 		return $this;
 	}
 	/**
 	 * Dump serializable object to Map
 	 * @return Map<var>
 	 */
-	function takeDict($__ctx, $fields=null, $flag=2)
+	function takeDict($ctx, $fields=null, $flag=2)
 	{
-		$values = new \Runtime\Map($__ctx);
+		$values = new \Runtime\Map($ctx);
 		if ($fields == null)
 		{
-			$f = \Runtime\rtl::method("Runtime.RuntimeUtils", "getVariablesNames");
-			$names = $f($__ctx, $this->getClassName($__ctx), $flag);
-			for ($i = 0;$i < $names->count($__ctx);$i++)
+			$f = \Runtime\rtl::method($ctx, "Runtime.RuntimeUtils", "getVariablesNames");
+			$names = $f($ctx, $this->getClassName($ctx), $flag);
+			for ($i = 0;$i < $names->count($ctx);$i++)
 			{
-				$name = $names->item($__ctx, $i);
-				$values->set($__ctx, $name, $this->takeValue($__ctx, $name, null));
+				$name = $names->item($ctx, $i);
+				$values->set($ctx, $name, $this->takeValue($ctx, $name, null));
 			}
 		}
 		else
 		{
-			for ($i = 0;$i < $fields->count($__ctx);$i++)
+			for ($i = 0;$i < $fields->count($ctx);$i++)
 			{
-				$name = $fields->item($__ctx, $i);
-				$values->set($__ctx, $name, $this->takeValue($__ctx, $name, null));
+				$name = $fields->item($ctx, $i);
+				$values->set($ctx, $name, $this->takeValue($ctx, $name, null));
 			}
 		}
-		return $values->toDict($__ctx);
+		return $values->toDict($ctx);
 	}
 	function staticMethod($method_name)
 	{
 		return \Runtime\rtl::method(null, $this->getClassName(), $method_name);
 	}
-	function callStatic($__ctx, $method_name)
+	function callStatic($ctx, $method_name)
 	{
 		$args = func_get_args();
 		$class_name = static::class;
@@ -146,7 +159,7 @@ class CoreObject
 		return call_user_func_array([$class_name, $method_name], $args);
 		return null;
 	}
-	function callStaticParent($__ctx, $method_name)
+	function callStaticParent($ctx, $method_name)
 	{
 		$args = func_get_args();
 		$class_name = static::class; 
@@ -172,9 +185,9 @@ class CoreObject
 	{
 		return "";
 	}
-	static function getClassInfo($__ctx)
+	static function getClassInfo($ctx)
 	{
-		return new \Runtime\Annotations\IntrospectionInfo($__ctx, [
+		return new \Runtime\Annotations\IntrospectionInfo($ctx, [
 			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
 			"class_name"=>"Runtime.CoreObject",
 			"name"=>"Runtime.CoreObject",
@@ -182,22 +195,22 @@ class CoreObject
 			]),
 		]);
 	}
-	static function getFieldsList($__ctx,$f)
+	static function getFieldsList($ctx,$f)
 	{
 		$a = [];
 		return \Runtime\Collection::from($a);
 	}
-	static function getFieldInfoByName($__ctx,$field_name)
+	static function getFieldInfoByName($ctx,$field_name)
 	{
 		return null;
 	}
-	static function getMethodsList($__ctx)
+	static function getMethodsList($ctx)
 	{
 		$a = [
 		];
 		return \Runtime\Collection::from($a);
 	}
-	static function getMethodInfoByName($__ctx,$field_name)
+	static function getMethodInfoByName($ctx,$field_name)
 	{
 		return null;
 	}

@@ -2,7 +2,7 @@
 /*!
  *  Bayrell Runtime Library
  *
- *  (c) Copyright 2016-2019 "Ildar Bikmamatov" <support@bayrell.org>
+ *  (c) Copyright 2016-2020 "Ildar Bikmamatov" <support@bayrell.org>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -19,71 +19,101 @@
 namespace Runtime;
 class MessageRPC extends \Runtime\Message
 {
+	public $__uri;
+	public $__api_name;
+	public $__space_name;
+	public $__method_name;
+	public $__data;
 	public $__code;
 	public $__error;
 	public $__response;
 	public $__logs;
+	public $__have_result;
 	/**
 	 * Returns true if success
 	 * @return bool
 	 */
-	static function isSuccess($__ctx, $msg)
+	static function isSuccess($ctx, $msg)
 	{
-		return $msg->code >= \Runtime\RuntimeConstant::ERROR_OK;
+		return $msg->have_result && $msg->code >= \Runtime\RuntimeConstant::ERROR_OK;
 	}
 	/**
 	 * Set success result
 	 * @param primitive res
 	 * @return Message
 	 */
-	static function success($__ctx, $response)
+	static function success($ctx, $msg, $response)
 	{
-		return new \Runtime\Message($__ctx, \Runtime\Dict::from(["code"=>\Runtime\RuntimeConstant::ERROR_OK,"error"=>"","response"=>$response]));
+		return $msg->copy($ctx, \Runtime\Dict::from(["code"=>\Runtime\RuntimeConstant::ERROR_OK,"error"=>"","response"=>$response,"have_result"=>true]));
 	}
 	/**
 	 * Set fail result
 	 * @param primitive res
 	 * @return Message
 	 */
-	static function fail($__ctx, $error="", $code=-1, $response=null)
+	static function fail($ctx, $msg, $response, $error="", $code=-1)
 	{
-		return new \Runtime\Message($__ctx, \Runtime\Dict::from(["code"=>$code,"error"=>$error,"response"=>$response]));
+		return $msg->copy($ctx, \Runtime\Dict::from(["code"=>$code,"error"=>$error,"response"=>$response,"have_result"=>true]));
 	}
 	/* ======================= Class Init Functions ======================= */
-	function _init($__ctx)
+	function _init($ctx)
 	{
-		parent::_init($__ctx);
+		parent::_init($ctx);
+		$this->__uri = "";
+		$this->__api_name = "";
+		$this->__space_name = "";
+		$this->__method_name = "";
+		$this->__data = null;
 		$this->__code = 0;
 		$this->__error = "";
 		$this->__response = null;
 		$this->__logs = null;
+		$this->__have_result = false;
 	}
-	function assignObject($__ctx,$o)
+	function assignObject($ctx,$o)
 	{
 		if ($o instanceof \Runtime\MessageRPC)
 		{
+			$this->__uri = $o->__uri;
+			$this->__api_name = $o->__api_name;
+			$this->__space_name = $o->__space_name;
+			$this->__method_name = $o->__method_name;
+			$this->__data = $o->__data;
 			$this->__code = $o->__code;
 			$this->__error = $o->__error;
 			$this->__response = $o->__response;
 			$this->__logs = $o->__logs;
+			$this->__have_result = $o->__have_result;
 		}
-		parent::assignObject($__ctx,$o);
+		parent::assignObject($ctx,$o);
 	}
-	function assignValue($__ctx,$k,$v)
+	function assignValue($ctx,$k,$v)
 	{
-		if ($k == "code")$this->__code = $v;
+		if ($k == "uri")$this->__uri = $v;
+		else if ($k == "api_name")$this->__api_name = $v;
+		else if ($k == "space_name")$this->__space_name = $v;
+		else if ($k == "method_name")$this->__method_name = $v;
+		else if ($k == "data")$this->__data = $v;
+		else if ($k == "code")$this->__code = $v;
 		else if ($k == "error")$this->__error = $v;
 		else if ($k == "response")$this->__response = $v;
 		else if ($k == "logs")$this->__logs = $v;
-		else parent::assignValue($__ctx,$k,$v);
+		else if ($k == "have_result")$this->__have_result = $v;
+		else parent::assignValue($ctx,$k,$v);
 	}
-	function takeValue($__ctx,$k,$d=null)
+	function takeValue($ctx,$k,$d=null)
 	{
-		if ($k == "code")return $this->__code;
+		if ($k == "uri")return $this->__uri;
+		else if ($k == "api_name")return $this->__api_name;
+		else if ($k == "space_name")return $this->__space_name;
+		else if ($k == "method_name")return $this->__method_name;
+		else if ($k == "data")return $this->__data;
+		else if ($k == "code")return $this->__code;
 		else if ($k == "error")return $this->__error;
 		else if ($k == "response")return $this->__response;
 		else if ($k == "logs")return $this->__logs;
-		return parent::takeValue($__ctx,$k,$d);
+		else if ($k == "have_result")return $this->__have_result;
+		return parent::takeValue($ctx,$k,$d);
 	}
 	function getClassName()
 	{
@@ -101,9 +131,9 @@ class MessageRPC extends \Runtime\Message
 	{
 		return "Runtime.Message";
 	}
-	static function getClassInfo($__ctx)
+	static function getClassInfo($ctx)
 	{
-		return new \Runtime\Annotations\IntrospectionInfo($__ctx, [
+		return new \Runtime\Annotations\IntrospectionInfo($ctx, [
 			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
 			"class_name"=>"Runtime.MessageRPC",
 			"name"=>"Runtime.MessageRPC",
@@ -111,29 +141,105 @@ class MessageRPC extends \Runtime\Message
 			]),
 		]);
 	}
-	static function getFieldsList($__ctx,$f)
+	static function getFieldsList($ctx,$f)
 	{
 		$a = [];
 		if (($f|3)==3)
 		{
+			$a[] = "uri";
+			$a[] = "api_name";
+			$a[] = "space_name";
+			$a[] = "method_name";
+			$a[] = "data";
 			$a[] = "code";
 			$a[] = "error";
 			$a[] = "response";
 			$a[] = "logs";
+			$a[] = "have_result";
 		}
 		return \Runtime\Collection::from($a);
 	}
-	static function getFieldInfoByName($__ctx,$field_name)
+	static function getFieldInfoByName($ctx,$field_name)
 	{
+		if ($field_name == "uri") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.MessageRPC",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "api_name") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.MessageRPC",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "space_name") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.MessageRPC",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "method_name") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.MessageRPC",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "data") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.MessageRPC",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "code") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.MessageRPC",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "error") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.MessageRPC",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "response") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.MessageRPC",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "logs") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.MessageRPC",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "have_result") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.MessageRPC",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
 		return null;
 	}
-	static function getMethodsList($__ctx)
+	static function getMethodsList($ctx)
 	{
 		$a = [
 		];
 		return \Runtime\Collection::from($a);
 	}
-	static function getMethodInfoByName($__ctx,$field_name)
+	static function getMethodInfoByName($ctx,$field_name)
 	{
 		return null;
 	}

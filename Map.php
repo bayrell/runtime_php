@@ -2,7 +2,7 @@
 /*!
  *  Bayrell Runtime Library
  *
- *  (c) Copyright 2016-2019 "Ildar Bikmamatov" <support@bayrell.org>
+ *  (c) Copyright 2016-2020 "Ildar Bikmamatov" <support@bayrell.org>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -23,9 +23,9 @@ class Map extends \Runtime\Dict
 	 * Returns new Instance
 	 * @return Object
 	 */
-	static function Instance($__ctx)
+	static function Instance($ctx)
 	{
-		return new \Runtime\Map($__ctx);
+		return new \Runtime\Map($ctx);
 	}
 	/**
 	 * Set value size_to position
@@ -33,7 +33,7 @@ class Map extends \Runtime\Dict
 	 * @param T value 
 	 * @return self
 	 */
-	function set($__ctx, $key, $value)
+	function set($ctx, $key, $value)
 	{
 		$key = rtl::toStr($key);
 		$this->_map[$key] = $value;
@@ -44,7 +44,7 @@ class Map extends \Runtime\Dict
 	 * @param string key
 	 * @return self
 	 */
-	function remove($__ctx, $key)
+	function remove($ctx, $key)
 	{
 		$key = rtl::toStr($key);
 		if (isset($this->_map[$key]))
@@ -55,7 +55,7 @@ class Map extends \Runtime\Dict
 	 * Clear all values from vector
 	 * @return self
 	 */
-	function clear($__ctx)
+	function clear($ctx)
 	{
 		$this->_map = [];
 		return $this;
@@ -77,9 +77,9 @@ class Map extends \Runtime\Dict
 	{
 		return "Runtime.Dict";
 	}
-	static function getClassInfo($__ctx)
+	static function getClassInfo($ctx)
 	{
-		return new \Runtime\Annotations\IntrospectionInfo($__ctx, [
+		return new \Runtime\Annotations\IntrospectionInfo($ctx, [
 			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
 			"class_name"=>"Runtime.Map",
 			"name"=>"Runtime.Map",
@@ -87,22 +87,22 @@ class Map extends \Runtime\Dict
 			]),
 		]);
 	}
-	static function getFieldsList($__ctx,$f)
+	static function getFieldsList($ctx,$f)
 	{
 		$a = [];
 		return \Runtime\Collection::from($a);
 	}
-	static function getFieldInfoByName($__ctx,$field_name)
+	static function getFieldInfoByName($ctx,$field_name)
 	{
 		return null;
 	}
-	static function getMethodsList($__ctx)
+	static function getMethodsList($ctx)
 	{
 		$a = [
 		];
 		return \Runtime\Collection::from($a);
 	}
-	static function getMethodInfoByName($__ctx,$field_name)
+	static function getMethodInfoByName($ctx,$field_name)
 	{
 		return null;
 	}

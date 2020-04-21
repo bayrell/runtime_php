@@ -2,7 +2,7 @@
 /*!
  *  Bayrell Runtime Library
  *
- *  (c) Copyright 2016-2019 "Ildar Bikmamatov" <support@bayrell.org>
+ *  (c) Copyright 2016-2020 "Ildar Bikmamatov" <support@bayrell.org>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ namespace Runtime;
 class Context extends \Runtime\CoreStruct
 {
 	public $__base_path;
-	public $__env;
+	public $__enviroments;
 	public $__settings;
 	public $__modules;
 	public $__entities;
@@ -29,36 +29,67 @@ class Context extends \Runtime\CoreStruct
 	public $__tags;
 	public $__initialized;
 	public $__started;
+	public $__start_time;
+	public $__logs;
 	/**
 	 * Returns app name
 	 * @return string
 	 */
-	static function appName()
+	static function appName($ctx)
 	{
 		return "";
 	}
 	/**
-	 * Returns required modules
+	 * Returns context settings
 	 * @return Dict<string>
 	 */
-	static function getModules($env)
+	static function getSettings($ctx, $env)
 	{
 		return null;
 	}
 	/**
-	 * Extend entities
+	 * Extends entities
 	 */
-	static function getEntities($env)
+	static function getEntities($ctx, $entities)
 	{
 		return null;
+	}
+	/**
+	 * Returns enviroment by eky
+	 */
+	static function env($ctx, $key, $def_value="")
+	{
+		return function ($ctx, $c) use (&$key,&$def_value)
+		{
+			return ($c->enviroments != null) ? $c->enviroments->get($ctx, $key, $def_value) : $def_value;
+		};
 	}
 	/**
 	 * Returns settings
 	 * @return Dict<string>
 	 */
-	static function getSettings($env)
+	static function config($ctx, $items, $d=null)
 	{
-		return null;
+		return function ($ctx, $c) use (&$items,&$d)
+		{
+			if ($c->settings == null)
+			{
+				return null;
+			}
+			$config = $c->settings->get($ctx, "config", null);
+			return ($config != null) ? \Runtime\rtl::attr($ctx, $config, $items, $d) : null;
+		};
+	}
+	/**
+	 * Returns docker secret key
+	 */
+	static function secret($ctx, $key)
+	{
+		return function ($ctx, $c) use (&$key)
+		{
+			$secrets = $c->settings->get($ctx, "secrets", null);
+			return ($secrets != null) ? $secrets->get($ctx, "key", "") : "";
+		};
 	}
 	/**
 	 * Create context
@@ -68,209 +99,66 @@ class Context extends \Runtime\CoreStruct
 	 * @params Dict settings
 	 * @return Context
 	 */
-	static function create($env, $modules=null, $settings=null)
+	static function create($ctx, $env, $entities=null)
 	{
-		/* Get modules */
-		if ($modules == null)
-		{
-			$m = static::getModules($env);
-			$modules = ($m != null) ? $m->keys(null) : \Runtime\Collection::from([]);
-		}
-		/* Get settings */
-		if ($settings == null)
-		{
-			$settings = static::getSettings($env);
-		}
-		/* Extends modules */
-		$modules = static::getRequiredModules($modules);
-		/* Get modules entities */
-		$entities = static::getModulesEntities($modules);
-		$entities = $entities->prependCollectionIm(null, static::getEntities($env));
-		/* Base path */
-		$base_path = \Runtime\rtl::attr(null, $settings, \Runtime\Collection::from(["base_path"]), "", "string");
-		if ($base_path == "")
-		{
-			$base_path = \Runtime\rtl::attr(null, $env, \Runtime\Collection::from(["BASE_PATH"]), "", "string");
-		}
+		$settings = static::getSettings($ctx, $env);
 		/* Context data */
-		$obj = \Runtime\Dict::from(["env"=>$env,"settings"=>$settings,"modules"=>$modules,"entities"=>$entities,"base_path"=>$base_path]);
+		$obj = \Runtime\Dict::from(["enviroments"=>$env,"settings"=>$settings,"modules"=>($settings != null) ? $settings->get($ctx, "modules", null) : null,"entities"=>$entities]);
 		/* Create context */
-		$context = static::newInstance(null, $obj);
-		return $context;
-	}
-	/**
-	 * Returns required modules
-	 * @param string class_name
-	 * @return Collection<string>
-	 */
-	static function _getRequiredModules($res, $cache, $modules, $filter=null)
-	{
-		if ($modules == null)
-		{
-			return ;
-		}
-		if ($filter)
-		{
-			$modules = $modules->filter(null, $filter);
-		}
-		for ($i = 0;$i < $modules->count(null);$i++)
-		{
-			$module_name = $modules->item(null, $i);
-			if ($cache->get(null, $module_name, false) == false)
-			{
-				$cache->set(null, $module_name, true);
-				$f = \Runtime\rtl::method(null, $module_name . \Runtime\rtl::toStr(".ModuleDescription"), "requiredModules");
-				$sub_modules = $f(null);
-				if ($sub_modules != null)
-				{
-					$sub_modules = $sub_modules->keys(null);
-					static::_getRequiredModules($res, $cache, $sub_modules);
-				}
-				$res->push(null, $module_name);
-			}
-		}
-	}
-	/**
-	 * Returns all modules
-	 * @param Collection<string> modules
-	 * @return Collection<string>
-	 */
-	static function getRequiredModules($modules)
-	{
-		$res = new \Runtime\Vector(null);
-		$cache = new \Runtime\Map(null);
-		static::_getRequiredModules($res, $cache, $modules);
-		$res = $res->removeDublicatesIm(null);
-		return $res->toCollection(null);
-	}
-	/**
-	 * Returns modules entities
-	 */
-	static function getModulesEntities($modules)
-	{
-		$entities = new \Runtime\Vector(null);
-		for ($i = 0;$i < $modules->count(null);$i++)
-		{
-			$module_class_name = $modules->item(null, $i) . \Runtime\rtl::toStr(".ModuleDescription");
-			$f = \Runtime\rtl::method(null, $module_class_name, "entities");
-			$arr = $f(null);
-			$entities->appendVector(null, $arr);
-		}
-		return $entities->toCollection(null);
-	}
-	/**
-	 * Extend entities
-	 */
-	static function extendEntities($entities, $context)
-	{
-		$e = $entities->toVector($context);
-		for ($i = 0;$i < $entities->count($context);$i++)
-		{
-			$item1 = $entities->item($context, $i);
-			$item1_class_name = $item1->getClassName();
-			if ($item1_class_name == "Runtime.Annotations.Entity")
-			{
-				$class_name = ($item1->value != "") ? $item1->value : $item1->name;
-				$info = \Runtime\RuntimeUtils::getClassIntrospection($context, $class_name);
-				if ($info->class_info)
-				{
-					for ($j = 0;$j < $info->class_info->count($context);$j++)
-					{
-						$item2 = $info->class_info->item($context, $j);
-						$item2_class_name = $item2->getClassName();
-						if ($item2 instanceof \Runtime\Annotations\Entity && $item2_class_name != "Runtime.Annotations.Entity")
-						{
-							$item2 = $item2->copy($context, \Runtime\Dict::from(["name"=>$class_name]));
-							$e->push($context, $item2);
-						}
-					}
-				}
-			}
-		}
-		return $e->toCollection($context);
+		$ctx = static::newInstance($ctx, $obj);
+		return $ctx;
 	}
 	/**
 	 * Init context
 	 */
-	static function init($context)
+	static function init($ctx, $c)
 	{
-		if ($context->initialized)
+		if ($c->initialized)
 		{
-			return $context;
+			return $c;
 		}
-		$entities = $context->entities;
+		/* Extends modules */
+		$modules = static::getRequiredModules($ctx, $c->modules);
+		/* Get modules entities */
+		$entities = static::getEntitiesFromModules($ctx, $modules);
+		$entities = $entities->prependCollectionIm($ctx, static::getEntities($ctx, $c->env));
+		/* Base path */
+		$base_path = ($c->base_path != "") ? $c->base_path : \Runtime\rtl::attr($ctx, $c->env, \Runtime\Collection::from(["BASE_PATH"]), "", "string");
+		/* Add entities */
+		if ($c->entities != null)
+		{
+			$entities = $entities->appendCollectionIm($ctx, $c->entities);
+		}
+		$c = $c->copy($ctx, ["entities"=>$entities]);
 		/* Extend entities */
-		$entities = static::extendEntities($entities, $context);
-		$entities = static::chain("Runtime.Entities", \Runtime\Collection::from([$context,$entities]), $context);
+		$__v0 = new \Runtime\Monad($ctx, $c);
+		$__v0 = $__v0->callMethod($ctx, "chain", \Runtime\Collection::from(["Runtime.Entities", \Runtime\Collection::from([$c,$entities])]));
+		$entities = $__v0->value($ctx);
+		$entities = static::extendEntities($ctx, $c, $entities);
+		$entities = static::extendEntitiesFromAnnotations($ctx, $entities);
 		/* Get providers */
-		$providers = static::getProvidersFromEntities($context);
+		$providers = static::getProvidersFromEntities($ctx, $entities);
 		/* Register drivers */
-		$drivers = static::getDriversFromEntities($context);
-		return $context->copy($context, \Runtime\Dict::from(["entities"=>$entities,"providers"=>$providers,"drivers"=>$drivers,"initialized"=>true]));
+		$drivers = static::getDriversFromEntities($ctx, $entities);
+		return $c->copy($ctx, \Runtime\Dict::from(["modules"=>$modules,"entities"=>$entities,"providers"=>$providers,"drivers"=>$drivers,"base_path"=>$base_path,"initialized"=>true]));
 	}
 	/**
 	 * Start context
 	 */
-	static function start($context)
+	static function start($ctx, $c)
 	{
-		if ($context->started)
+		if ($c->started)
 		{
-			return $context;
+			return $c;
 		}
-		$drivers = $context->drivers->keys($context);
-		for ($i = 0;$i < $drivers->count($context);$i++)
+		$drivers = $c->drivers->keys($ctx);
+		for ($i = 0;$i < $drivers->count($ctx);$i++)
 		{
-			$driver_name = $drivers->item($context, $i);
-			$driver = $context->drivers->item($context, $driver_name);
-			$driver->startDriver($context);
+			$driver_name = $drivers->item($ctx, $i);
+			$driver = $c->drivers->item($ctx, $driver_name);
+			$driver->startDriver($ctx);
 		}
-		return $context->copy($context, \Runtime\Dict::from(["started"=>true]));
-	}
-	/**
-	 * Returns providers from entities
-	 */
-	static function getProvidersFromEntities($context)
-	{
-		$arr = $context->entities->filter($context, function ($__ctx, $item)
-		{
-			return $item instanceof \Runtime\Annotations\Provider;
-		});
-		$providers = new \Runtime\Map($context);
-		for ($i = 0;$i < $arr->count($context);$i++)
-		{
-			$item = $arr->item($context, $i);
-			$providers->set($context, $item->name, $item);
-		}
-		return $providers->toDict($context);
-	}
-	/**
-	 * Register drivers
-	 */
-	static function getDriversFromEntities($context)
-	{
-		$arr = $context->entities->filter($context, function ($__ctx, $item)
-		{
-			return $item instanceof \Runtime\Annotations\Driver;
-		});
-		$drivers = new \Runtime\Map($context);
-		for ($i = 0;$i < $arr->count($context);$i++)
-		{
-			$item = $arr->item($context, $i);
-			$driver_name = $item->name;
-			$class_name = $item->value;
-			if ($class_name == "")
-			{
-				$class_name = $item->name;
-			}
-			$driver = \Runtime\rtl::newInstance($context, $class_name, \Runtime\Collection::from([]));
-			$driver = static::chain($context, $class_name, \Runtime\Collection::from([$context,$driver]));
-			if ($class_name != $driver_name)
-			{
-				$driver = static::chain($context, $driver_name, \Runtime\Collection::from([$context,$driver]));
-			}
-			$drivers->set($context, $item->name, $driver);
-		}
-		return $drivers->toDict($context);
+		return $c->copy($ctx, \Runtime\Dict::from(["started"=>true]));
 	}
 	/* ---------------------- Driver -------------------- */
 	/**
@@ -279,13 +167,16 @@ class Context extends \Runtime\CoreStruct
 	 * @params string driver_name
 	 * @return Runtime.anager
 	 */
-	static function getDriver($context, $driver_name)
+	static function getDriver($ctx, $driver_name)
 	{
-		if ($context->drivers->has($context, $driver_name))
+		return function ($ctx, $c) use (&$driver_name)
 		{
-			return $context->drivers->item($context, $driver_name);
-		}
-		return null;
+			if ($c->drivers->has($ctx, $driver_name))
+			{
+				return $c->drivers->item($ctx, $driver_name);
+			}
+			return null;
+		};
 	}
 	/* --------------------- Provider ------------------- */
 	/**
@@ -294,37 +185,45 @@ class Context extends \Runtime\CoreStruct
 	 * @params string provider_name
 	 * @return CoreProvider
 	 */
-	static function createProvider($provider_name, $params=null, $context)
+	static function createProvider($ctx, $provider_name, $params, $settings_name="default")
 	{
-		if ($params == null)
+		return function ($ctx, $c) use (&$provider_name,&$params,&$settings_name)
 		{
-			$params = \Runtime\Dict::from([]);
-		}
-		$provider = null;
-		if ($context->providers->has($context, $provider_name))
-		{
-			$info = $context->providers->item($context, $provider_name);
-			if ($info->kind == "interface")
+			$provider = null;
+			if ($c->providers->has($ctx, $provider_name))
 			{
-				throw new \Runtime\Exceptions\RuntimeException($context, "Provider " . \Runtime\rtl::toStr($provider_name) . \Runtime\rtl::toStr(" does not declared"));
+				$info = $c->providers->item($ctx, $provider_name);
+				if ($info->kind == "interface")
+				{
+					throw new \Runtime\Exceptions\RuntimeException($ctx, "Provider " . \Runtime\rtl::toStr($provider_name) . \Runtime\rtl::toStr(" does not declared"));
+				}
+				$class_name = $info->value;
+				if ($class_name == "")
+				{
+					$class_name = $info->name;
+				}
+				/* Set default params */
+				if ($params == null)
+				{
+					$params = \Runtime\rtl::attr($ctx, $c->settings, \Runtime\Collection::from(["providers",$class_name,$settings_name]));
+				}
+				if ($params == null)
+				{
+					$params = \Runtime\Dict::from([]);
+				}
+				$provider = \Runtime\rtl::newInstance($ctx, $class_name, \Runtime\Collection::from([$params]));
+				$provider = static::chain($ctx, $c, $class_name, \Runtime\Collection::from([$provider]));
+				if ($provider_name != $class_name)
+				{
+					$provider = static::chain($ctx, $c, $provider_name, \Runtime\Collection::from([$provider]));
+				}
 			}
-			$class_name = $info->value;
-			if ($class_name == "")
+			else
 			{
-				$class_name = $info->name;
+				throw new \Runtime\Exceptions\RuntimeException($ctx, "Provider " . \Runtime\rtl::toStr($provider_name) . \Runtime\rtl::toStr(" not found"));
 			}
-			$provider = \Runtime\rtl::newInstance($context, $class_name, \Runtime\Collection::from([$params]));
-			$provider = static::chain($context, $class_name, \Runtime\Collection::from([$context,$provider]));
-			if ($provider_name != $class_name)
-			{
-				$provider = static::chain($context, $provider_name, \Runtime\Collection::from([$context,$provider]));
-			}
-		}
-		else
-		{
-			throw new \Runtime\Exceptions\RuntimeException($context, "Provider " . \Runtime\rtl::toStr($provider_name) . \Runtime\rtl::toStr(" not found"));
-		}
-		return $provider;
+			return $provider;
+		};
 	}
 	/**
 	 * Returns provider
@@ -332,128 +231,129 @@ class Context extends \Runtime\CoreStruct
 	 * @params string provider_name
 	 * @return CoreProvider
 	 */
-	static function getProvider($provider_name, $settings_name="default", $context)
+	static function getProvider($ctx, $provider_name, $settings_name="default")
 	{
-		$params = \Runtime\rtl::attr($context, $context->settings, \Runtime\Collection::from(["providers",$provider_name,$settings_name]));
-		$provider = static::createProvider($provider_name, $params, $context);
-		return $provider;
+		return function ($ctx, $c) use (&$provider_name,&$settings_name)
+		{
+			$provider = static::createProvider($ctx, $c, $provider_name, null, $settings_name);
+			return $provider;
+		};
 	}
 	/* ---------------------- Chain --------------------- */
 	/**
 	 * Apply Lambda Chain
 	 */
-	static function chain($chain_name, $args, $context)
+	static function chain($ctx, $chain_name, $args)
 	{
-		$entities = $context->entities->filter($context, function ($__ctx, $item) use (&$chain_name)
+		return function ($ctx, $c) use (&$chain_name,&$args)
 		{
-			return $item instanceof \Runtime\Annotations\LambdaChain && $item->name == $chain_name && $item->is_async == false;
-		});
-		$entities = $entities->sortIm($context, function ($a, $b)
-		{
-			return $a->pos > $b->pos;
-		});
-		for ($i = 0;$i < $entities->count($context);$i++)
-		{
-			$item = $entities->item($context, $i);
-			$item_chain_name = $item->chain;
-			if ($item_chain_name != "")
+			$entities = $c->entities->filter($ctx, function ($ctx, $item) use (&$chain_name)
 			{
-				$res = static::chain($item_chain_name, $args, $context);
-				$args = $args->setIm($context, $args->count($context) - 1, $res);
-			}
-			else
+				return $item instanceof \Runtime\Annotations\LambdaChain && $item->name == $chain_name && $item->is_async == false;
+			});
+			$entities = $entities->sortIm($ctx, function ($a, $b)
 			{
-				$arr = \Runtime\rs::split($context, "::", $item->value);
-				$class_name = $arr->get($context, 0, "");
-				$method_name = $arr->get($context, 1, "");
-				$f = \Runtime\rtl::method($context, $class_name, $method_name);
-				$res = \Runtime\rtl::apply($context, $f, $args);
-				$args = $args->setIm($context, $args->count($context) - 1, $res);
+				return $a->pos > $b->pos;
+			});
+			for ($i = 0;$i < $entities->count($ctx);$i++)
+			{
+				$item = $entities->item($ctx, $i);
+				$item_chain_name = $item->chain;
+				if ($item_chain_name != "")
+				{
+					$res = $c->chain($ctx, $item_chain_name, $args);
+					$args = $args->setIm($ctx, $args->count($ctx) - 1, $res);
+				}
+				else
+				{
+					$arr = \Runtime\rs::split($ctx, "::", $item->value);
+					$class_name = $arr->get($ctx, 0, "");
+					$method_name = $arr->get($ctx, 1, "");
+					$f = \Runtime\rtl::method($ctx, $class_name, $method_name);
+					$res = \Runtime\rtl::apply($ctx, $f, $args);
+					$args = $args->setIm($ctx, $args->count($ctx) - 1, $res);
+				}
 			}
-		}
-		$res = $args->last($context);
-		return $res;
+			$res = $args->last($ctx);
+			return $res;
+		};
 	}
 	/**
 	 * Apply Lambda Chain Await
 	 */
-	static function chainAwait($chain_name, $args, $context)
+	static function chainAwait($ctx, $chain_name, $args)
 	{
-		$entities = $context->entities->filter($context, function ($__ctx, $item) use (&$chain_name)
+		return function ($ctx, $c) use (&$chain_name,&$args)
 		{
-			return $item instanceof \Runtime\Annotations\LambdaChain && $item->name == $chain_name;
-		});
-		$entities = $entities->sortIm($context, function ($a, $b)
-		{
-			return $a->pos > $b->pos;
-		});
-		for ($i = 0;$i < $entities->count($context);$i++)
-		{
-			$item = $entities->item($context, $i);
-			$item_chain_name = $item->chain;
-			if ($item_chain_name != "")
+			$entities = $c->entities->filter($ctx, function ($ctx, $item) use (&$chain_name)
 			{
-				$res = static::chainAwait($item_chain_name, $args, $context);
-				$args = $args->setIm($context, $args->count($context) - 1, $res);
-			}
-			else
+				return $item instanceof \Runtime\Annotations\LambdaChain && $item->name == $chain_name;
+			});
+			$entities = $entities->sortIm($ctx, function ($a, $b)
 			{
-				$arr = \Runtime\rs::split($context, "::", $item->value);
-				$class_name = $arr->get($context, 0, "");
-				$method_name = $arr->get($context, 1, "");
-				$f = \Runtime\rtl::method($context, $class_name, $method_name);
-				if ($item->is_async)
+				return $a->pos > $b->pos;
+			});
+			for ($i = 0;$i < $entities->count($ctx);$i++)
+			{
+				$item = $entities->item($ctx, $i);
+				$item_chain_name = $item->chain;
+				if ($item_chain_name != "")
 				{
-					$res = \Runtime\rtl::apply($context, $f, $args);
-					$args = $args->setIm($context, $args->count($context) - 1, $res);
+					$res = static::chainAwait($ctx, $item_chain_name, $args);
+					$args = $args->setIm($ctx, $args->count($ctx) - 1, $res);
 				}
 				else
 				{
-					$res = \Runtime\rtl::apply($context, $f, $args);
-					$args = $args->setIm($context, $args->count($context) - 1, $res);
+					$arr = \Runtime\rs::split($ctx, "::", $item->value);
+					$class_name = $arr->get($ctx, 0, "");
+					$method_name = $arr->get($ctx, 1, "");
+					$f = \Runtime\rtl::method($ctx, $class_name, $method_name);
+					if ($item->is_async)
+					{
+						$res = \Runtime\rtl::apply($ctx, $f, $args);
+						$args = $args->setIm($ctx, $args->count($ctx) - 1, $res);
+					}
+					else
+					{
+						$res = \Runtime\rtl::apply($ctx, $f, $args);
+						$args = $args->setIm($ctx, $args->count($ctx) - 1, $res);
+					}
 				}
 			}
-		}
-		$res = $args->last($context);
-		return $res;
+			$res = $args->last($ctx);
+			return $res;
+		};
 	}
 	/**
 	 * Translate message
 	 * @params string message - message need to be translated
+	 * @params string space - message space
 	 * @params Map params - Messages params. Default null.
 	 * @params string locale - Different locale. Default "".
 	 * @return string - translated string
 	 */
-	function translate($message, $params=null, $locale="")
+	static function translate($ctx, $message, $space, $params=null, $locale="")
 	{
-		return $message;
+		return function ($ctx, $c) use (&$message,&$space,&$params,&$locale)
+		{
+			return $message;
+		};
 	}
 	/* ----------------------- Bus ---------------------- */
 	/**
-	 * Local bus call
-	 * @param string class_name
-	 * @param string method_name
-	 * @param ApiRequest request
-	 * @return var The result of the api
+	 * Send message
+	 * @param Message msg
+	 * @param Context ctx
+	 * @return Message
 	 */
-	function busCall($class_name, $interface_name, $method_name, $data)
+	static function sendMessage($ctx, $msg)
 	{
-		/*BusInterface provider = static::getProvider(this, "Runtime.Interfaces.LocalBusInterface");
-		BusResult res = await provider::call(provider, this, class_name, interface_name, method_name, data);
-		return res;*/
-	}
-	/**
-	 * Local bus call
-	 * @param string class_name
-	 * @param string method_name
-	 * @param ApiRequest request
-	 * @return var The result of the api
-	 */
-	function busCallRoute($url, $data)
-	{
-		/*BusInterface provider = this.getProvider("Runtime.Interfaces.LocalBusInterface");
-		BusResult res = await provider::callRoute(provider, this, url, data);
-		return res;*/
+		return function ($ctx, $c) use (&$msg)
+		{
+			$provider = static::getProvider($ctx, $c, \Runtime\RuntimeConstant::BUS_INTERFACE, "default");
+			$msg = $provider::sendMessage($ctx, $provider, $msg);
+			return $msg;
+		};
 	}
 	/* ---------------------- Logs ---------------------- */
 	/**
@@ -461,68 +361,262 @@ class Context extends \Runtime\CoreStruct
 	 * @param string message
 	 * @param int loglevel
 	 */
-	function log($message, $loglevel=0)
+	static function debug($ctx, $message, $loglevel=0)
 	{
-		/*this.logs.push(message ~ "\n");*/
+		return function ($ctx, $c) use (&$message,&$loglevel)
+		{
+			$this->logs->push($ctx, $message . \Runtime\rtl::toStr("\n"));
+		};
+	}
+	/**
+	 * Timer message
+	 * @param string message
+	 * @param int loglevel
+	 */
+	static function log_timer($ctx, $message, $loglevel=0)
+	{
+		return function ($ctx, $c) use (&$message,&$loglevel)
+		{
+			$__v0 = new \Runtime\Monad($ctx, $c);
+			$__v0 = $__v0->callMethod($ctx, "utime", \Runtime\Collection::from([]));
+			$time = $__v0->value($ctx);
+			$time = $time - $c->start_time;
+			$s = "[" . \Runtime\rtl::toStr(\Runtime\rtl::round($ctx, $time * 1000)) . \Runtime\rtl::toStr("]ms ") . \Runtime\rtl::toStr($message) . \Runtime\rtl::toStr("\n");
+			$c->logs->push($ctx, $s);
+			/*if (isset($_GET['aaa']) && $_GET['aaa'] == 'bbb') var_dump($s);*/
+		};
 	}
 	/**
 	 * Dump var to log
 	 * @param var v
 	 * @param int loglevel
 	 */
-	function dump($v, $loglevel=0)
+	static function dump($ctx, $v, $loglevel=0)
 	{
-		ob_start();
-		var_dump($v);
-		$content = ob_get_contents();
-		ob_end_clean();
-		/*$this->logs->push($content);*/
+		return function ($ctx, $c) use (&$v,&$loglevel)
+		{
+			ob_start();
+			var_dump($v);
+			$content = ob_get_contents();
+			ob_end_clean();
+			$this->logs->push($content);
+		};
 	}
 	/**
 	 * Append logs message
 	 * @param Collection<string> logs
 	 */
-	function logAppend($logs)
+	static function logAppend($ctx, $logs)
 	{
-		/*this.logs.appendVector(logs);*/
+		return function ($ctx, $c) use (&$logs)
+		{
+			/*this.logs.appendVector(logs);*/
+		};
 	}
 	/**
 	 * Return logs
 	 */
-	function getLogs()
+	static function getLogs($ctx)
 	{
-		/*return this.logs.toCollection();*/
-		return \Runtime\Collection::from([]);
+		return function ($ctx, $c)
+		{
+			/*return this.logs.toCollection();*/
+			return \Runtime\Collection::from([]);
+		};
 	}
 	/* ---------------------- Tags ---------------------- */
 	/**
 	 * Set tag
 	 */
-	function setTagIm($tag_name, $value)
+	static function setTagIm($ctx, $tag_name, $value)
 	{
-		return $this->copy(\Runtime\Dict::from(["tags"=>$this->_tags->setIm($this, $tag_name, $value)]));
+		return function ($ctx, $c) use (&$tag_name,&$value)
+		{
+			return $c->copy($ctx, \Runtime\Dict::from(["tags"=>$c->tags->setIm($ctx, $c, $tag_name, $value)]));
+		};
 	}
 	/**
 	 * Returns tag
 	 */
-	function getTag($tag_name)
+	static function getTag($ctx, $tag_name)
 	{
-		return $this->_tags->get($this, $tag_name, null);
+		return function ($ctx, $c) use (&$tag_name)
+		{
+			return $c->tags->get($ctx, $c, $tag_name, null);
+		};
 	}
 	/* ---------------------- Other --------------------- */
 	/**
 	 * Returns unix timestamp
 	 */
-	function time()
+	static function time($ctx)
 	{
-		return time();
+		return function ($ctx, $c)
+		{
+			return time();
+		};
+	}
+	/**
+	 * Returns unix timestamp
+	 */
+	static function utime($ctx)
+	{
+		return function ($ctx, $c)
+		{
+			return microtime(true);
+		};
+	}
+	/* -------------------- Functions ------------------- */
+	/**
+	 * Returns required modules
+	 * @param string class_name
+	 * @return Collection<string>
+	 */
+	static function _getRequiredModules($ctx, $res, $cache, $modules, $filter=null)
+	{
+		if ($modules == null)
+		{
+			return ;
+		}
+		if ($filter)
+		{
+			$modules = $modules->filter($ctx, $filter);
+		}
+		for ($i = 0;$i < $modules->count($ctx);$i++)
+		{
+			$module_name = $modules->item($ctx, $i);
+			if ($cache->get($ctx, $module_name, false) == false)
+			{
+				$cache->set($ctx, $module_name, true);
+				$f = \Runtime\rtl::method($ctx, $module_name . \Runtime\rtl::toStr(".ModuleDescription"), "requiredModules");
+				$sub_modules = $f($ctx);
+				if ($sub_modules != null)
+				{
+					$sub_modules = $sub_modules->keys($ctx);
+					static::_getRequiredModules($ctx, $res, $cache, $sub_modules);
+				}
+				$res->push($ctx, $module_name);
+			}
+		}
+	}
+	/**
+	 * Returns all modules
+	 * @param Collection<string> modules
+	 * @return Collection<string>
+	 */
+	static function getRequiredModules($ctx, $modules)
+	{
+		$res = new \Runtime\Vector($ctx);
+		$cache = new \Runtime\Map($ctx);
+		static::_getRequiredModules($ctx, $res, $cache, $modules);
+		$res = $res->removeDublicatesIm($ctx);
+		return $res->toCollection($ctx);
+	}
+	/**
+	 * Returns modules entities
+	 */
+	static function getEntitiesFromModules($ctx, $modules)
+	{
+		$entities = new \Runtime\Vector($ctx);
+		for ($i = 0;$i < $modules->count($ctx);$i++)
+		{
+			$module_class_name = $modules->item($ctx, $i) . \Runtime\rtl::toStr(".ModuleDescription");
+			$f = \Runtime\rtl::method($ctx, $module_class_name, "entities");
+			$arr = $f($ctx);
+			$entities->appendVector($ctx, $arr);
+		}
+		return $entities->toCollection($ctx);
+	}
+	/**
+	 * Extend entities
+	 */
+	static function extendEntitiesFromAnnotations($ctx, $entities)
+	{
+		$e = $entities->toVector($ctx);
+		for ($i = 0;$i < $entities->count($ctx);$i++)
+		{
+			$item1 = $entities->item($ctx, $i);
+			$item1_class_name = $item1->getClassName($ctx);
+			if ($item1_class_name == "Runtime.Annotations.Entity")
+			{
+				$class_name = ($item1->value != "") ? $item1->value : $item1->name;
+				$info = \Runtime\RuntimeUtils::getClassIntrospection($ctx, $class_name);
+				if ($info != null && $info->class_info)
+				{
+					for ($j = 0;$j < $info->class_info->count($ctx);$j++)
+					{
+						$item2 = $info->class_info->item($ctx, $j);
+						$item2_class_name = $item2->getClassName($ctx);
+						if ($item2 instanceof \Runtime\Annotations\Entity && $item2_class_name != "Runtime.Annotations.Entity")
+						{
+							$item2 = $item2->copy($ctx, \Runtime\Dict::from(["name"=>$class_name]));
+							$e->push($ctx, $item2);
+						}
+					}
+				}
+			}
+		}
+		return $e->toCollection($ctx);
+	}
+	/**
+	 * Returns providers from entities
+	 */
+	static function getProvidersFromEntities($ctx, $entities)
+	{
+		$arr = $entities->filter($ctx, function ($ctx, $item)
+		{
+			return $item instanceof \Runtime\Annotations\Provider;
+		});
+		$providers = new \Runtime\Map($ctx);
+		for ($i = 0;$i < $arr->count($ctx);$i++)
+		{
+			$item = $arr->item($ctx, $i);
+			$providers->set($ctx, $item->name, $item);
+		}
+		return $providers->toDict($ctx);
+	}
+	/**
+	 * Register drivers
+	 */
+	static function getDriversFromEntities($ctx, $entities)
+	{
+		$arr = $entities->filter($ctx, function ($ctx, $item)
+		{
+			return $item instanceof \Runtime\Annotations\Driver;
+		});
+		$drivers = new \Runtime\Map($ctx);
+		for ($i = 0;$i < $arr->count($ctx);$i++)
+		{
+			$item = $arr->item($ctx, $i);
+			$driver_name = $item->name;
+			$class_name = $item->value;
+			if ($class_name == "")
+			{
+				$class_name = $item->name;
+			}
+			$driver = \Runtime\rtl::newInstance($ctx, $class_name, \Runtime\Collection::from([]));
+			$driver = static::chain($ctx, $class_name, \Runtime\Collection::from([$driver]));
+			if ($class_name != $driver_name)
+			{
+				$driver = static::chain($ctx, $driver_name, \Runtime\Collection::from([$driver]));
+			}
+			$drivers->set($ctx, $item->name, $driver);
+		}
+		return $drivers->toDict($ctx);
+	}
+	/**
+	 * Extends entities
+	 */
+	static function extendEntities($ctx, $c, $entities)
+	{
+		return $entities;
 	}
 	/* ======================= Class Init Functions ======================= */
-	function _init($__ctx)
+	function _init($ctx)
 	{
-		parent::_init($__ctx);
+		parent::_init($ctx);
 		$this->__base_path = null;
-		$this->__env = null;
+		$this->__enviroments = null;
 		$this->__settings = null;
 		$this->__modules = null;
 		$this->__entities = null;
@@ -531,13 +625,15 @@ class Context extends \Runtime\CoreStruct
 		$this->__tags = null;
 		$this->__initialized = false;
 		$this->__started = false;
+		$this->__start_time = 0;
+		$this->__logs = new \Runtime\Vector($ctx);
 	}
-	function assignObject($__ctx,$o)
+	function assignObject($ctx,$o)
 	{
 		if ($o instanceof \Runtime\Context)
 		{
 			$this->__base_path = $o->__base_path;
-			$this->__env = $o->__env;
+			$this->__enviroments = $o->__enviroments;
 			$this->__settings = $o->__settings;
 			$this->__modules = $o->__modules;
 			$this->__entities = $o->__entities;
@@ -546,13 +642,15 @@ class Context extends \Runtime\CoreStruct
 			$this->__tags = $o->__tags;
 			$this->__initialized = $o->__initialized;
 			$this->__started = $o->__started;
+			$this->__start_time = $o->__start_time;
+			$this->__logs = $o->__logs;
 		}
-		parent::assignObject($__ctx,$o);
+		parent::assignObject($ctx,$o);
 	}
-	function assignValue($__ctx,$k,$v)
+	function assignValue($ctx,$k,$v)
 	{
 		if ($k == "base_path")$this->__base_path = $v;
-		else if ($k == "env")$this->__env = $v;
+		else if ($k == "enviroments")$this->__enviroments = $v;
 		else if ($k == "settings")$this->__settings = $v;
 		else if ($k == "modules")$this->__modules = $v;
 		else if ($k == "entities")$this->__entities = $v;
@@ -561,12 +659,14 @@ class Context extends \Runtime\CoreStruct
 		else if ($k == "tags")$this->__tags = $v;
 		else if ($k == "initialized")$this->__initialized = $v;
 		else if ($k == "started")$this->__started = $v;
-		else parent::assignValue($__ctx,$k,$v);
+		else if ($k == "start_time")$this->__start_time = $v;
+		else if ($k == "logs")$this->__logs = $v;
+		else parent::assignValue($ctx,$k,$v);
 	}
-	function takeValue($__ctx,$k,$d=null)
+	function takeValue($ctx,$k,$d=null)
 	{
 		if ($k == "base_path")return $this->__base_path;
-		else if ($k == "env")return $this->__env;
+		else if ($k == "enviroments")return $this->__enviroments;
 		else if ($k == "settings")return $this->__settings;
 		else if ($k == "modules")return $this->__modules;
 		else if ($k == "entities")return $this->__entities;
@@ -575,7 +675,9 @@ class Context extends \Runtime\CoreStruct
 		else if ($k == "tags")return $this->__tags;
 		else if ($k == "initialized")return $this->__initialized;
 		else if ($k == "started")return $this->__started;
-		return parent::takeValue($__ctx,$k,$d);
+		else if ($k == "start_time")return $this->__start_time;
+		else if ($k == "logs")return $this->__logs;
+		return parent::takeValue($ctx,$k,$d);
 	}
 	function getClassName()
 	{
@@ -593,9 +695,9 @@ class Context extends \Runtime\CoreStruct
 	{
 		return "Runtime.CoreStruct";
 	}
-	static function getClassInfo($__ctx)
+	static function getClassInfo($ctx)
 	{
-		return new \Runtime\Annotations\IntrospectionInfo($__ctx, [
+		return new \Runtime\Annotations\IntrospectionInfo($ctx, [
 			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
 			"class_name"=>"Runtime.Context",
 			"name"=>"Runtime.Context",
@@ -603,13 +705,13 @@ class Context extends \Runtime\CoreStruct
 			]),
 		]);
 	}
-	static function getFieldsList($__ctx,$f)
+	static function getFieldsList($ctx,$f)
 	{
 		$a = [];
 		if (($f|3)==3)
 		{
 			$a[] = "base_path";
-			$a[] = "env";
+			$a[] = "enviroments";
 			$a[] = "settings";
 			$a[] = "modules";
 			$a[] = "entities";
@@ -618,20 +720,106 @@ class Context extends \Runtime\CoreStruct
 			$a[] = "tags";
 			$a[] = "initialized";
 			$a[] = "started";
+			$a[] = "start_time";
+			$a[] = "logs";
 		}
 		return \Runtime\Collection::from($a);
 	}
-	static function getFieldInfoByName($__ctx,$field_name)
+	static function getFieldInfoByName($ctx,$field_name)
 	{
+		if ($field_name == "base_path") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.Context",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "enviroments") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.Context",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "settings") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.Context",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "modules") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.Context",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "entities") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.Context",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "drivers") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.Context",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "providers") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.Context",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "tags") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.Context",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "initialized") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.Context",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "started") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.Context",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "start_time") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.Context",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "logs") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.Context",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
 		return null;
 	}
-	static function getMethodsList($__ctx)
+	static function getMethodsList($ctx)
 	{
 		$a = [
 		];
 		return \Runtime\Collection::from($a);
 	}
-	static function getMethodInfoByName($__ctx,$field_name)
+	static function getMethodInfoByName($ctx,$field_name)
 	{
 		return null;
 	}

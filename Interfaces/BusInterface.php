@@ -17,25 +17,10 @@
  *  limitations under the License.
  */
 namespace Runtime\Interfaces;
-interface AssetsInterface
+interface BusInterface
 {
 	/**
-	 * Returns module name
-	 * @return string
+	 * Send message
 	 */
-	static function getModuleName($ctx);
-	/**
-	 * Returns required modules
-	 * @return Dict<string>
-	 */
-	static function requiredModules($ctx);
-	/**
-	 * Returns module files load order
-	 * @return Collection<string>
-	 */
-	static function assets($ctx);
-	/**
-	 * Returns sync loaded files
-	 */
-	static function resources($ctx);
+	static function sendMessage($ctx, $provider, $msg);
 }

@@ -16,47 +16,43 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-namespace Runtime\Annotations;
-class Driver extends \Runtime\Annotations\Entity
+namespace Runtime;
+class Container
 {
+	public $val;
+	public $err;
+	function __construct($ctx, $value)
+	{
+		$this->val = $value;
+	}
 	/* ======================= Class Init Functions ======================= */
-	function assignObject($ctx,$o)
+	function _init($ctx)
 	{
-		if ($o instanceof \Runtime\Annotations\Driver)
-		{
-		}
-		parent::assignObject($ctx,$o);
-	}
-	function assignValue($ctx,$k,$v)
-	{
-		parent::assignValue($ctx,$k,$v);
-	}
-	function takeValue($ctx,$k,$d=null)
-	{
-		return parent::takeValue($ctx,$k,$d);
+		$this->val = null;
+		$this->err = null;
 	}
 	function getClassName()
 	{
-		return "Runtime.Annotations.Driver";
+		return "Runtime.Container";
 	}
 	static function getCurrentNamespace()
 	{
-		return "Runtime.Annotations";
+		return "Runtime";
 	}
 	static function getCurrentClassName()
 	{
-		return "Runtime.Annotations.Driver";
+		return "Runtime.Container";
 	}
 	static function getParentClassName()
 	{
-		return "Runtime.Annotations.Entity";
+		return "";
 	}
 	static function getClassInfo($ctx)
 	{
 		return new \Runtime\Annotations\IntrospectionInfo($ctx, [
 			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
-			"class_name"=>"Runtime.Annotations.Driver",
-			"name"=>"Runtime.Annotations.Driver",
+			"class_name"=>"Runtime.Container",
+			"name"=>"Runtime.Container",
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
@@ -68,6 +64,20 @@ class Driver extends \Runtime\Annotations\Entity
 	}
 	static function getFieldInfoByName($ctx,$field_name)
 	{
+		if ($field_name == "val") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.Container",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "err") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.Container",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
 		return null;
 	}
 	static function getMethodsList($ctx)

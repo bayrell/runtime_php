@@ -2,7 +2,7 @@
 /*!
  *  Bayrell Runtime Library
  *
- *  (c) Copyright 2016-2019 "Ildar Bikmamatov" <support@bayrell.org>
+ *  (c) Copyright 2016-2020 "Ildar Bikmamatov" <support@bayrell.org>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -23,15 +23,15 @@ class Vector extends \Runtime\Collection
 	 * Returns new Instance
 	 * @return Object
 	 */
-	static function Instance($__ctx)
+	static function Instance($ctx)
 	{
-		return new \Runtime\Vector($__ctx);
+		return new \Runtime\Vector($ctx);
 	}
 	/**
 	 * Append value to the end of array
 	 * @param T value
 	 */
-	function push($__ctx, $value)
+	function push($ctx, $value)
 	{
 		$this->_arr[] = $value;
 		return $this;
@@ -40,7 +40,7 @@ class Vector extends \Runtime\Collection
 	 * Insert first value size_to array
 	 * @return T value
 	 */
-	function unshift($__ctx, $value)
+	function unshift($ctx, $value)
 	{
 		array_unshift($this->_arr, $value);
 		return $this;
@@ -49,7 +49,7 @@ class Vector extends \Runtime\Collection
 	 * Extract last value from array
 	 * @return T value
 	 */
-	function pop($__ctx)
+	function pop($ctx)
 	{
 		return array_pop($this->_arr);
 	}
@@ -57,7 +57,7 @@ class Vector extends \Runtime\Collection
 	 * Extract first value from array
 	 * @return T value
 	 */
-	function shift($__ctx)
+	function shift($ctx)
 	{
 		return array_shift($this->_arr);
 	}
@@ -66,7 +66,7 @@ class Vector extends \Runtime\Collection
 	 * @param T value
 	 * @param int pos - position
 	 */
-	function insert($__ctx, $pos, $value)
+	function insert($ctx, $pos, $value)
 	{
 		array_splice($this->_arr, $pos, 0, [$value]);
 		return $this;
@@ -76,7 +76,7 @@ class Vector extends \Runtime\Collection
 	 * @param int pos - position
 	 * @param int count - count remove items
 	 */
-	function remove($__ctx, $pos, $count=1)
+	function remove($ctx, $pos, $count=1)
 	{
 		array_splice($this->_arr, $pos, $count);
 		return $this;
@@ -86,7 +86,7 @@ class Vector extends \Runtime\Collection
 	 * @param int pos_begin - start position
 	 * @param int pos_end - end position
 	 */
-	function removeRange($__ctx, $pos_begin, $pos_end)
+	function removeRange($ctx, $pos_begin, $pos_end)
 	{
 		$this->remove($pos_begin, $pos_end - $pos_begin + 1);
 		return $this;
@@ -96,7 +96,7 @@ class Vector extends \Runtime\Collection
 	 * @param int pos - position
 	 * @param T value 
 	 */
-	function set($__ctx, $pos, $value)
+	function set($ctx, $pos, $value)
 	{
 		if (!array_key_exists($pos, $this->_arr))
 		{
@@ -108,7 +108,7 @@ class Vector extends \Runtime\Collection
 	/**
 	 * Clear all values from vector
 	 */
-	function clear($__ctx)
+	function clear($ctx)
 	{
 		$this->_arr = [];
 		return $this;
@@ -117,25 +117,25 @@ class Vector extends \Runtime\Collection
 	 * Append value to the end of the vector
 	 * @param T value
 	 */
-	function append($__ctx, $value)
+	function append($ctx, $value)
 	{
-		$this->push($__ctx, $value);
+		$this->push($ctx, $value);
 		return $this;
 	}
 	/**
 	 * Insert first value to begin of the vector
 	 * @return T value
 	 */
-	function prepend($__ctx, $value)
+	function prepend($ctx, $value)
 	{
-		$this->unshift($__ctx, $value);
+		$this->unshift($ctx, $value);
 		return $this;
 	}
 	/**
 	 * Append vector to the end of the vector
 	 * @param Vector<T> arr
 	 */
-	function appendVector($__ctx, $arr)
+	function appendVector($ctx, $arr)
 	{
 		if (!$arr) return $this;
 		foreach ($arr->_arr as $key => $value)
@@ -148,7 +148,7 @@ class Vector extends \Runtime\Collection
 	 * Prepend vector to the begin of the vector
 	 * @param Vector<T> arr
 	 */
-	function prependVector($__ctx, $arr)
+	function prependVector($ctx, $arr)
 	{
 		if (!$arr) return $this;
 		foreach ($arr->_arr as $key => $value)
@@ -160,30 +160,30 @@ class Vector extends \Runtime\Collection
 	/**
 	 * Remove value
 	 */
-	function removeValue($__ctx, $value)
+	function removeValue($ctx, $value)
 	{
-		$index = $this->indexOf($__ctx, $value);
+		$index = $this->indexOf($ctx, $value);
 		if ($index != -1)
 		{
-			$this->remove($__ctx, $index, 1);
+			$this->remove($ctx, $index, 1);
 		}
 		return $this;
 	}
 	/**
 	 * Remove value
 	 */
-	function removeItem($__ctx, $value)
+	function removeItem($ctx, $value)
 	{
-		return $this->removeValue($__ctx, $value);
+		return $this->removeValue($ctx, $value);
 	}
 	/**
 	 * Remove value
 	 */
-	function removeItems($__ctx, $values)
+	function removeItems($ctx, $values)
 	{
-		for ($i = 0;$i < $values->count($__ctx);$i++)
+		for ($i = 0;$i < $values->count($ctx);$i++)
 		{
-			$this->removeValue($__ctx, $values->item($__ctx, $i));
+			$this->removeValue($ctx, $values->item($ctx, $i));
 		}
 		return $this;
 	}
@@ -204,9 +204,9 @@ class Vector extends \Runtime\Collection
 	{
 		return "Runtime.Collection";
 	}
-	static function getClassInfo($__ctx)
+	static function getClassInfo($ctx)
 	{
-		return new \Runtime\Annotations\IntrospectionInfo($__ctx, [
+		return new \Runtime\Annotations\IntrospectionInfo($ctx, [
 			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
 			"class_name"=>"Runtime.Vector",
 			"name"=>"Runtime.Vector",
@@ -214,22 +214,22 @@ class Vector extends \Runtime\Collection
 			]),
 		]);
 	}
-	static function getFieldsList($__ctx,$f)
+	static function getFieldsList($ctx,$f)
 	{
 		$a = [];
 		return \Runtime\Collection::from($a);
 	}
-	static function getFieldInfoByName($__ctx,$field_name)
+	static function getFieldInfoByName($ctx,$field_name)
 	{
 		return null;
 	}
-	static function getMethodsList($__ctx)
+	static function getMethodsList($ctx)
 	{
 		$a = [
 		];
 		return \Runtime\Collection::from($a);
 	}
-	static function getMethodInfoByName($__ctx,$field_name)
+	static function getMethodInfoByName($ctx,$field_name)
 	{
 		return null;
 	}

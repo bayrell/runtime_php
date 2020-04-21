@@ -1,4 +1,5 @@
 <?php
+
 /*!
  *  Bayrell Runtime Library
  *
@@ -16,26 +17,36 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-namespace Runtime\Interfaces;
-interface AssetsInterface
+
+namespace Runtime;
+
+class Callback 
 {
-	/**
-	 * Returns module name
-	 * @return string
-	 */
-	static function getModuleName($ctx);
-	/**
-	 * Returns required modules
-	 * @return Dict<string>
-	 */
-	static function requiredModules($ctx);
-	/**
-	 * Returns module files load order
-	 * @return Collection<string>
-	 */
-	static function assets($ctx);
-	/**
-	 * Returns sync loaded files
-	 */
-	static function resources($ctx);
+	protected $obj;
+	protected $name;
+	function __construct($obj, $name)
+	{
+		if (gettype($obj) == "string")
+		{
+			$obj = \Runtime\rtl::find_class($obj);
+			if (!class_exists($obj)){
+				throw new \Exception($obj . " not found ");
+			}
+			if (!method_exists($obj, $name)){
+				throw new \Exception("Method '" . $name . "' not found in " . $obj);
+			}
+		}
+		$this->obj = $obj;
+		$this->name = $name;
+	}
+		
+	function __invoke()
+	{
+		return call_user_func_array([$this->obj, $this->name], func_get_args());
+	}
+	
+	function invokeArgs($args)
+	{
+		return call_user_func_array([$this->obj, $this->name], $args);
+	}
 }

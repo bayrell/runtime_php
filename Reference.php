@@ -2,7 +2,7 @@
 /*!
  *  Bayrell Runtime Library
  *
- *  (c) Copyright 2016-2019 "Ildar Bikmamatov" <support@bayrell.org>
+ *  (c) Copyright 2016-2020 "Ildar Bikmamatov" <support@bayrell.org>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -21,29 +21,29 @@ class Reference extends \Runtime\CoreObject
 {
 	public $uq;
 	public $ref;
-	function __construct($__ctx, $ref=null)
+	function __construct($ctx, $ref=null)
 	{
-		parent::__construct($__ctx);
+		parent::__construct($ctx);
 		$this->ref = $ref;
 	}
 	/**
 	 * Assign and clone data from other object
 	 * @param CoreObject obj
 	 */
-	function assignObject($__ctx, $obj)
+	function assignObject($ctx, $obj)
 	{
 		if ($obj instanceof \Runtime\Reference)
 		{
 			$this->uq = $obj->uq;
 			$this->ref = $this->ref;
 		}
-		parent::assignObject($__ctx, $obj);
+		parent::assignObject($ctx, $obj);
 	}
 	/* ======================= Class Init Functions ======================= */
-	function _init($__ctx)
+	function _init($ctx)
 	{
-		parent::_init($__ctx);
-		$this->uq = \Runtime\rtl::unique($__ctx);
+		parent::_init($ctx);
+		$this->uq = \Runtime\rtl::unique($ctx);
 		$this->ref = null;
 	}
 	function getClassName()
@@ -62,9 +62,9 @@ class Reference extends \Runtime\CoreObject
 	{
 		return "Runtime.CoreObject";
 	}
-	static function getClassInfo($__ctx)
+	static function getClassInfo($ctx)
 	{
-		return new \Runtime\Annotations\IntrospectionInfo($__ctx, [
+		return new \Runtime\Annotations\IntrospectionInfo($ctx, [
 			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
 			"class_name"=>"Runtime.Reference",
 			"name"=>"Runtime.Reference",
@@ -72,22 +72,36 @@ class Reference extends \Runtime\CoreObject
 			]),
 		]);
 	}
-	static function getFieldsList($__ctx,$f)
+	static function getFieldsList($ctx,$f)
 	{
 		$a = [];
 		return \Runtime\Collection::from($a);
 	}
-	static function getFieldInfoByName($__ctx,$field_name)
+	static function getFieldInfoByName($ctx,$field_name)
 	{
+		if ($field_name == "uq") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.Reference",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "ref") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
+			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
+			"class_name"=>"Runtime.Reference",
+			"name"=> $field_name,
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
 		return null;
 	}
-	static function getMethodsList($__ctx)
+	static function getMethodsList($ctx)
 	{
 		$a = [
 		];
 		return \Runtime\Collection::from($a);
 	}
-	static function getMethodInfoByName($__ctx,$field_name)
+	static function getMethodInfoByName($ctx,$field_name)
 	{
 		return null;
 	}

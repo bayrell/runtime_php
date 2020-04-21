@@ -2,7 +2,7 @@
 /*!
  *  Bayrell Runtime Library
  *
- *  (c) Copyright 2016-2019 "Ildar Bikmamatov" <support@bayrell.org>
+ *  (c) Copyright 2016-2020 "Ildar Bikmamatov" <support@bayrell.org>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -19,33 +19,17 @@
 namespace Runtime;
 class CoreDriver extends \Runtime\CoreObject
 {
-	public $_context;
-	function __construct($__ctx, $context=null)
+	function __construct($ctx)
 	{
-		parent::__construct($__ctx);
-		$this->_context = $context;
-	}
-	/**
-	 * Returns context
-	 *
-	 * @return Context 
-	 */
-	function context($__ctx)
-	{
-		return $this->_context;
+		parent::__construct($ctx);
 	}
 	/**
 	 * Start driver
 	 */
-	function startDriver($__ctx)
+	function startDriver($ctx)
 	{
 	}
 	/* ======================= Class Init Functions ======================= */
-	function _init($__ctx)
-	{
-		parent::_init($__ctx);
-		$this->_context = null;
-	}
 	function getClassName()
 	{
 		return "Runtime.CoreDriver";
@@ -62,9 +46,9 @@ class CoreDriver extends \Runtime\CoreObject
 	{
 		return "Runtime.CoreObject";
 	}
-	static function getClassInfo($__ctx)
+	static function getClassInfo($ctx)
 	{
-		return new \Runtime\Annotations\IntrospectionInfo($__ctx, [
+		return new \Runtime\Annotations\IntrospectionInfo($ctx, [
 			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
 			"class_name"=>"Runtime.CoreDriver",
 			"name"=>"Runtime.CoreDriver",
@@ -72,22 +56,22 @@ class CoreDriver extends \Runtime\CoreObject
 			]),
 		]);
 	}
-	static function getFieldsList($__ctx,$f)
+	static function getFieldsList($ctx,$f)
 	{
 		$a = [];
 		return \Runtime\Collection::from($a);
 	}
-	static function getFieldInfoByName($__ctx,$field_name)
+	static function getFieldInfoByName($ctx,$field_name)
 	{
 		return null;
 	}
-	static function getMethodsList($__ctx)
+	static function getMethodsList($ctx)
 	{
 		$a = [
 		];
 		return \Runtime\Collection::from($a);
 	}
-	static function getMethodInfoByName($__ctx,$field_name)
+	static function getMethodInfoByName($ctx,$field_name)
 	{
 		return null;
 	}

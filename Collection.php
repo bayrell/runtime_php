@@ -2,7 +2,7 @@
 /*!
  *  Bayrell Runtime Library
  *
- *  (c) Copyright 2016-2019 "Ildar Bikmamatov" <support@bayrell.org>
+ *  (c) Copyright 2016-2020 "Ildar Bikmamatov" <support@bayrell.org>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -81,13 +81,21 @@ class _Collection implements \ArrayAccess, \JsonSerializable
 	 * Get and set methods
 	 */
 	function __isset($k){return isset($this->_arr[$k]);}
-	function __get($k){return $this->item($name);}
-	function __set($k,$v){throw new \Runtime\Exceptions\AssignStructValueError(null, $k);}
-	function __unset($k){throw new \Runtime\Exceptions\AssignStructValueError(null, $k);}
+	function __get($k){return $this->item(\Runtime\RuntimeUtils::getContext(), $k);}
+	function __set($k,$v){
+		throw new \Runtime\Exceptions\AssignStructValueError(\Runtime\RuntimeUtils::getContext(), $k);
+	}
+	function __unset($k){
+		throw new \Runtime\Exceptions\AssignStructValueError(\Runtime\RuntimeUtils::getContext(), $k);
+	}
 	public function offsetExists($k){return isset($this->_arr[$k]);}
-	public function offsetGet($k){return $this->item($name);}
-	public function offsetSet($k,$v){throw new \Runtime\Exceptions\AssignStructValueError(null, $k);}
-	public function offsetUnset($k){throw new \Runtime\Exceptions\AssignStructValueError(null, $k);}
+	public function offsetGet($k){return $this->item(\Runtime\RuntimeUtils::getContext(), $k);}
+	public function offsetSet($k,$v){
+		throw new \Runtime\Exceptions\AssignStructValueError(\Runtime\RuntimeUtils::getContext(), $k);
+	}
+	public function offsetUnset($k){
+		throw new \Runtime\Exceptions\AssignStructValueError(\Runtime\RuntimeUtils::getContext(), $k);
+	}
 	
 	
 	/* Class name */
@@ -102,15 +110,15 @@ class Collection extends \Runtime\_Collection
 	 * Returns new Instance
 	 * @return Object
 	 */
-	static function Instance($__ctx)
+	static function Instance($ctx)
 	{
-		return new \Runtime\Collection($__ctx);
+		return new \Runtime\Collection($ctx);
 	}
 	/**
 	 * Returns new Instance
 	 * @return Object
 	 */
-	static function create($__ctx, $arr)
+	static function create($ctx, $arr)
 	{
 		return static::from($arr);
 	}
@@ -118,7 +126,7 @@ class Collection extends \Runtime\_Collection
 	 * Returns copy of Collectiom
 	 * @param int pos - position
 	 */
-	function copy($__ctx)
+	function copy($ctx)
 	{
 		$class_name = static::class;
 		$arr2 = new $class_name();
@@ -129,14 +137,14 @@ class Collection extends \Runtime\_Collection
 	/**
 	 * Convert to collection
 	 */
-	function toCollection($__ctx)
+	function toCollection($ctx)
 	{
 		return \Runtime\Collection::from($this);
 	}
 	/**
 	 * Convert to vector
 	 */
-	function toVector($__ctx)
+	function toVector($ctx)
 	{
 		return \Runtime\Vector::from($this);
 	}
@@ -144,7 +152,7 @@ class Collection extends \Runtime\_Collection
 	 * Returns value from position
 	 * @param int pos - position
 	 */
-	function get($__ctx, $pos, $default_value)
+	function get($ctx, $pos, $default_value)
 	{
 		$val = isset($this->_arr[$pos]) ? $this->_arr[$pos] : $default_value;
 		return $val;
@@ -153,18 +161,18 @@ class Collection extends \Runtime\_Collection
 	 * Returns value from position. Throw exception, if position does not exists
 	 * @param int pos - position
 	 */
-	function item($__ctx, $pos)
+	function item($ctx, $pos)
 	{
 		if (!array_key_exists($pos, $this->_arr))
 		{
-			throw new IndexOutOfRange($__ctx);
+			throw new \Runtime\Exceptions\IndexOutOfRange($ctx);
 		}
 		return $this->_arr[$pos];
 	}
 	/**
 	 * Returns count items in vector
 	 */
-	function count($__ctx)
+	function count($ctx)
 	{
 		return count($this->_arr);
 	}
@@ -173,7 +181,7 @@ class Collection extends \Runtime\_Collection
 	 * @param T value
 	 * @return  int
 	 */
-	function indexOf($__ctx, $value)
+	function indexOf($ctx, $value)
 	{
 		$pos = array_search($value, $this->_arr, true);
 		if ($pos === false) return -1;
@@ -186,9 +194,9 @@ class Collection extends \Runtime\_Collection
 	 * @param int pos_end - end position
 	 * @return  int
 	 */
-	function indexOfRange($__ctx, $value, $pos_begin, $pos_end)
+	function indexOfRange($ctx, $value, $pos_begin, $pos_end)
 	{
-		$pos = $this->indexOf($__ctx, $value);
+		$pos = $this->indexOf($ctx, $value);
 		if ($pos == -1 or $pos > $pos_end or $pos < $pos_begin)
 			return -1;
 		return $pos;
@@ -196,7 +204,7 @@ class Collection extends \Runtime\_Collection
 	/**
 	 * Get first item
 	 */
-	function first($__ctx, $default_value=null)
+	function first($ctx, $default_value=null)
 	{
 		$c = count($this->_arr);
 		if ($c == 0) return $default_value;	
@@ -205,7 +213,7 @@ class Collection extends \Runtime\_Collection
 	/**
 	 * Get last item
 	 */
-	function last($__ctx, $default_value=null, $pos=-1)
+	function last($ctx, $default_value=null, $pos=-1)
 	{
 		$c = count($this->_arr);
 		if ($c == 0) return $default_value;
@@ -215,17 +223,17 @@ class Collection extends \Runtime\_Collection
 	/**
 	 * Get last item
 	 */
-	function getLastItem($__ctx, $default_value=null, $pos=-1)
+	function getLastItem($ctx, $default_value=null, $pos=-1)
 	{
-		return $this->last($__ctx, $default_value, $pos);
+		return $this->last($ctx, $default_value, $pos);
 	}
 	/**
 	 * Append value to the end of the Collection and return new Collection
 	 * @param T value
 	 */
-	function pushIm($__ctx, $value)
+	function pushIm($ctx, $value)
 	{
-		$res = $this->copy($__ctx);
+		$res = $this->copy($ctx);
 		$res->_arr[] = $value;
 		return $res;
 	}
@@ -233,9 +241,9 @@ class Collection extends \Runtime\_Collection
 	 * Insert first value size_to array
 	 * @return T value
 	 */
-	function unshiftIm($__ctx, $value)
+	function unshiftIm($ctx, $value)
 	{
-		$res = $this->copy($__ctx);
+		$res = $this->copy($ctx);
 		array_unshift($res->_arr, $value);
 		return $res;
 	}
@@ -243,9 +251,9 @@ class Collection extends \Runtime\_Collection
 	 * Extract last value from array
 	 * @return T value
 	 */
-	function removeLastIm($__ctx)
+	function removeLastIm($ctx)
 	{
-		$res = $this->copy($__ctx);
+		$res = $this->copy($ctx);
 		array_pop($res->_arr);
 		return $res;
 	}
@@ -253,9 +261,9 @@ class Collection extends \Runtime\_Collection
 	 * Extract first value from array
 	 * @return T value
 	 */
-	function removeFirstIm($__ctx)
+	function removeFirstIm($ctx)
 	{
-		$res = $this->copy($__ctx);
+		$res = $this->copy($ctx);
 		array_shift($res->_arr);
 		return $res;
 	}
@@ -264,9 +272,9 @@ class Collection extends \Runtime\_Collection
 	 * @param T value
 	 * @param int pos - position
 	 */
-	function insertIm($__ctx, $pos, $value)
+	function insertIm($ctx, $pos, $value)
 	{
-		$res = $this->copy($__ctx);
+		$res = $this->copy($ctx);
 		array_splice($res->_arr, $pos, 0, [$value]);
 		return $res;
 	}
@@ -275,9 +283,9 @@ class Collection extends \Runtime\_Collection
 	 * @param int pos - position
 	 * @param int count - count remove items
 	 */
-	function removeIm($__ctx, $pos, $count=1)
+	function removeIm($ctx, $pos, $count=1)
 	{
-		$res = $this->copy($__ctx);
+		$res = $this->copy($ctx);
 		array_splice($res->_arr, $pos, $count);
 		return $res;
 	}
@@ -286,9 +294,9 @@ class Collection extends \Runtime\_Collection
 	 * @param int pos_begin - start position
 	 * @param int pos_end - end position
 	 */
-	function removeRangeIm($__ctx, $pos_begin, $pos_end)
+	function removeRangeIm($ctx, $pos_begin, $pos_end)
 	{
-		$res = $this->copy($__ctx);
+		$res = $this->copy($ctx);
 		$res->removeIm($pos_begin, $pos_end - $pos_begin + 1);
 		return $res;
 	}
@@ -297,11 +305,11 @@ class Collection extends \Runtime\_Collection
 	 * @param int pos - position
 	 * @param T value 
 	 */
-	function setIm($__ctx, $pos, $value)
+	function setIm($ctx, $pos, $value)
 	{
 		if (!array_key_exists($pos, $this->_arr))
-			throw new IndexOutOfRange($__ctx);
-		$res = $this->copy($__ctx);	
+			throw new \Runtime\Exceptions\IndexOutOfRange($ctx);
+		$res = $this->copy($ctx);	
 		$res->_arr[$pos] = $value;
 		return $res;
 	}
@@ -309,27 +317,27 @@ class Collection extends \Runtime\_Collection
 	 * Append value to the end of the vector
 	 * @param T value
 	 */
-	function appendIm($__ctx, $value)
+	function appendIm($ctx, $value)
 	{
-		return $this->pushIm($__ctx, $value);
+		return $this->pushIm($ctx, $value);
 	}
 	/**
 	 * Insert first value to begin of the vector
 	 * @return T value
 	 */
-	function prependIm($__ctx, $value)
+	function prependIm($ctx, $value)
 	{
-		return $this->unshiftIm($__ctx, $value);
+		return $this->unshiftIm($ctx, $value);
 	}
 	/**
 	 * Append vector to the end of the vector
 	 * @param Collection<T> arr
 	 */
-	function appendCollectionIm($__ctx, $arr)
+	function appendCollectionIm($ctx, $arr)
 	{
 		if (!$arr) return $this;
 		if (count($arr->_arr) == 0) return $this;
-		$res = $this->copy($__ctx);
+		$res = $this->copy($ctx);
 		foreach ($arr->_arr as $item)
 		{
 			$res->_arr[] = $item;
@@ -340,10 +348,10 @@ class Collection extends \Runtime\_Collection
 	 * Prepend vector to the begin of the vector
 	 * @param Collection<T> arr
 	 */
-	function prependCollectionIm($__ctx, $arr)
+	function prependCollectionIm($ctx, $arr)
 	{
 		if (!$arr) return $this;
-		$res = $this->copy($__ctx);
+		$res = $this->copy($ctx);
 		$sz = count($arr->_arr);
 		for ($i=$sz-1; $i>=0; $i--)
 		{
@@ -354,31 +362,31 @@ class Collection extends \Runtime\_Collection
 	/**
 	 * Remove value
 	 */
-	function removeValueIm($__ctx, $value)
+	function removeValueIm($ctx, $value)
 	{
-		$index = $this->indexOf($__ctx, $value);
+		$index = $this->indexOf($ctx, $value);
 		if ($index != -1)
 		{
-			return $this->removeIm($__ctx, $index);
+			return $this->removeIm($ctx, $index);
 		}
 		return $this;
 	}
 	/**
 	 * Remove value
 	 */
-	function removeItemIm($__ctx, $value)
+	function removeItemIm($ctx, $value)
 	{
-		return $this->removeValueIm($__ctx, $value);
+		return $this->removeValueIm($ctx, $value);
 	}
 	/**
 	 * Remove value
 	 */
-	function removeItemsIm($__ctx, $values)
+	function removeItemsIm($ctx, $values)
 	{
 		$res = $this;
-		for ($i = 0;$i < $values->count($__ctx);$i++)
+		for ($i = 0;$i < $values->count($ctx);$i++)
 		{
-			$res = $res->removeItem($__ctx, $values->item($__ctx, $i));
+			$res = $res->removeItem($ctx, $values->item($ctx, $i));
 		}
 		return $res;
 	}
@@ -387,12 +395,12 @@ class Collection extends \Runtime\_Collection
 	 * @param fn f
 	 * @return Collection
 	 */
-	function map($__ctx, $f)
+	function map($ctx, $f)
 	{
-		$arr2 = $this->copy($__ctx);
+		$arr2 = $this->copy($ctx);
 		foreach ($this->_arr as $key => $value)
 		{
-			$arr2->_arr[$key] = $f($__ctx, $value, $key);
+			$arr2->_arr[$key] = $f($ctx, $value, $key);
 		}
 		return $arr2;
 	}
@@ -401,12 +409,12 @@ class Collection extends \Runtime\_Collection
 	 * @param fn f
 	 * @return Collection
 	 */
-	function filter($__ctx, $f)
+	function filter($ctx, $f)
 	{
-		$arr2 = static::Instance($__ctx);
+		$arr2 = static::Instance($ctx);
 		foreach ($this->_arr as $key => $value)
 		{
-			if ( $f($__ctx, $value, $key) )
+			if ( $f($ctx, $value, $key) )
 			{
 				$arr2->_arr[] = $value;
 			}
@@ -418,12 +426,12 @@ class Collection extends \Runtime\_Collection
 	 * @param fn f
 	 * @return Dict
 	 */
-	function transition($__ctx, $f)
+	function transition($ctx, $f)
 	{
 		$d = new \Runtime\Dict();
 		foreach ($this->_arr as $key => $value)
 		{
-			$p = $f(__ctx, $value, $key);
+			$p = $f(ctx, $value, $key);
 			$d->map[$p[1]] = $p[0];
 		}
 		return $d;
@@ -434,11 +442,11 @@ class Collection extends \Runtime\_Collection
 	 * @param var init_value
 	 * @return init_value
 	 */
-	function reduce($__ctx, $f, $init_value)
+	function reduce($ctx, $f, $init_value)
 	{
 		foreach ($this->_arr as $key => $value)
 		{
-			$init_value = $f($__ctx, $init_value, $value, $key);
+			$init_value = $f($ctx, $init_value, $value, $key);
 		}
 		return $init_value;
 	}
@@ -446,11 +454,11 @@ class Collection extends \Runtime\_Collection
 	 * Call function for each item
 	 * @param fn f
 	 */
-	function each($__ctx, $f)
+	function each($ctx, $f)
 	{
 		foreach ($this->_arr as $key => $value)
 		{
-			$f($__ctx, $value, $key);
+			$f($ctx, $value, $key);
 		}
 	}
 	/**
@@ -458,11 +466,11 @@ class Collection extends \Runtime\_Collection
 	 * @param Collection<T> arr
 	 * @return Collection<T>
 	 */
-	function concat($__ctx, $arr=null)
+	function concat($ctx, $arr=null)
 	{
 		if ($arr == null) return $this;
-		$arr2 = static::Instance($__ctx);
-		$arr2->_arr = array_merge($this->_arr, $v->_arr);
+		$arr2 = static::Instance($ctx);
+		$arr2->_arr = array_merge($this->_arr, $arr->_arr);
 		return $arr2;
 	}
 	/**
@@ -470,11 +478,11 @@ class Collection extends \Runtime\_Collection
 	 * @param Collection<T> arr
 	 * @return Collection<T>
 	 */
-	function intersect($__ctx, $arr)
+	function intersect($ctx, $arr)
 	{
-		return $this->filter($__ctx, function ($__ctx, $item) use (&$arr)
+		return $this->filter($ctx, function ($ctx, $item) use (&$arr)
 		{
-			return $arr->indexOf($__ctx, $item) >= 0;
+			return $arr->indexOf($ctx, $item) >= 0;
 		});
 	}
 	/**
@@ -483,18 +491,18 @@ class Collection extends \Runtime\_Collection
 	 * @param int lenght
 	 * @return Collection<T>
 	 */
-	function slice($__ctx, $offset, $length=null)
+	function slice($ctx, $offset, $length=null)
 	{
-		$arr2 = static::Instance($__ctx);
+		$arr2 = static::Instance($ctx);
 		$arr2->_arr = array_slice($this->_arr, $offset, $length);
 		return $arr2;
 	}
 	/**
 	 * Reverse array
 	 */
-	function reverseIm($__ctx)
+	function reverseIm($ctx)
 	{
-		$arr2 = $this->copy($__ctx);
+		$arr2 = $this->copy($ctx);
 		array_reverse($arr2->_arr);
 		return $arr2;
 	}
@@ -502,9 +510,9 @@ class Collection extends \Runtime\_Collection
 	 * Sort vector
 	 * @param fn f - Sort user function
 	 */
-	function sortIm($__ctx, $f=null)
+	function sortIm($ctx, $f=null)
 	{
-		$res = $this->copy($__ctx);
+		$res = $this->copy($ctx);
 		if ($f == null)
 		{
 			asort($res->_arr);
@@ -518,7 +526,11 @@ class Collection extends \Runtime\_Collection
 	/**
 	 * Remove dublicate values
 	 */
-	function removeDublicatesIm($__ctx)
+	function removeDublicatesIm($ctx)
+	{
+		return $this->removeDuplicatesIm($ctx);
+	}
+	function removeDuplicatesIm($ctx)
 	{
 		$arr = []; $sz = count($this->_arr);
 		for ($i=0; $i<$sz; $i++)
@@ -530,7 +542,7 @@ class Collection extends \Runtime\_Collection
 				$arr[] = $value;
 			}
 		}
-		$res = static::Instance($__ctx);
+		$res = static::Instance($ctx);
 		$res->_arr = $arr;
 		return $res;
 	}
@@ -539,13 +551,13 @@ class Collection extends \Runtime\_Collection
 	 * @param fn f - Find function
 	 * @return int - position
 	 */
-	function find($__ctx, $f)
+	function find($ctx, $f)
 	{
 		$sz = count($this->_arr);
 		for ($i=0; $i<$sz; $i++)
 		{
 			$elem = $this->_arr[$i];
-			if ( $f($__ctx, $elem) )
+			if ( $f($ctx, $elem) )
 			{
 				return $i;
 			}
@@ -559,10 +571,17 @@ class Collection extends \Runtime\_Collection
 	 * @param T def_value - Find function
 	 * @return item
 	 */
-	function findItem($__ctx, $f, $def_value=null)
+	function findItem($ctx, $f, $def_value=null)
 	{
-		$pos = $this->find($__ctx, $f);
-		return $this->get($__ctx, $pos, $def_value);
+		$pos = $this->find($ctx, $f);
+		return $this->get($ctx, $pos, $def_value);
+	}
+	/**
+	 * Join collection to string
+	 */
+	function join($ctx, $ch)
+	{
+		return \Runtime\rs::join($ctx, $ch, $this);
 	}
 	/* ======================= Class Init Functions ======================= */
 	function getClassName()
@@ -581,9 +600,9 @@ class Collection extends \Runtime\_Collection
 	{
 		return "Runtime._Collection";
 	}
-	static function getClassInfo($__ctx)
+	static function getClassInfo($ctx)
 	{
-		return new \Runtime\Annotations\IntrospectionInfo($__ctx, [
+		return new \Runtime\Annotations\IntrospectionInfo($ctx, [
 			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
 			"class_name"=>"Runtime.Collection",
 			"name"=>"Runtime.Collection",
@@ -591,22 +610,22 @@ class Collection extends \Runtime\_Collection
 			]),
 		]);
 	}
-	static function getFieldsList($__ctx,$f)
+	static function getFieldsList($ctx,$f)
 	{
 		$a = [];
 		return \Runtime\Collection::from($a);
 	}
-	static function getFieldInfoByName($__ctx,$field_name)
+	static function getFieldInfoByName($ctx,$field_name)
 	{
 		return null;
 	}
-	static function getMethodsList($__ctx)
+	static function getMethodsList($ctx)
 	{
 		$a = [
 		];
 		return \Runtime\Collection::from($a);
 	}
-	static function getMethodInfoByName($__ctx,$field_name)
+	static function getMethodInfoByName($ctx,$field_name)
 	{
 		return null;
 	}

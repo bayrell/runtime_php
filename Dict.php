@@ -2,7 +2,7 @@
 /*!
  *  Bayrell Runtime Library
  *
- *  (c) Copyright 2016-2019 "Ildar Bikmamatov" <support@bayrell.org>
+ *  (c) Copyright 2016-2020 "Ildar Bikmamatov" <support@bayrell.org>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -71,7 +71,7 @@ class _Map implements \ArrayAccess, \JsonSerializable
 	/**
 	 * Constructor
 	 */
-	public function __construct($__ctx, $map=null)
+	public function __construct($ctx, $map=null)
 	{
 		$this->_map = [];
 		if ($map == null) {}
@@ -144,15 +144,15 @@ class Dict extends \Runtime\_Map
 	 * Returns new Instance
 	 * @return Object
 	 */
-	static function Instance($__ctx)
+	static function Instance($ctx)
 	{
-		return new \Runtime\Dict($__ctx);
+		return new \Runtime\Dict($ctx);
 	}
 	/**
 	 * Returns new Instance
 	 * @return Object
 	 */
-	static function create($__ctx, $obj)
+	static function create($ctx, $obj)
 	{
 		$class_name = static::class;
 		return new $class_name($obj);
@@ -161,32 +161,32 @@ class Dict extends \Runtime\_Map
 	 * Returns copy of Dict
 	 * @param int pos - position
 	 */
-	function copy($__ctx)
+	function copy($ctx)
 	{
-		$new_obj = static::Instance($__ctx);
+		$new_obj = static::Instance($ctx);
 		$new_obj->_map = $this->_map;
 		return $new_obj;
 	}
 	/**
 	 * Convert to dict
 	 */
-	function toDict($__ctx)
+	function toDict($ctx)
 	{
-		return new \Runtime\Dict($__ctx, $this);
+		return new \Runtime\Dict($ctx, $this);
 	}
 	/**
 	 * Convert to dict
 	 */
-	function toMap($__ctx)
+	function toMap($ctx)
 	{
-		return new \Runtime\Map($__ctx, $this);
+		return new \Runtime\Map($ctx, $this);
 	}
 	/**
 	 * Return true if key exists
 	 * @param string key
 	 * @return bool var
 	 */
-	function contains($__ctx, $key)
+	function contains($ctx, $key)
 	{
 		$key = $this->toStr($key);
 		return isset($this->_map[$key]);
@@ -196,9 +196,9 @@ class Dict extends \Runtime\_Map
 	 * @param string key
 	 * @return bool var
 	 */
-	function has($__ctx, $key)
+	function has($ctx, $key)
 	{
-		return $this->contains($__ctx, $key);
+		return $this->contains($ctx, $key);
 	}
 	/**
 	 * Returns value from position
@@ -206,18 +206,28 @@ class Dict extends \Runtime\_Map
 	 * @param T default_value
 	 * @return T
 	 */
-	function get($__ctx, $key, $default_value)
+	function get($ctx, $key, $default_value)
 	{
 		$key = $this->toStr($key);
 		$val = isset($this->_map[$key]) ? $this->_map[$key] : $default_value;
 		return $val;
 	}
 	/**
+	 * Returns value from position
+	 * @param string key
+	 * @param T default_value
+	 * @return T
+	 */
+	function attr($ctx, $items, $default_value)
+	{
+		return \Runtime\rtl::attr($ctx, $this, $items, $default_value);
+	}
+	/**
 	 * Returns value from position. Throw exception, if position does not exists
 	 * @param string key - position
 	 * @return T
 	 */
-	function item($__ctx, $key)
+	function item($ctx, $key)
 	{
 		$key = $this->toStr($key);
 		if (!array_key_exists($key, $this->_map))
@@ -232,9 +242,9 @@ class Dict extends \Runtime\_Map
 	 * @param T value 
 	 * @return self
 	 */
-	function setIm($__ctx, $key, $value)
+	function setIm($ctx, $key, $value)
 	{
-		$res = $this->copy($__ctx);
+		$res = $this->copy($ctx);
 		$key = $this->toStr($key);
 		$res->_map[$key] = $value;
 		return $res;
@@ -244,12 +254,12 @@ class Dict extends \Runtime\_Map
 	 * @param string key
 	 * @return self
 	 */
-	function removeIm($__ctx, $key)
+	function removeIm($ctx, $key)
 	{
 		$key = $this->toStr($key);
 		if (isset($this->_map[$key]))
 		{
-			$res = $this->copy($__ctx);
+			$res = $this->copy($ctx);
 			unset($res->_map[$key]);
 			return $res;
 		}
@@ -259,7 +269,7 @@ class Dict extends \Runtime\_Map
 	 * Returns vector of the keys
 	 * @return Collection<string>
 	 */
-	function keys($__ctx)
+	function keys($ctx)
 	{
 		$keys = array_keys($this->_map);
 		$res = \Runtime\Collection::from($keys);
@@ -269,7 +279,7 @@ class Dict extends \Runtime\_Map
 	 * Returns vector of the values
 	 * @return Collection<T>
 	 */
-	function values($__ctx)
+	function values($ctx)
 	{
 		$values = array_values($this->_map);
 		$res = \Runtime\Collection::from($values);
@@ -280,12 +290,12 @@ class Dict extends \Runtime\_Map
 	 * @param fn f
 	 * @return Dict
 	 */
-	function map($__ctx, $f)
+	function map($ctx, $f)
 	{
-		$map2 = static::Instance($__ctx);
+		$map2 = static::Instance($ctx);
 		foreach ($this->_map as $key => $value)
 		{
-			$new_val = $f($__ctx, $value, $key);
+			$new_val = $f($ctx, $value, $key);
 			$map2->_map[$key] = $new_val;
 		}
 		return $map2;
@@ -295,12 +305,12 @@ class Dict extends \Runtime\_Map
 	 * @param fn f
 	 * @return Collection
 	 */
-	function filter($__ctx, $f)
+	function filter($ctx, $f)
 	{
-		$map2 = static::Instance($__ctx);
+		$map2 = static::Instance($ctx);
 		foreach ($this->_map as $key => $value)
 		{
-			$flag = $f($__ctx, $value, $key);
+			$flag = $f($ctx, $value, $key);
 			if ($flag) $map2->_map[$key] = $value;
 		}
 		return $map2;
@@ -309,11 +319,11 @@ class Dict extends \Runtime\_Map
 	 * Call function for each item
 	 * @param fn f
 	 */
-	function each($__ctx, $f)
+	function each($ctx, $f)
 	{
 		foreach ($this->_map as $key => $value)
 		{
-			$f($__ctx, $value, $key);
+			$f($ctx, $value, $key);
 		}
 	}
 	/**
@@ -321,12 +331,12 @@ class Dict extends \Runtime\_Map
 	 * @param fn f
 	 * @return Collection
 	 */
-	function transition($__ctx, $f)
+	function transition($ctx, $f)
 	{
-		$arr = new \Runtime\Collection($__ctx);
+		$arr = new \Runtime\Collection($ctx);
 		foreach ($this->_map as $key => $value)
 		{
-			$arr->_arr[] = $f($__ctx, $value, $key);
+			$arr->_arr[] = $f($ctx, $value, $key);
 		}
 		return $arr;
 	}
@@ -336,11 +346,11 @@ class Dict extends \Runtime\_Map
 	 * @param var init_value
 	 * @return init_value
 	 */
-	function reduce($__ctx, $f, $init_value)
+	function reduce($ctx, $f, $init_value)
 	{
 		foreach ($this->_map as $key => $value)
 		{
-			$init_value = $f($__ctx, $init_value, $value, $key);
+			$init_value = $f($ctx, $init_value, $value, $key);
 		}
 		return $init_value;
 	}
@@ -349,10 +359,10 @@ class Dict extends \Runtime\_Map
 	 * @param Dict<T> map
 	 * @return self
 	 */
-	function concat($__ctx, $map=null)
+	function concat($ctx, $map=null)
 	{
 		if ($map == null) return $this;
-		$res = $this->copy($__ctx);
+		$res = $this->copy($ctx);
 		foreach ($this->_map as $key => $value)
 		{
 			$res->_map[$key] = $value;
@@ -376,9 +386,9 @@ class Dict extends \Runtime\_Map
 	{
 		return "Runtime._Map";
 	}
-	static function getClassInfo($__ctx)
+	static function getClassInfo($ctx)
 	{
-		return new \Runtime\Annotations\IntrospectionInfo($__ctx, [
+		return new \Runtime\Annotations\IntrospectionInfo($ctx, [
 			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
 			"class_name"=>"Runtime.Dict",
 			"name"=>"Runtime.Dict",
@@ -386,22 +396,22 @@ class Dict extends \Runtime\_Map
 			]),
 		]);
 	}
-	static function getFieldsList($__ctx,$f)
+	static function getFieldsList($ctx,$f)
 	{
 		$a = [];
 		return \Runtime\Collection::from($a);
 	}
-	static function getFieldInfoByName($__ctx,$field_name)
+	static function getFieldInfoByName($ctx,$field_name)
 	{
 		return null;
 	}
-	static function getMethodsList($__ctx)
+	static function getMethodsList($ctx)
 	{
 		$a = [
 		];
 		return \Runtime\Collection::from($a);
 	}
-	static function getMethodInfoByName($__ctx,$field_name)
+	static function getMethodInfoByName($ctx,$field_name)
 	{
 		return null;
 	}
