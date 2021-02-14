@@ -17,7 +17,7 @@
  *  limitations under the License.
  */
 namespace Runtime;
-class DateTime extends \Runtime\CoreStruct
+class DateTime extends \Runtime\BaseStruct
 {
 	public $__y;
 	public $__m;
@@ -30,24 +30,30 @@ class DateTime extends \Runtime\CoreStruct
 	/**
 	 * Create date time from timestamp
 	 */
-	static function timestamp($ctx, $time, $tz="UTC")
+	static function create($ctx, $time=-1, $tz="UTC")
 	{
-		$dt = new \DateTime();
-		$dt->setTimezone(new \DateTimeZone($tz));
-		$dt->setTimestamp($time);		
-		return static::fromObject($dt);
-		return null;
-	}
-	/**
-	 * Output dbtime
-	 */
-	static function dbtime($ctx, $time, $tz="UTC")
-	{
+		if ($time == -1) $time = time();
 		$dt = new \DateTime();
 		$dt->setTimezone(new \DateTimeZone($tz));
 		$dt->setTimestamp($time);
-		return $dt->format('Y-m-d H:i:s');
-		return "";
+		return static::fromObject($ctx, $dt);
+		return null;
+	}
+	/**
+	 * Convert to timestamp
+	 */
+	static function strtotime($ctx, $s, $tz="UTC")
+	{
+		$date = new \DateTime($dateStr, new \DateTimeZone($tz));
+		$timestamp = $date->format('U');
+	}
+	/**
+	 * Create date from string
+	 */
+	static function fromString($ctx, $s, $tz="UTC")
+	{
+		$time = static::strtotime($ctx, $s);
+		return static::create($ctx, $time, $tz);
 	}
 	/**
 	 * Returns datetime
@@ -56,19 +62,7 @@ class DateTime extends \Runtime\CoreStruct
 	 */
 	static function now($ctx, $tz="UTC")
 	{
-		$dt = new \DateTime("now", new \DateTimezone($tz));
-		return static::createDatetime($dt, $tz);
-		return null;
-	}
-	/**
-	 * Returns day of week
-	 * @return int
-	 */
-	function getDayOfWeek($ctx)
-	{
-		$dt = static::getDatetime(obj);
-		return $dt->format("w");
-		return null;
+		return static::create($ctx, -1, $tz);
 	}
 	/**
 	 * Returns timestamp
@@ -76,33 +70,43 @@ class DateTime extends \Runtime\CoreStruct
 	 */
 	function getTimestamp($ctx)
 	{
-		$dt = static::getDatetime(obj);
+		$dt = $this->toObject($ctx);
 		return $dt->getTimestamp();
 		return null;
 	}
-	/**
-	 * Set timestamp
-	 * @param int timestamp
-	 * @return DateTime instance
-	 */
-	function setTimestamp($ctx, $timestamp)
+	function timestamp($ctx)
 	{
-		$dt = static::getDatetime($obj);
-		$dt->setTimestamp($timestamp);
-		return static::assignDatetime($dt, $obj);
+		return $this->getTimestamp($ctx);
+	}
+	/**
+	 * Returns day of week
+	 * @return int
+	 */
+	function getDayOfWeek($ctx)
+	{
+		$dt = $this->toObject($ctx);
+		return $dt->format("w");
 		return null;
 	}
 	/**
-	 * Change time zone
-	 * @param string tz
-	 * @return DateTime instance
+	 * Return db datetime
+	 * @return string
 	 */
-	function changeTimezone($ctx, $tz)
+	function getDateTime($ctx, $tz="UTC")
 	{
-		$dt = static::getDatetime($obj);
-		$dt->setTimezone(new \DateTimeZone($tz));
-		return static::assignDatetime($dt, $obj);
-		return null;
+		$dt = $this->toObject($ctx);
+		$dt->setTimezone( new \DateTimeZone($tz) );
+		return $dt->format("Y-m-d H:i:s");
+		return "";
+	}
+	/**
+	 * Return date
+	 * @return string
+	 */
+	function getDate($ctx, $tz="UTC")
+	{
+		$value = $this->getDateTime($ctx, $tz);
+		return \Runtime\rs::substr($ctx, $value, 0, 10);
 	}
 	/**
 	 * Return datetime in RFC822
@@ -110,7 +114,7 @@ class DateTime extends \Runtime\CoreStruct
 	 */
 	function getRFC822($ctx)
 	{
-		$dt = static::getDatetime($obj);
+		$dt = $this->toObject($ctx);
 		return $dt->format(\DateTime::RFC822);
 		return "";
 	}
@@ -120,32 +124,11 @@ class DateTime extends \Runtime\CoreStruct
 	 */
 	function getISO8601($ctx)
 	{
-		$dt = static::getDatetime($obj);
+		$dt = $this->toObject($ctx);
 		return $dt->format(\DateTime::ISO8601);
 		return "";
 	}
-	/**
-	 * Return db datetime
-	 * @return string
-	 */
-	function getDBTime($ctx)
-	{
-		$dt = static::getDatetime($obj);
-		return $dt->format("Y-m-d H:i:s");
-		return "";
-	}
-	/**
-	 * Return datetime by UTC
-	 * @return string
-	 */
-	function getUTC($ctx)
-	{
-		$dt = $this->getDatetime();
-		$dt->setTimezone( new \DateTimeZone("UTC") ); 
-		return $dt->format("Y-m-d H:i:s");
-		return "";
-	}
-	private function getDatetime()
+	private function toObject($ctx)
 	{
 		$dt = new \DateTime();
 		$dt->setTimezone( new \DateTimeZone($this->tz) );
@@ -154,7 +137,7 @@ class DateTime extends \Runtime\CoreStruct
 		return $dt;
 	}
 	
-	public static function fromObject($dt)
+	public static function fromObject($ctx, $dt)
 	{
 		$y = (int)$dt->format("Y");
 		$m = (int)$dt->format("m");
@@ -163,7 +146,7 @@ class DateTime extends \Runtime\CoreStruct
 		$i = (int)$dt->format("i");
 		$s = (int)$dt->format("s");
 		$tz = $dt->getTimezone()->getName();
-		return new DateTime( null, Dict::from(["y"=>$y,"m"=>$m,"d"=>$d,"h"=>$h,"i"=>$i,"s"=>$s,"tz"=>$tz]) );
+		return new \Runtime\DateTime($ctx, Dict::from(["y"=>$y,"m"=>$m,"d"=>$d,"h"=>$h,"i"=>$i,"s"=>$s,"tz"=>$tz]));
 	}
 	/* ======================= Class Init Functions ======================= */
 	function _init($ctx)
@@ -177,45 +160,6 @@ class DateTime extends \Runtime\CoreStruct
 		$this->__s = 0;
 		$this->__ms = 0;
 		$this->__tz = "UTC";
-	}
-	function assignObject($ctx,$o)
-	{
-		if ($o instanceof \Runtime\DateTime)
-		{
-			$this->__y = $o->__y;
-			$this->__m = $o->__m;
-			$this->__d = $o->__d;
-			$this->__h = $o->__h;
-			$this->__i = $o->__i;
-			$this->__s = $o->__s;
-			$this->__ms = $o->__ms;
-			$this->__tz = $o->__tz;
-		}
-		parent::assignObject($ctx,$o);
-	}
-	function assignValue($ctx,$k,$v)
-	{
-		if ($k == "y")$this->__y = $v;
-		else if ($k == "m")$this->__m = $v;
-		else if ($k == "d")$this->__d = $v;
-		else if ($k == "h")$this->__h = $v;
-		else if ($k == "i")$this->__i = $v;
-		else if ($k == "s")$this->__s = $v;
-		else if ($k == "ms")$this->__ms = $v;
-		else if ($k == "tz")$this->__tz = $v;
-		else parent::assignValue($ctx,$k,$v);
-	}
-	function takeValue($ctx,$k,$d=null)
-	{
-		if ($k == "y")return $this->__y;
-		else if ($k == "m")return $this->__m;
-		else if ($k == "d")return $this->__d;
-		else if ($k == "h")return $this->__h;
-		else if ($k == "i")return $this->__i;
-		else if ($k == "s")return $this->__s;
-		else if ($k == "ms")return $this->__ms;
-		else if ($k == "tz")return $this->__tz;
-		return parent::takeValue($ctx,$k,$d);
 	}
 	function getClassName()
 	{
@@ -231,14 +175,11 @@ class DateTime extends \Runtime\CoreStruct
 	}
 	static function getParentClassName()
 	{
-		return "Runtime.CoreStruct";
+		return "Runtime.BaseStruct";
 	}
 	static function getClassInfo($ctx)
 	{
-		return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
-			"class_name"=>"Runtime.DateTime",
-			"name"=>"Runtime.DateTime",
+		return \Runtime\Dict::from([
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
@@ -246,82 +187,67 @@ class DateTime extends \Runtime\CoreStruct
 	static function getFieldsList($ctx,$f)
 	{
 		$a = [];
-		if (($f|3)==3)
+		if (($f&3)==3)
 		{
-			$a[] = "y";
-			$a[] = "m";
-			$a[] = "d";
-			$a[] = "h";
-			$a[] = "i";
-			$a[] = "s";
-			$a[] = "ms";
-			$a[] = "tz";
+			$a[]="y";
+			$a[]="m";
+			$a[]="d";
+			$a[]="h";
+			$a[]="i";
+			$a[]="s";
+			$a[]="ms";
+			$a[]="tz";
 		}
 		return \Runtime\Collection::from($a);
 	}
 	static function getFieldInfoByName($ctx,$field_name)
 	{
-		if ($field_name == "y") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
-			"class_name"=>"Runtime.DateTime",
-			"name"=> $field_name,
+		if ($field_name == "y") return \Runtime\Dict::from([
+			"t"=>"int",
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
-		if ($field_name == "m") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
-			"class_name"=>"Runtime.DateTime",
-			"name"=> $field_name,
+		if ($field_name == "m") return \Runtime\Dict::from([
+			"t"=>"int",
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
-		if ($field_name == "d") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
-			"class_name"=>"Runtime.DateTime",
-			"name"=> $field_name,
+		if ($field_name == "d") return \Runtime\Dict::from([
+			"t"=>"int",
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
-		if ($field_name == "h") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
-			"class_name"=>"Runtime.DateTime",
-			"name"=> $field_name,
+		if ($field_name == "h") return \Runtime\Dict::from([
+			"t"=>"int",
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
-		if ($field_name == "i") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
-			"class_name"=>"Runtime.DateTime",
-			"name"=> $field_name,
+		if ($field_name == "i") return \Runtime\Dict::from([
+			"t"=>"int",
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
-		if ($field_name == "s") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
-			"class_name"=>"Runtime.DateTime",
-			"name"=> $field_name,
+		if ($field_name == "s") return \Runtime\Dict::from([
+			"t"=>"int",
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
-		if ($field_name == "ms") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
-			"class_name"=>"Runtime.DateTime",
-			"name"=> $field_name,
+		if ($field_name == "ms") return \Runtime\Dict::from([
+			"t"=>"int",
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
-		if ($field_name == "tz") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
-			"class_name"=>"Runtime.DateTime",
-			"name"=> $field_name,
+		if ($field_name == "tz") return \Runtime\Dict::from([
+			"t"=>"string",
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
 		return null;
 	}
-	static function getMethodsList($ctx)
+	static function getMethodsList($ctx,$f=0)
 	{
-		$a = [
+		$a = [];
+		if (($f&4)==4) $a=[
 		];
 		return \Runtime\Collection::from($a);
 	}

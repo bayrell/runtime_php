@@ -17,22 +17,35 @@
  *  limitations under the License.
  */
 namespace Runtime;
-class CoreDriver extends \Runtime\CoreObject
+class BaseObject
 {
 	function __construct($ctx)
 	{
-		parent::__construct($ctx);
+		/* Init object */
+		$this->_init($ctx);
 	}
 	/**
-	 * Start driver
+	 * Init function
 	 */
-	function startDriver($ctx)
+	function _init($ctx)
 	{
 	}
+	/**
+	 * Returns new instance
+	 */
+	static function newInstance($ctx, $items)
+	{
+		return null;
+	}
+	static function createInstance($ctx, $items)
+	{
+		return static::newInstance($ctx, $items);
+	}
+	function __getKey($k){return $k;}
 	/* ======================= Class Init Functions ======================= */
 	function getClassName()
 	{
-		return "Runtime.CoreDriver";
+		return "Runtime.BaseObject";
 	}
 	static function getCurrentNamespace()
 	{
@@ -40,18 +53,15 @@ class CoreDriver extends \Runtime\CoreObject
 	}
 	static function getCurrentClassName()
 	{
-		return "Runtime.CoreDriver";
+		return "Runtime.BaseObject";
 	}
 	static function getParentClassName()
 	{
-		return "Runtime.CoreObject";
+		return "";
 	}
 	static function getClassInfo($ctx)
 	{
-		return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
-			"class_name"=>"Runtime.CoreDriver",
-			"name"=>"Runtime.CoreDriver",
+		return \Runtime\Dict::from([
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
@@ -65,9 +75,10 @@ class CoreDriver extends \Runtime\CoreObject
 	{
 		return null;
 	}
-	static function getMethodsList($ctx)
+	static function getMethodsList($ctx,$f=0)
 	{
-		$a = [
+		$a = [];
+		if (($f&4)==4) $a=[
 		];
 		return \Runtime\Collection::from($a);
 	}

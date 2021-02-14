@@ -1,6 +1,6 @@
 <?php
 /*!
- *  Bayrell Runtime Library 
+ *  Bayrell Runtime Library
  *
  *  (c) Copyright 2016-2020 "Ildar Bikmamatov" <support@bayrell.org>
  *
@@ -17,23 +17,16 @@
  *  limitations under the License.
  */
 namespace Runtime\Exceptions;
-class ApiException extends \Runtime\Exceptions\RuntimeException
+class FileNotFound extends \Runtime\Exceptions\RuntimeException
 {
-	public $response;
-	function __construct($ctx, $message="", $code=-1, $response=null, $prev=null)
+	function __construct($ctx, $name, $object="File", $code=-5, $prev=null)
 	{
-		parent::__construct($ctx, $message, $code, $prev);
-		$this->response = $response;
+		parent::__construct($ctx, $ctx->translate($ctx, "Runtime", "%object% '%name%' not found", \Runtime\Dict::from(["name"=>$name,"object"=>$object])), $code, $prev);
 	}
 	/* ======================= Class Init Functions ======================= */
-	function _init($ctx)
-	{
-		parent::_init($ctx);
-		$this->response = null;
-	}
 	function getClassName()
 	{
-		return "Runtime.Exceptions.ApiException";
+		return "Runtime.Exceptions.FileNotFound";
 	}
 	static function getCurrentNamespace()
 	{
@@ -41,7 +34,7 @@ class ApiException extends \Runtime\Exceptions\RuntimeException
 	}
 	static function getCurrentClassName()
 	{
-		return "Runtime.Exceptions.ApiException";
+		return "Runtime.Exceptions.FileNotFound";
 	}
 	static function getParentClassName()
 	{
@@ -61,11 +54,6 @@ class ApiException extends \Runtime\Exceptions\RuntimeException
 	}
 	static function getFieldInfoByName($ctx,$field_name)
 	{
-		if ($field_name == "response") return \Runtime\Dict::from([
-			"t"=>"var",
-			"annotations"=>\Runtime\Collection::from([
-			]),
-		]);
 		return null;
 	}
 	static function getMethodsList($ctx,$f=0)

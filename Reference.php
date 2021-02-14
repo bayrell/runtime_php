@@ -17,7 +17,7 @@
  *  limitations under the License.
  */
 namespace Runtime;
-class Reference extends \Runtime\CoreObject
+class Reference extends \Runtime\BaseObject
 {
 	public $uq;
 	public $ref;
@@ -28,16 +28,16 @@ class Reference extends \Runtime\CoreObject
 	}
 	/**
 	 * Assign and clone data from other object
-	 * @param CoreObject obj
+	 * @param BaseObject obj
 	 */
-	function assignObject($ctx, $obj)
+	function assignObject1($ctx, $obj)
 	{
 		if ($obj instanceof \Runtime\Reference)
 		{
 			$this->uq = $obj->uq;
 			$this->ref = $this->ref;
 		}
-		parent::assignObject($ctx, $obj);
+		parent::assignObject1($ctx, $obj);
 	}
 	/* ======================= Class Init Functions ======================= */
 	function _init($ctx)
@@ -60,14 +60,11 @@ class Reference extends \Runtime\CoreObject
 	}
 	static function getParentClassName()
 	{
-		return "Runtime.CoreObject";
+		return "Runtime.BaseObject";
 	}
 	static function getClassInfo($ctx)
 	{
-		return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
-			"class_name"=>"Runtime.Reference",
-			"name"=>"Runtime.Reference",
+		return \Runtime\Dict::from([
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
@@ -79,25 +76,22 @@ class Reference extends \Runtime\CoreObject
 	}
 	static function getFieldInfoByName($ctx,$field_name)
 	{
-		if ($field_name == "uq") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
-			"class_name"=>"Runtime.Reference",
-			"name"=> $field_name,
+		if ($field_name == "uq") return \Runtime\Dict::from([
+			"t"=>"string",
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
-		if ($field_name == "ref") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
-			"class_name"=>"Runtime.Reference",
-			"name"=> $field_name,
+		if ($field_name == "ref") return \Runtime\Dict::from([
+			"t"=>"T",
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
 		return null;
 	}
-	static function getMethodsList($ctx)
+	static function getMethodsList($ctx,$f=0)
 	{
-		$a = [
+		$a = [];
+		if (($f&4)==4) $a=[
 		];
 		return \Runtime\Collection::from($a);
 	}

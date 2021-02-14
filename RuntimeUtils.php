@@ -19,186 +19,10 @@
 namespace Runtime;
 class RuntimeUtils
 {
-	static $_global_context=null;
 	static $_variables_names=null;
 	const JSON_PRETTY=1;
-	/**
-	 * Returns global context
-	 * @return Context
-	 */
-	static function getContext()
-	{
-		return self::$_global_context;
-	}
-	/**
-	 * Set global context
-	 * @param Context context
-	 */
-	static function setContext($context)
-	{
-		self::$_global_context = $context;
-		return $context;
-	}
-	/* ========================== Class Introspection Functions ========================== */
-	/**
-	 * Returns parents class names
-	 * @return Vector<string>
-	 */
-	static function getParents($ctx, $class_name)
-	{
-		$res = new \Runtime\Vector($ctx);
-		$res->push($ctx, $class_name);
-		while ($class_name != "")
-		{
-			$f = \Runtime\rtl::method($ctx, $class_name, "getParentClassName");
-			$class_name = $f($ctx);
-			if ($class_name != "")
-			{
-				$res->push($ctx, $class_name);
-			}
-		}
-		return $res->toCollection($ctx);
-	}
-	/**
-	 * Returns Introspection of the class name
-	 * @param string class_name
-	 * @return Vector<IntrospectionInfo>
-	 */
-	static function getVariablesNames($ctx, $class_name, $flag=2)
-	{
-		$__memorize_value = \Runtime\rtl::_memorizeValue("Runtime.RuntimeUtils.getVariablesNames", func_get_args());
-		if ($__memorize_value != \Runtime\rtl::$_memorize_not_found) return $__memorize_value;
-		/* Get parents names */
-		$class_names = \Runtime\RuntimeUtils::getParents($ctx, $class_name);
-		$names = $class_names->reduce($ctx, function ($ctx, $names, $item_class_name) use (&$flag)
-		{
-			$item_fields = null;
-			$f = \Runtime\rtl::method($ctx, $item_class_name, "getFieldsList");
-			try
-			{
-				
-				$item_fields = $f($ctx, $flag);
-			}
-			catch (\Exception $_ex)
-			{
-				$e = $_ex;
-				throw $_ex;
-			}
-			if ($item_fields != null)
-			{
-				$names->appendVector($ctx, $item_fields);
-			}
-			return $names;
-		}, new \Runtime\Vector($ctx));
-		$__memorize_value = $names->toCollection($ctx);
-		\Runtime\rtl::_memorizeSave("Runtime.RuntimeUtils.getVariablesNames", func_get_args(), $__memorize_value);
-		return $__memorize_value;
-	}
-	/**
-	 * Returns Introspection of the class name
-	 * @param string class_name
-	 * @return Vector<IntrospectionInfo>
-	 */
-	static function getClassIntrospection($ctx, $class_name)
-	{
-		$__memorize_value = \Runtime\rtl::_memorizeValue("Runtime.RuntimeUtils.getClassIntrospection", func_get_args());
-		if ($__memorize_value != \Runtime\rtl::$_memorize_not_found) return $__memorize_value;
-		$class_info = null;
-		$fields = new \Runtime\Map($ctx);
-		$methods = new \Runtime\Map($ctx);
-		$info = null;
-		if (!\Runtime\rtl::class_exists($ctx, $class_name))
-		{
-			$__memorize_value = null;
-			\Runtime\rtl::_memorizeSave("Runtime.RuntimeUtils.getClassIntrospection", func_get_args(), $__memorize_value);
-			return $__memorize_value;
-		}
-		/* Append annotations */
-		$appendAnnotations = function ($ctx, $arr, $name, $info)
-		{
-			if ($info == null)
-			{
-				return ;
-			}
-			if (!$arr->has($ctx, $name))
-			{
-				$arr->set($ctx, $name, new \Runtime\Vector($ctx));
-			}
-			$v = $arr->item($ctx, $name);
-			$v->appendVector($ctx, $info->annotations);
-		};
-		/* Get Class Info */
-		try
-		{
-			
-			$info = \Runtime\rtl::method($ctx, $class_name, "getClassInfo")($ctx);
-			if ($info != null)
-			{
-				$class_info = $info->annotations;
-			}
-		}
-		catch (\Exception $_ex)
-		{
-			$e = $_ex;
-			throw $_ex;
-		}
-		/* Get parents names */
-		$class_names = \Runtime\RuntimeUtils::getParents($ctx, $class_name);
-		for ($i = 0;$i < $class_names->count($ctx);$i++)
-		{
-			$item_class_name = $class_names->item($ctx, $i);
-			/* Get fields introspection */
-			$item_fields = null;
-			try
-			{
-				
-				$item_fields = \Runtime\rtl::method($ctx, $item_class_name, "getFieldsList")($ctx, 3);
-			}
-			catch (\Exception $_ex)
-			{
-				$e = $_ex;
-				throw $_ex;
-			}
-			for ($j = 0;$j < $item_fields->count($ctx);$j++)
-			{
-				$field_name = $item_fields->item($ctx, $j);
-				$info = \Runtime\rtl::method($ctx, $item_class_name, "getFieldInfoByName")($ctx, $field_name);
-				$appendAnnotations($ctx, $fields, $field_name, $info);
-			}
-			/* Get methods introspection */
-			$item_methods = null;
-			try
-			{
-				
-				$item_methods = \Runtime\rtl::method($ctx, $item_class_name, "getMethodsList")($ctx);
-			}
-			catch (\Exception $_ex)
-			{
-				$e = $_ex;
-				throw $_ex;
-			}
-			for ($j = 0;$j < $item_methods->count($ctx);$j++)
-			{
-				$method_name = $item_methods->item($ctx, $j);
-				$info = \Runtime\rtl::method($ctx, $item_class_name, "getMethodInfoByName")($ctx, $method_name);
-				$appendAnnotations($ctx, $methods, $method_name, $info);
-			}
-		}
-		/* To Collection */
-		$methods = $methods->map($ctx, function ($ctx, $item, $name)
-		{
-			return $item->toCollection($ctx);
-		});
-		$fields = $fields->map($ctx, function ($ctx, $item, $name)
-		{
-			return $item->toCollection($ctx);
-		});
-		$__memorize_value = new \Runtime\Annotations\IntrospectionClass($ctx, \Runtime\Dict::from(["class_name"=>$class_name,"class_info"=>($class_info != null) ? $class_info->toCollection($ctx) : null,"fields"=>$fields->toDict($ctx),"methods"=>$methods->toDict($ctx),"interfaces"=>\Runtime\rtl::getInterfaces($ctx, $class_name)]));
-		\Runtime\rtl::_memorizeSave("Runtime.RuntimeUtils.getClassIntrospection", func_get_args(), $__memorize_value);
-		return $__memorize_value;
-	}
 	/* ============================= Serialization Functions ============================= */
-	static function ObjectToNative($ctx, $value, $force_class_name=false)
+	static function ObjectToNative($ctx, $value, $force_class_name=true)
 	{
 		$value1 = \Runtime\RuntimeUtils::ObjectToPrimitive($ctx, $value, $force_class_name);
 		$value2 = \Runtime\RuntimeUtils::PrimitiveToNative($ctx, $value1);
@@ -215,7 +39,7 @@ class RuntimeUtils
 	 * @param var obj
 	 * @return var
 	 */
-	static function ObjectToPrimitive($ctx, $obj, $force_class_name=false)
+	static function ObjectToPrimitive($ctx, $obj, $force_class_name=true)
 	{
 		if ($obj === null)
 		{
@@ -231,16 +55,6 @@ class RuntimeUtils
 			{
 				return static::ObjectToPrimitive($ctx, $value, $force_class_name);
 			});
-			/*
-			Vector<var> res = new Vector();
-			for (int i=0; i<obj.count(); i++)
-			{
-				var value = obj.item(i);
-				value = self::ObjectToPrimitive( value, force_class_name );
-				res.push(value);
-			}
-			return res.toCollection();
-			*/
 		}
 		if ($obj instanceof \Runtime\Dict)
 		{
@@ -248,38 +62,31 @@ class RuntimeUtils
 			{
 				return static::ObjectToPrimitive($ctx, $value, $force_class_name);
 			});
-			/*
-			Map<var> res = new Map();
-			Vector<string> keys = obj.keys();
-			
-			for (int i=0; i<keys.count(); i++)
-			{
-				string key = keys.item(i);
-				var value = obj.item(key);
-				value = self::ObjectToPrimitive( value, force_class_name );
-				res.set(key, value);
-			}
-			
-			delete keys;
-			*/
-			if ($force_class_name)
-			{
-				$obj = $obj->setIm($ctx, "__class_name__", "Runtime.Dict");
-			}
 			return $obj->toDict($ctx);
 		}
-		if ($obj instanceof \Runtime\Interfaces\SerializeInterface)
+		if ($obj instanceof \Runtime\Date)
+		{
+			return $obj;
+		}
+		if ($obj instanceof \Runtime\DateTime)
+		{
+			return $obj;
+		}
+		if ($obj instanceof \Runtime\BaseStruct)
 		{
 			$values = new \Runtime\Map($ctx);
-			$names = static::getVariablesNames($ctx, $obj->getClassName($ctx), 1);
+			$names = \Runtime\rtl::getFields($ctx, $obj->getClassName($ctx));
 			for ($i = 0;$i < $names->count($ctx);$i++)
 			{
 				$variable_name = $names->item($ctx, $i);
-				$value = $obj->takeValue($ctx, $variable_name, null);
+				$value = $obj->get($ctx, $variable_name, null);
 				$value = \Runtime\RuntimeUtils::ObjectToPrimitive($ctx, $value, $force_class_name);
-				$values->set($ctx, $variable_name, $value);
+				$values->setValue($ctx, $variable_name, $value);
 			}
-			$values->set($ctx, "__class_name__", $obj->getClassName($ctx));
+			if ($force_class_name)
+			{
+				$values->setValue($ctx, "__class_name__", $obj->getClassName($ctx));
+			}
 			return $values->toDict($ctx);
 		}
 		return null;
@@ -306,7 +113,7 @@ class RuntimeUtils
 			{
 				$value = $obj->item($ctx, $i);
 				$value = \Runtime\RuntimeUtils::PrimitiveToObject($ctx, $value);
-				$res->push($ctx, $value);
+				$res->pushValue($ctx, $value);
 			}
 			return $res->toCollection($ctx);
 		}
@@ -319,7 +126,7 @@ class RuntimeUtils
 				$key = $keys->item($ctx, $i);
 				$value = $obj->item($ctx, $key);
 				$value = \Runtime\RuntimeUtils::PrimitiveToObject($ctx, $value);
-				$res->set($ctx, $key, $value);
+				$res->setValue($ctx, $key, $value);
 			}
 			if (!$res->has($ctx, "__class_name__"))
 			{
@@ -335,20 +142,20 @@ class RuntimeUtils
 			{
 				return null;
 			}
-			if (!\Runtime\rtl::class_implements($ctx, $class_name, "Runtime.Interfaces.SerializeInterface"))
+			if (!\Runtime\rtl::class_implements($ctx, $class_name, "Runtime.SerializeInterface"))
 			{
 				return null;
 			}
 			/* Assign values */
 			$obj = new \Runtime\Map($ctx);
-			$names = static::getVariablesNames($ctx, $class_name, 1);
+			$names = \Runtime\rtl::getFields($ctx, $class_name);
 			for ($i = 0;$i < $names->count($ctx);$i++)
 			{
 				$variable_name = $names->item($ctx, $i);
 				if ($variable_name != "__class_name__")
 				{
 					$value = $res->get($ctx, $variable_name, null);
-					$obj->set($ctx, $variable_name, $value);
+					$obj->setValue($ctx, $variable_name, $value);
 				}
 			}
 			/* New instance */
@@ -364,21 +171,48 @@ class RuntimeUtils
 			
 		if (is_object($value))
 		{
-			$res = \Runtime\Dict::from($value);
-			$res = $res->map($ctx, function ($ctx, $val, $key){
-				return self::NativeToPrimitive($ctx, $val);
-			});
-			return $res;
-		}
-		
-		if (is_array($value))
-		{
-			if ( isset($value['__class_name__']) ){
+			if (isset($value->__class_name__) && $value['__class_name__'] == "Runtime.Date")
+			{
+				$res = \Runtime\Date::from($value);
+				return $res;
+			}
+			else if (isset($value->__class_name__) && $value['__class_name__'] == "Runtime.DateTime")
+			{
+				$res = \Runtime\DateTime::from($value);
+				return $res;
+			}
+			else
+			{
 				$res = \Runtime\Dict::from($value);
 				$res = $res->map($ctx, function ($ctx, $val, $key){
 					return self::NativeToPrimitive($ctx, $val);
 				});
 				return $res;
+			}
+		}
+		
+		if (is_array($value))
+		{
+			if ( isset($value['__class_name__']) )
+			{
+				if ($value['__class_name__'] == "Runtime.Date")
+				{
+					$res = \Runtime\Date::from($value);
+					return $res;
+				}
+				else if ($value['__class_name__'] == "Runtime.DateTime")
+				{
+					$res = \Runtime\DateTime::from($value);
+					return $res;
+				}
+				else
+				{
+					$res = \Runtime\Dict::from($value);
+					$res = $res->map($ctx, function ($ctx, $val, $key){
+						return self::NativeToPrimitive($ctx, $val);
+					});
+					return $res;
+				}
 			}
 			$arr = array_values($value);
 			$res = \Runtime\Collection::from($arr);
@@ -392,6 +226,46 @@ class RuntimeUtils
 	}
 	static function PrimitiveToNative($ctx, $value)
 	{
+		if ($value === null)
+			return null;
+		
+		if ($value instanceof \Runtime\Date)
+		{
+			$value = $value->toDict($ctx)->setIm($ctx, "__class_name__", "Runtime.Date");
+		}
+		else if ($value instanceof \Runtime\DateTime)
+		{
+			$value = $value->toDict($ctx)->setIm($ctx, "__class_name__", "Runtime.DateTime");
+		}
+		
+		if ($value instanceof \Runtime\Collection)
+		{
+			$arr = [];
+			$value->each
+			(
+				$ctx,
+				function ($ctx, $v) use (&$arr)
+				{
+					$arr[] = static::PrimitiveToNative($ctx, $v);
+				}
+			);
+			return $arr;
+		}
+		
+		if ($value instanceof \Runtime\Dict)
+		{
+			$arr = [];
+			$value->each
+			(
+				$ctx,
+				function ($ctx, $v, $k) use (&$arr)
+				{
+					$arr[$k] = static::PrimitiveToNative($ctx, $v);
+				}
+			);
+			return $arr;
+		}
+		return $value;
 	}
 	/**
 	 * Json encode serializable values
@@ -402,7 +276,7 @@ class RuntimeUtils
 	static function json_encode($ctx, $value, $flags=0, $convert=true)
 	{
 		if ($convert){
-			$value = self::ObjectToPrimitive($ctx, $value);
+			$value = self::ObjectToNative($ctx, $value);
 		}
 		$json_flags = JSON_UNESCAPED_UNICODE;
 		if ( ($flags & 1) == 1 ) $json_flags = $json_flags | JSON_PRETTY_PRINT;
@@ -419,204 +293,6 @@ class RuntimeUtils
 		if ($res === null || $res === false)
 			return null;
 		return self::NativeToObject($ctx, $res);
-	}
-	/**
-	 * Base64 encode
-	 * @param string s
-	 * @return string 
-	 */
-	static function base64_encode($ctx, $s)
-	{
-		return base64_encode($s);
-	}
-	/**
-	 * Base64 decode
-	 * @param string s
-	 * @return string 
-	 */
-	static function base64_decode($ctx, $s)
-	{
-		return base64_decode($s);
-	}
-	/**
-	 * Base64 encode
-	 * @param string s
-	 * @return string 
-	 */
-	static function base64_encode_url($ctx, $s)
-	{
-		$s = base64_encode($s);
-		$s = str_replace('+', '-', $s);
-		$s = str_replace('/', '_', $s);
-		$s = str_replace('=', '', $s);
-		return $s;
-	}
-	/**
-	 * Base64 decode
-	 * @param string s
-	 * @return string 
-	 */
-	static function base64_decode_url($ctx, $s)
-	{
-		$c = 4 - strlen($s) % 4;
-		if ($c < 4 && $c > 0) $s .= str_repeat('=', $c);
-		$s = str_replace('-', '+', $s);
-		$s = str_replace('_', '/', $s);
-		return base64_decode($s);
-	}
-	/* ================================= Other Functions ================================= */
-	/*
-	 * Generate password
-	 *
-	 * @param int length The lenght of the password
-	 * @param string options What kinds of the char can be in password
-	 *   a - lower case chars
-	 *   b - upper case chars
-	 *   c - numbers
-	 *   d - special chars !@#$%^&?*_-+=~(){}[]<>|/,.:;\\
-	 *   e - quotes `"'
-	 */
-	static function randomString($ctx, $length=16, $options="abc")
-	{
-		$s = "";
-		if (\Runtime\rs::strpos($ctx, $options, "a") >= 0)
-		{
-			$s .= \Runtime\rtl::toStr("abcdefghjkmnpqrstuvwxyz");
-		}
-		if (\Runtime\rs::strpos($ctx, $options, "b") >= 0)
-		{
-			$s .= \Runtime\rtl::toStr("ABCDEFGHJKMNPQRSTUVWXYZ");
-		}
-		if (\Runtime\rs::strpos($ctx, $options, "c") >= 0)
-		{
-			$s .= \Runtime\rtl::toStr("1234567890");
-		}
-		if (\Runtime\rs::strpos($ctx, $options, "d") >= 0)
-		{
-			$s .= \Runtime\rtl::toStr("!@#$%^&?*_-+=~(){}[]<>|/,.:;\\");
-		}
-		if (\Runtime\rs::strpos($ctx, $options, "e") >= 0)
-		{
-			$s .= \Runtime\rtl::toStr("`\"'");
-		}
-		$res = "";
-		$c = \Runtime\rs::strlen($ctx, $s);
-		for ($i = 0;$i < $length;$i++)
-		{
-			$k = \Runtime\rtl::random($ctx, 0, $c - 1);
-			$res .= \Runtime\rtl::toStr($s[$k]);
-		}
-		return $res;
-	}
-	/**
-	 * Returns true if value is primitive value
-	 * @return boolean 
-	 */
-	static function isPrimitiveValue($ctx, $value)
-	{
-		if (\Runtime\rtl::isScalarValue($ctx, $value))
-		{
-			return true;
-		}
-		if ($value instanceof \Runtime\Vector)
-		{
-			return true;
-		}
-		if ($value instanceof \Runtime\Map)
-		{
-			return true;
-		}
-		return false;
-	}
-	/**
-	 * Convert bytes to string
-	 * @param Vector<byte> arr - vector of the bytes
-	 * @string charset - charset of the bytes vector. Default utf8
-	 * @return string
-	 */
-	static function bytesToString($ctx, $arr, $charset="utf8")
-	{
-		$arr = array_map( function($byte){ return chr($byte); }, $arr->_getArr() );
-		$s = implode("", $arr);
-		return $s;
-	}
-	/**
-	 * Convert string to bytes
-	 * @param string s - incoming string
-	 * @param charset - Result bytes charset. Default utf8
-	 * @return Collection<byte> output collection
-	 */
-	static function toString($ctx, $arr, $charset="utf8")
-	{
-		return static::bytesToString($ctx, $arr, $charset);
-	}
-	/**
-	 * Convert string to bytes
-	 * @param string s - incoming string
-	 * @param Vector<byte> arr - output vector
-	 * @param charset - Result bytes charset. Default utf8
-	 */
-	static function stringToBytes($ctx, $s, $arr, $charset="utf8")
-	{
-	}
-	/**
-	 * Convert string to bytes
-	 * @param string s - incoming string
-	 * @param charset - Result bytes charset. Default utf8
-	 * @return Collection<byte> output collection
-	 */
-	static function toBytes($ctx, $s, $charset="utf8")
-	{
-		return static::stringToBytes($ctx, $s, $charset);
-	}
-	/**
-	 * Translate message
-	 * @params string message - message need to be translated
-	 * @params Dict params - Messages params. Default null.
-	 * @params string locale - Different locale. Default "".
-	 * @return string - translated string
-	 */
-	static function translate($ctx, $message, $params=null, $locale="", $context=null)
-	{
-		if ($context == null)
-		{
-			$context = \Runtime\RuntimeUtils::getContext($ctx);
-		}
-		if ($context != null)
-		{
-			$context->translate($ctx, $message, $params, $locale);
-		}
-		return $message;
-	}
-	/**
-	 * Retuns css hash 
-	 * @param string component class name
-	 * @return string hash
-	 */
-	static function getCssHash($ctx, $s)
-	{
-		$__memorize_value = \Runtime\rtl::_memorizeValue("Runtime.RuntimeUtils.getCssHash", func_get_args());
-		if ($__memorize_value != \Runtime\rtl::$_memorize_not_found) return $__memorize_value;
-		$r = "";
-		$a = "1234567890abcdef";
-		$sz = \Runtime\rs::strlen($ctx, $s);
-		$h = 0;
-		for ($i = 0;$i < $sz;$i++)
-		{
-			$c = \Runtime\rs::ord($ctx, \Runtime\rs::substr($ctx, $s, $i, 1));
-			$h = ($h << 2) + ($h >> 14) + $c & 65535;
-		}
-		$p = 0;
-		while ($h != 0 || $p < 4)
-		{
-			$c = $h & 15;
-			$h = $h >> 4;
-			$r .= \Runtime\rtl::toStr(\Runtime\rs::substr($ctx, $a, $c, 1));
-			$p = $p + 1;
-		}
-		$__memorize_value = $r;
-		\Runtime\rtl::_memorizeSave("Runtime.RuntimeUtils.getCssHash", func_get_args(), $__memorize_value);
-		return $__memorize_value;
 	}
 	/* ======================= Class Init Functions ======================= */
 	function getClassName()
@@ -637,10 +313,7 @@ class RuntimeUtils
 	}
 	static function getClassInfo($ctx)
 	{
-		return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
-			"class_name"=>"Runtime.RuntimeUtils",
-			"name"=>"Runtime.RuntimeUtils",
+		return \Runtime\Dict::from([
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
@@ -652,32 +325,22 @@ class RuntimeUtils
 	}
 	static function getFieldInfoByName($ctx,$field_name)
 	{
-		if ($field_name == "_global_context") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
-			"class_name"=>"Runtime.RuntimeUtils",
-			"name"=> $field_name,
+		if ($field_name == "_variables_names") return \Runtime\Dict::from([
+			"t"=>"Runtime.Map",
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
-		if ($field_name == "_variables_names") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
-			"class_name"=>"Runtime.RuntimeUtils",
-			"name"=> $field_name,
-			"annotations"=>\Runtime\Collection::from([
-			]),
-		]);
-		if ($field_name == "JSON_PRETTY") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
-			"class_name"=>"Runtime.RuntimeUtils",
-			"name"=> $field_name,
+		if ($field_name == "JSON_PRETTY") return \Runtime\Dict::from([
+			"t"=>"int",
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
 		return null;
 	}
-	static function getMethodsList($ctx)
+	static function getMethodsList($ctx,$f=0)
 	{
-		$a = [
+		$a = [];
+		if (($f&4)==4) $a=[
 		];
 		return \Runtime\Collection::from($a);
 	}

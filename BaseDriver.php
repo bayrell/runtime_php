@@ -17,27 +17,46 @@
  *  limitations under the License.
  */
 namespace Runtime;
-class MessageSession extends \Runtime\CoreStruct
+class BaseDriver extends \Runtime\BaseObject
 {
+	public $object_name;
+	public $entity;
+	function __construct($ctx, $object_name="", $entity=null)
+	{
+		parent::__construct($ctx);
+		$this->object_name = $object_name;
+		$this->entity = $entity;
+	}
+	/**
+	 * Returns object name
+	 */
+	function getObjectName($ctx)
+	{
+		return $this->object_name;
+	}
+	/**
+	 * Returns entity
+	 */
+	function getEntity($ctx)
+	{
+		return $this->entity;
+	}
+	/**
+	 * Start driver
+	 */
+	function startDriver($ctx)
+	{
+	}
 	/* ======================= Class Init Functions ======================= */
-	function assignObject($ctx,$o)
+	function _init($ctx)
 	{
-		if ($o instanceof \Runtime\MessageSession)
-		{
-		}
-		parent::assignObject($ctx,$o);
-	}
-	function assignValue($ctx,$k,$v)
-	{
-		parent::assignValue($ctx,$k,$v);
-	}
-	function takeValue($ctx,$k,$d=null)
-	{
-		return parent::takeValue($ctx,$k,$d);
+		parent::_init($ctx);
+		$this->object_name = "";
+		$this->entity = null;
 	}
 	function getClassName()
 	{
-		return "Runtime.MessageSession";
+		return "Runtime.BaseDriver";
 	}
 	static function getCurrentNamespace()
 	{
@@ -45,18 +64,15 @@ class MessageSession extends \Runtime\CoreStruct
 	}
 	static function getCurrentClassName()
 	{
-		return "Runtime.MessageSession";
+		return "Runtime.BaseDriver";
 	}
 	static function getParentClassName()
 	{
-		return "Runtime.CoreStruct";
+		return "Runtime.BaseObject";
 	}
 	static function getClassInfo($ctx)
 	{
-		return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
-			"class_name"=>"Runtime.MessageSession",
-			"name"=>"Runtime.MessageSession",
+		return \Runtime\Dict::from([
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
@@ -68,11 +84,22 @@ class MessageSession extends \Runtime\CoreStruct
 	}
 	static function getFieldInfoByName($ctx,$field_name)
 	{
+		if ($field_name == "object_name") return \Runtime\Dict::from([
+			"t"=>"string",
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "entity") return \Runtime\Dict::from([
+			"t"=>"Runtime.Entity",
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
 		return null;
 	}
-	static function getMethodsList($ctx)
+	static function getMethodsList($ctx,$f=0)
 	{
-		$a = [
+		$a = [];
+		if (($f&4)==4) $a=[
 		];
 		return \Runtime\Collection::from($a);
 	}

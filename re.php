@@ -46,13 +46,21 @@ class re
 		$matches = [];
 		if (preg_match_all("/" . $r . "/i", $s, $matches))
 		{
-			$res = new Vector();
-			array_shift($matches);
-			foreach ($matches as $arr)
+			$res = [];
+			foreach ($matches as $index1 => $obj1)
 			{
-				$res->push($ctx, Vector::from($arr) );
+				foreach ($obj1 as $index2 => $val)
+				{
+					if (!isset($res[$index2])) $res[$index2] = [];
+					$res[$index2][$index1] = $val;
+				}
 			}
-			return $res;
+			$res = array_map
+			(
+				function ($item) { return Collection::from($item); },
+				$res
+			);
+			return Collection::from($res);
 		}
 		
 		return null;
@@ -88,10 +96,7 @@ class re
 	}
 	static function getClassInfo($ctx)
 	{
-		return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
-			"class_name"=>"Runtime.re",
-			"name"=>"Runtime.re",
+		return \Runtime\Dict::from([
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
@@ -105,9 +110,10 @@ class re
 	{
 		return null;
 	}
-	static function getMethodsList($ctx)
+	static function getMethodsList($ctx,$f=0)
 	{
-		$a = [
+		$a = [];
+		if (($f&4)==4) $a=[
 		];
 		return \Runtime\Collection::from($a);
 	}

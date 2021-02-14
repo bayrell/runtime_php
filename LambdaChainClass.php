@@ -17,27 +17,12 @@
  *  limitations under the License.
  */
 namespace Runtime;
-class CoreProvider extends \Runtime\CoreStruct
+class LambdaChainClass extends \Runtime\Entity
 {
 	/* ======================= Class Init Functions ======================= */
-	function assignObject($ctx,$o)
-	{
-		if ($o instanceof \Runtime\CoreProvider)
-		{
-		}
-		parent::assignObject($ctx,$o);
-	}
-	function assignValue($ctx,$k,$v)
-	{
-		parent::assignValue($ctx,$k,$v);
-	}
-	function takeValue($ctx,$k,$d=null)
-	{
-		return parent::takeValue($ctx,$k,$d);
-	}
 	function getClassName()
 	{
-		return "Runtime.CoreProvider";
+		return "Runtime.LambdaChainClass";
 	}
 	static function getCurrentNamespace()
 	{
@@ -45,18 +30,15 @@ class CoreProvider extends \Runtime\CoreStruct
 	}
 	static function getCurrentClassName()
 	{
-		return "Runtime.CoreProvider";
+		return "Runtime.LambdaChainClass";
 	}
 	static function getParentClassName()
 	{
-		return "Runtime.CoreStruct";
+		return "Runtime.Entity";
 	}
 	static function getClassInfo($ctx)
 	{
-		return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
-			"class_name"=>"Runtime.CoreProvider",
-			"name"=>"Runtime.CoreProvider",
+		return \Runtime\Dict::from([
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
@@ -70,9 +52,10 @@ class CoreProvider extends \Runtime\CoreStruct
 	{
 		return null;
 	}
-	static function getMethodsList($ctx)
+	static function getMethodsList($ctx,$f=0)
 	{
-		$a = [
+		$a = [];
+		if (($f&4)==4) $a=[
 		];
 		return \Runtime\Collection::from($a);
 	}

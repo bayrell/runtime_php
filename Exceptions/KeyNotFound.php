@@ -19,10 +19,9 @@
 namespace Runtime\Exceptions;
 class KeyNotFound extends \Runtime\Exceptions\RuntimeException
 {
-	function __construct($ctx, $key, $context=null, $prev=null)
+	function __construct($ctx, $key, $prev=null)
 	{
-		/* RuntimeUtils::translate("ERROR_KEY_NOT_FOUND", null, "", context),  */
-		parent::__construct($ctx, "Key '" . \Runtime\rtl::toStr($key) . \Runtime\rtl::toStr("' not found"), \Runtime\RuntimeConstant::ERROR_KEY_NOT_FOUND, $context, $prev);
+		parent::__construct($ctx, $ctx->translate($ctx, "Runtime", "Key '%key%' not found", \Runtime\Dict::from(["key"=>$key])), \Runtime\rtl::ERROR_KEY_NOT_FOUND, $prev);
 	}
 	/* ======================= Class Init Functions ======================= */
 	function getClassName()
@@ -43,10 +42,7 @@ class KeyNotFound extends \Runtime\Exceptions\RuntimeException
 	}
 	static function getClassInfo($ctx)
 	{
-		return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
-			"class_name"=>"Runtime.Exceptions.KeyNotFound",
-			"name"=>"Runtime.Exceptions.KeyNotFound",
+		return \Runtime\Dict::from([
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
@@ -60,9 +56,10 @@ class KeyNotFound extends \Runtime\Exceptions\RuntimeException
 	{
 		return null;
 	}
-	static function getMethodsList($ctx)
+	static function getMethodsList($ctx,$f=0)
 	{
-		$a = [
+		$a = [];
+		if (($f&4)==4) $a=[
 		];
 		return \Runtime\Collection::from($a);
 	}

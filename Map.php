@@ -23,9 +23,9 @@ class Map extends \Runtime\Dict
 	 * Returns new Instance
 	 * @return Object
 	 */
-	static function Instance($ctx)
+	static function Instance($ctx, $val=null)
 	{
-		return new \Runtime\Map($ctx);
+		return new \Runtime\Map($ctx, $val);
 	}
 	/**
 	 * Set value size_to position
@@ -33,7 +33,7 @@ class Map extends \Runtime\Dict
 	 * @param T value 
 	 * @return self
 	 */
-	function set($ctx, $key, $value)
+	function setValue($ctx, $key, $value)
 	{
 		$key = rtl::toStr($key);
 		$this->_map[$key] = $value;
@@ -44,7 +44,7 @@ class Map extends \Runtime\Dict
 	 * @param string key
 	 * @return self
 	 */
-	function remove($ctx, $key)
+	function removeValue($ctx, $key)
 	{
 		$key = rtl::toStr($key);
 		if (isset($this->_map[$key]))
@@ -79,10 +79,7 @@ class Map extends \Runtime\Dict
 	}
 	static function getClassInfo($ctx)
 	{
-		return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
-			"class_name"=>"Runtime.Map",
-			"name"=>"Runtime.Map",
+		return \Runtime\Dict::from([
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
@@ -96,9 +93,10 @@ class Map extends \Runtime\Dict
 	{
 		return null;
 	}
-	static function getMethodsList($ctx)
+	static function getMethodsList($ctx,$f=0)
 	{
-		$a = [
+		$a = [];
+		if (($f&4)==4) $a=[
 		];
 		return \Runtime\Collection::from($a);
 	}

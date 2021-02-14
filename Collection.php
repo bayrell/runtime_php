@@ -81,20 +81,20 @@ class _Collection implements \ArrayAccess, \JsonSerializable
 	 * Get and set methods
 	 */
 	function __isset($k){return isset($this->_arr[$k]);}
-	function __get($k){return $this->item(\Runtime\RuntimeUtils::getContext(), $k);}
+	function __get($k){return $this->item(\Runtime\rtl::getContext(), $k);}
 	function __set($k,$v){
-		throw new \Runtime\Exceptions\AssignStructValueError(\Runtime\RuntimeUtils::getContext(), $k);
+		throw new \Runtime\Exceptions\AssignStructValueError(\Runtime\rtl::getContext(), $k);
 	}
 	function __unset($k){
-		throw new \Runtime\Exceptions\AssignStructValueError(\Runtime\RuntimeUtils::getContext(), $k);
+		throw new \Runtime\Exceptions\AssignStructValueError(\Runtime\rtl::getContext(), $k);
 	}
 	public function offsetExists($k){return isset($this->_arr[$k]);}
-	public function offsetGet($k){return $this->item(\Runtime\RuntimeUtils::getContext(), $k);}
+	public function offsetGet($k){return $this->item(\Runtime\rtl::getContext(), $k);}
 	public function offsetSet($k,$v){
-		throw new \Runtime\Exceptions\AssignStructValueError(\Runtime\RuntimeUtils::getContext(), $k);
+		throw new \Runtime\Exceptions\AssignStructValueError(\Runtime\rtl::getContext(), $k);
 	}
 	public function offsetUnset($k){
-		throw new \Runtime\Exceptions\AssignStructValueError(\Runtime\RuntimeUtils::getContext(), $k);
+		throw new \Runtime\Exceptions\AssignStructValueError(\Runtime\rtl::getContext(), $k);
 	}
 	
 	
@@ -126,7 +126,7 @@ class Collection extends \Runtime\_Collection
 	 * Returns copy of Collectiom
 	 * @param int pos - position
 	 */
-	function copy($ctx)
+	function cp($ctx)
 	{
 		$class_name = static::class;
 		$arr2 = new $class_name();
@@ -165,7 +165,7 @@ class Collection extends \Runtime\_Collection
 	{
 		if (!array_key_exists($pos, $this->_arr))
 		{
-			throw new \Runtime\Exceptions\IndexOutOfRange($ctx);
+			throw new \Runtime\Exceptions\IndexOutOfRange($ctx, $pos);
 		}
 		return $this->_arr[$pos];
 	}
@@ -233,9 +233,25 @@ class Collection extends \Runtime\_Collection
 	 */
 	function pushIm($ctx, $value)
 	{
-		$res = $this->copy($ctx);
+		$res = $this->cp($ctx);
 		$res->_arr[] = $value;
 		return $res;
+	}
+	function push($ctx, $value)
+	{
+		throw new \Runtime\Exceptions\RuntimeException($ctx, "Deprecated Collection push");
+	}
+	function push1($ctx, $value)
+	{
+		return $this->pushIm($ctx, $value);
+	}
+	function append1($ctx, $value)
+	{
+		return $this->push($ctx, $value);
+	}
+	function appendIm($ctx, $value)
+	{
+		return $this->pushIm($ctx, $value);
 	}
 	/**
 	 * Insert first value size_to array
@@ -243,9 +259,25 @@ class Collection extends \Runtime\_Collection
 	 */
 	function unshiftIm($ctx, $value)
 	{
-		$res = $this->copy($ctx);
+		$res = $this->cp($ctx);
 		array_unshift($res->_arr, $value);
 		return $res;
+	}
+	function unshift($ctx, $value)
+	{
+		throw new \Runtime\Exceptions\RuntimeException($ctx, "Deprecated Collection unshift");
+	}
+	function unshift1($ctx, $value)
+	{
+		return $this->unshiftIm($ctx, $value);
+	}
+	function prepend1($ctx, $value)
+	{
+		return $this->unshift($ctx, $value);
+	}
+	function prependIm($ctx, $value)
+	{
+		return $this->unshiftIm($ctx, $value);
 	}
 	/**
 	 * Extract last value from array
@@ -253,9 +285,13 @@ class Collection extends \Runtime\_Collection
 	 */
 	function removeLastIm($ctx)
 	{
-		$res = $this->copy($ctx);
+		$res = $this->cp($ctx);
 		array_pop($res->_arr);
 		return $res;
+	}
+	function removeLast($ctx, $value)
+	{
+		return $this->removeLastIm($ctx, $value);
 	}
 	/**
 	 * Extract first value from array
@@ -263,9 +299,13 @@ class Collection extends \Runtime\_Collection
 	 */
 	function removeFirstIm($ctx)
 	{
-		$res = $this->copy($ctx);
+		$res = $this->cp($ctx);
 		array_shift($res->_arr);
 		return $res;
+	}
+	function removeFirst($ctx, $value)
+	{
+		return $this->removeFirstIm($ctx, $value);
 	}
 	/**
 	 * Insert value to position
@@ -274,9 +314,13 @@ class Collection extends \Runtime\_Collection
 	 */
 	function insertIm($ctx, $pos, $value)
 	{
-		$res = $this->copy($ctx);
+		$res = $this->cp($ctx);
 		array_splice($res->_arr, $pos, 0, [$value]);
 		return $res;
+	}
+	function insert($ctx, $value)
+	{
+		return $this->insertIm($ctx, $value);
 	}
 	/**
 	 * Remove value from position
@@ -285,9 +329,13 @@ class Collection extends \Runtime\_Collection
 	 */
 	function removeIm($ctx, $pos, $count=1)
 	{
-		$res = $this->copy($ctx);
+		$res = $this->cp($ctx);
 		array_splice($res->_arr, $pos, $count);
 		return $res;
+	}
+	function remove1($ctx, $value)
+	{
+		return $this->removeIm($ctx, $value);
 	}
 	/**
 	 * Remove range
@@ -296,9 +344,13 @@ class Collection extends \Runtime\_Collection
 	 */
 	function removeRangeIm($ctx, $pos_begin, $pos_end)
 	{
-		$res = $this->copy($ctx);
+		$res = $this->cp($ctx);
 		$res->removeIm($pos_begin, $pos_end - $pos_begin + 1);
 		return $res;
+	}
+	function removeRange($ctx, $value)
+	{
+		return $this->removeRangeIm($ctx, $value);
 	}
 	/**
 	 * Set value size_to position
@@ -308,41 +360,45 @@ class Collection extends \Runtime\_Collection
 	function setIm($ctx, $pos, $value)
 	{
 		if (!array_key_exists($pos, $this->_arr))
-			throw new \Runtime\Exceptions\IndexOutOfRange($ctx);
-		$res = $this->copy($ctx);	
+			throw new \Runtime\Exceptions\IndexOutOfRange($ctx, $pos);
+		$res = $this->cp($ctx);
 		$res->_arr[$pos] = $value;
 		return $res;
 	}
-	/**
-	 * Append value to the end of the vector
-	 * @param T value
-	 */
-	function appendIm($ctx, $value)
+	function set($ctx, $value)
 	{
-		return $this->pushIm($ctx, $value);
+		throw new \Runtime\Exceptions\RuntimeException($ctx, "Deprecated Collection set");
 	}
-	/**
-	 * Insert first value to begin of the vector
-	 * @return T value
-	 */
-	function prependIm($ctx, $value)
+	function set1($ctx, $value)
 	{
-		return $this->unshiftIm($ctx, $value);
+		return $this->setIm($ctx, $value);
 	}
 	/**
 	 * Append vector to the end of the vector
 	 * @param Collection<T> arr
 	 */
-	function appendCollectionIm($ctx, $arr)
+	function concatIm($ctx, $arr)
 	{
+		if ($arr == null)
+		{
+			return $this;
+		}
 		if (!$arr) return $this;
 		if (count($arr->_arr) == 0) return $this;
-		$res = $this->copy($ctx);
+		$res = $this->cp($ctx);
 		foreach ($arr->_arr as $item)
 		{
 			$res->_arr[] = $item;
 		}
 		return $res;
+	}
+	function appendCollection1($ctx, $arr)
+	{
+		return $this->concatIm($ctx, $arr);
+	}
+	function concat($ctx, $arr)
+	{
+		return $this->concatIm($ctx, $arr);
 	}
 	/**
 	 * Prepend vector to the begin of the vector
@@ -351,7 +407,7 @@ class Collection extends \Runtime\_Collection
 	function prependCollectionIm($ctx, $arr)
 	{
 		if (!$arr) return $this;
-		$res = $this->copy($ctx);
+		$res = $this->cp($ctx);
 		$sz = count($arr->_arr);
 		for ($i=$sz-1; $i>=0; $i--)
 		{
@@ -359,24 +415,25 @@ class Collection extends \Runtime\_Collection
 		}
 		return $res;
 	}
-	/**
-	 * Remove value
-	 */
-	function removeValueIm($ctx, $value)
+	function prependCollection1($ctx, $arr)
 	{
-		$index = $this->indexOf($ctx, $value);
-		if ($index != -1)
-		{
-			return $this->removeIm($ctx, $index);
-		}
-		return $this;
+		return $this->prependCollectionIm($ctx, $arr);
 	}
 	/**
 	 * Remove value
 	 */
 	function removeItemIm($ctx, $value)
 	{
-		return $this->removeValueIm($ctx, $value);
+		$index = $this->indexOf($ctx, $value);
+		if ($index != -1)
+		{
+			return $this->remove($ctx, $index);
+		}
+		return $this;
+	}
+	function removeItem($ctx, $value)
+	{
+		return $this->removeItemIm($ctx, $value);
 	}
 	/**
 	 * Remove value
@@ -390,6 +447,10 @@ class Collection extends \Runtime\_Collection
 		}
 		return $res;
 	}
+	function removeItems($ctx, $values)
+	{
+		return $this->removeItemsIm($ctx, $values);
+	}
 	/**
 	 * Map
 	 * @param fn f
@@ -397,7 +458,7 @@ class Collection extends \Runtime\_Collection
 	 */
 	function map($ctx, $f)
 	{
-		$arr2 = $this->copy($ctx);
+		$arr2 = $this->cp($ctx);
 		foreach ($this->_arr as $key => $value)
 		{
 			$arr2->_arr[$key] = $f($ctx, $value, $key);
@@ -428,11 +489,11 @@ class Collection extends \Runtime\_Collection
 	 */
 	function transition($ctx, $f)
 	{
-		$d = new \Runtime\Dict();
+		$d = new \Runtime\Dict($ctx);
 		foreach ($this->_arr as $key => $value)
 		{
-			$p = $f(ctx, $value, $key);
-			$d->map[$p[1]] = $p[0];
+			$p = $f($ctx, $value, $key);
+			$d->_map[$p[1]] = $p[0];
 		}
 		return $d;
 	}
@@ -466,18 +527,6 @@ class Collection extends \Runtime\_Collection
 	 * @param Collection<T> arr
 	 * @return Collection<T>
 	 */
-	function concat($ctx, $arr=null)
-	{
-		if ($arr == null) return $this;
-		$arr2 = static::Instance($ctx);
-		$arr2->_arr = array_merge($this->_arr, $arr->_arr);
-		return $arr2;
-	}
-	/**
-	 * Returns Collection
-	 * @param Collection<T> arr
-	 * @return Collection<T>
-	 */
 	function intersect($ctx, $arr)
 	{
 		return $this->filter($ctx, function ($ctx, $item) use (&$arr)
@@ -502,9 +551,13 @@ class Collection extends \Runtime\_Collection
 	 */
 	function reverseIm($ctx)
 	{
-		$arr2 = $this->copy($ctx);
-		array_reverse($arr2->_arr);
+		$arr2 = $this->cp($ctx);
+		$arr2->_arr = array_reverse($arr2->_arr);
 		return $arr2;
+	}
+	function reverse($ctx)
+	{
+		return $this->reverseIm($ctx);
 	}
 	/**
 	 * Sort vector
@@ -512,24 +565,25 @@ class Collection extends \Runtime\_Collection
 	 */
 	function sortIm($ctx, $f=null)
 	{
-		$res = $this->copy($ctx);
+		$res = $this->cp($ctx);
 		if ($f == null)
 		{
 			asort($res->_arr);
 		}
 		else
 		{
-			usort($res->_arr, $f);
+			$f1 = function($a, $b) use ($ctx, $f){ return $f($ctx, $a, $b); };
+			usort($res->_arr, $f1);
 		}
 		return $res;
+	}
+	function sort($ctx, $f=null)
+	{
+		return $this->sortIm($ctx, $f);
 	}
 	/**
 	 * Remove dublicate values
 	 */
-	function removeDublicatesIm($ctx)
-	{
-		return $this->removeDuplicatesIm($ctx);
-	}
 	function removeDuplicatesIm($ctx)
 	{
 		$arr = []; $sz = count($this->_arr);
@@ -545,6 +599,10 @@ class Collection extends \Runtime\_Collection
 		$res = static::Instance($ctx);
 		$res->_arr = $arr;
 		return $res;
+	}
+	function removeDuplicates($ctx)
+	{
+		return $this->removeDuplicatesIm($ctx);
 	}
 	/**
 	 * Find item pos
@@ -602,10 +660,7 @@ class Collection extends \Runtime\_Collection
 	}
 	static function getClassInfo($ctx)
 	{
-		return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
-			"class_name"=>"Runtime.Collection",
-			"name"=>"Runtime.Collection",
+		return \Runtime\Dict::from([
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
@@ -619,9 +674,10 @@ class Collection extends \Runtime\_Collection
 	{
 		return null;
 	}
-	static function getMethodsList($ctx)
+	static function getMethodsList($ctx,$f=0)
 	{
-		$a = [
+		$a = [];
+		if (($f&4)==4) $a=[
 		];
 		return \Runtime\Collection::from($a);
 	}

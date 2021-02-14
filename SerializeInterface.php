@@ -16,26 +16,13 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-namespace Runtime\Interfaces;
-interface AssetsInterface
+namespace Runtime;
+interface SerializeInterface
 {
 	/**
-	 * Returns module name
-	 * @return string
+	 * Returns instance of the value by variable name
+	 * @param string variable_name
+	 * @return var
 	 */
-	static function getModuleName($ctx);
-	/**
-	 * Returns required modules
-	 * @return Dict<string>
-	 */
-	static function requiredModules($ctx);
-	/**
-	 * Returns module files load order
-	 * @return Collection<string>
-	 */
-	static function assets($ctx);
-	/**
-	 * Returns sync loaded files
-	 */
-	static function resources($ctx);
+	function get($ctx, $variable_name, $default_value=null);
 }

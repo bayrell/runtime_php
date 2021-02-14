@@ -16,61 +16,51 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-namespace Runtime\Annotations;
-class Entity extends \Runtime\CoreStruct
+namespace Runtime;
+class LambdaChain extends \Runtime\BaseStruct
 {
 	public $__name;
 	public $__value;
+	public $__chain;
+	public $__pos;
+	public $__is_async;
+	function logName($ctx)
+	{
+		return $this->getClassName($ctx) . \Runtime\rtl::toStr(" -> ") . \Runtime\rtl::toStr($this->name) . \Runtime\rtl::toStr(" -> [") . \Runtime\rtl::toStr($this->pos) . \Runtime\rtl::toStr("] ") . \Runtime\rtl::toStr($this->value);
+	}
+	function addClassItem($ctx, $class_name, $class_method_name, $class_item, $info)
+	{
+		return $this->copy($ctx, \Runtime\Dict::from(["value"=>$class_name . \Runtime\rtl::toStr("::") . \Runtime\rtl::toStr($class_method_name)]));
+	}
 	/* ======================= Class Init Functions ======================= */
 	function _init($ctx)
 	{
 		parent::_init($ctx);
 		$this->__name = "";
 		$this->__value = "";
-	}
-	function assignObject($ctx,$o)
-	{
-		if ($o instanceof \Runtime\Annotations\Entity)
-		{
-			$this->__name = $o->__name;
-			$this->__value = $o->__value;
-		}
-		parent::assignObject($ctx,$o);
-	}
-	function assignValue($ctx,$k,$v)
-	{
-		if ($k == "name")$this->__name = $v;
-		else if ($k == "value")$this->__value = $v;
-		else parent::assignValue($ctx,$k,$v);
-	}
-	function takeValue($ctx,$k,$d=null)
-	{
-		if ($k == "name")return $this->__name;
-		else if ($k == "value")return $this->__value;
-		return parent::takeValue($ctx,$k,$d);
+		$this->__chain = "";
+		$this->__pos = 0;
+		$this->__is_async = false;
 	}
 	function getClassName()
 	{
-		return "Runtime.Annotations.Entity";
+		return "Runtime.LambdaChain";
 	}
 	static function getCurrentNamespace()
 	{
-		return "Runtime.Annotations";
+		return "Runtime";
 	}
 	static function getCurrentClassName()
 	{
-		return "Runtime.Annotations.Entity";
+		return "Runtime.LambdaChain";
 	}
 	static function getParentClassName()
 	{
-		return "Runtime.CoreStruct";
+		return "Runtime.BaseStruct";
 	}
 	static function getClassInfo($ctx)
 	{
-		return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
-			"class_name"=>"Runtime.Annotations.Entity",
-			"name"=>"Runtime.Annotations.Entity",
+		return \Runtime\Dict::from([
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
@@ -78,34 +68,49 @@ class Entity extends \Runtime\CoreStruct
 	static function getFieldsList($ctx,$f)
 	{
 		$a = [];
-		if (($f|3)==3)
+		if (($f&3)==3)
 		{
-			$a[] = "name";
-			$a[] = "value";
+			$a[]="name";
+			$a[]="value";
+			$a[]="chain";
+			$a[]="pos";
+			$a[]="is_async";
 		}
 		return \Runtime\Collection::from($a);
 	}
 	static function getFieldInfoByName($ctx,$field_name)
 	{
-		if ($field_name == "name") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
-			"class_name"=>"Runtime.Annotations.Entity",
-			"name"=> $field_name,
+		if ($field_name == "name") return \Runtime\Dict::from([
+			"t"=>"string",
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
-		if ($field_name == "value") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
-			"class_name"=>"Runtime.Annotations.Entity",
-			"name"=> $field_name,
+		if ($field_name == "value") return \Runtime\Dict::from([
+			"t"=>"string",
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "chain") return \Runtime\Dict::from([
+			"t"=>"string",
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "pos") return \Runtime\Dict::from([
+			"t"=>"double",
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "is_async") return \Runtime\Dict::from([
+			"t"=>"bool",
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
 		return null;
 	}
-	static function getMethodsList($ctx)
+	static function getMethodsList($ctx,$f=0)
 	{
-		$a = [
+		$a = [];
+		if (($f&4)==4) $a=[
 		];
 		return \Runtime\Collection::from($a);
 	}

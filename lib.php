@@ -81,23 +81,13 @@ namespace Runtime;
 		};
 	}
 	/**
-	 * Returns attr of item
-	 */
-	static function attr($ctx, $key, $def_value)
-	{
-		return function ($ctx, $item1) use (&$key,&$def_value)
-		{
-			return ($item1 != null) ? $item1->takeValue($ctx, $key, $def_value) : $def_value;
-		};
-	}
-	/**
 	 * Equal two struct by key
 	 */
 	static function equalAttr($ctx, $key, $value)
 	{
 		return function ($ctx, $item1) use (&$key,&$value)
 		{
-			return ($item1 != null) ? $item1->takeValue($ctx, $key) == $value : false;
+			return ($item1 != null) ? (\Runtime\rtl::attr($ctx, $item1, $key) == $value) : (false);
 		};
 	}
 	/**
@@ -107,7 +97,30 @@ namespace Runtime;
 	{
 		return function ($ctx, $item1) use (&$key,&$value)
 		{
-			return ($item1 != null) ? $item1->takeValue($ctx, $key) != $value : false;
+			return ($item1 != null) ? (\Runtime\rtl::attr($ctx, $item1, $key) != $value) : (false);
+		};
+	}
+	static function equalAttrNot($ctx, $key, $value)
+	{
+		return static::equalNotAttr($ctx, $key, $value);
+	}
+	/**
+	 * Equal attrs
+	 */
+	static function equalAttrs($ctx, $search)
+	{
+		return function ($ctx, $item) use (&$search)
+		{
+			$fields = $search->keys($ctx);
+			for ($i = 0;$i < $fields->count($ctx);$i++)
+			{
+				$field_name = \Runtime\rtl::get($ctx, $fields, $i);
+				if (\Runtime\rtl::get($ctx, $search, $field_name) != \Runtime\rtl::get($ctx, $item, $field_name))
+				{
+					return false;
+				}
+			}
+			return true;
 		};
 	}
 	/**
@@ -126,14 +139,64 @@ namespace Runtime;
 		};
 	}
 	/**
+	 * Returns key value of obj
+	 */
+	static function get($ctx, $key, $def_value)
+	{
+		return function ($ctx, $obj) use (&$key,&$def_value)
+		{
+			return \Runtime\rtl::attr($ctx, $obj, \Runtime\Collection::from([$key]), $def_value);
+		};
+	}
+	/**
+	 * Set value
+	 */
+	static function set($ctx, $key, $value)
+	{
+		return function ($ctx, $obj) use (&$key,&$value)
+		{
+			return \Runtime\rtl::setAttr($ctx, $obj, \Runtime\Collection::from([$key]), $value);
+		};
+	}
+	/**
+	 * Returns attr of item
+	 */
+	static function attr($ctx, $path, $def_value=null)
+	{
+		return function ($ctx, $obj) use (&$path,&$def_value)
+		{
+			return \Runtime\rtl::attr($ctx, $obj, $path, $def_value);
+		};
+	}
+	/**
+	 * Set dict attr
+	 */
+	static function setAttr($ctx, $path, $value)
+	{
+		return function ($ctx, $obj) use (&$path,&$value)
+		{
+			return \Runtime\rtl::setAttr($ctx, $obj, $path, $value);
+		};
+	}
+	/**
 	 * Returns max id from items
 	 */
 	static function getMaxIdFromItems($ctx, $items, $start=0)
 	{
 		return $items->reduce($ctx, function ($ctx, $value, $item)
 		{
-			return ($item->id > $value) ? $item->id : $value;
+			return ($item->id > $value) ? ($item->id) : ($value);
 		}, $start);
+	}
+	/**
+	 * Copy object
+	 */
+	static function copy($ctx, $d)
+	{
+		return function ($ctx, $item) use (&$d)
+		{
+			return $item->copy($ctx, $d);
+		};
 	}
 	/**
 	 * Take dict
@@ -143,6 +206,16 @@ namespace Runtime;
 		return function ($ctx, $item) use (&$fields)
 		{
 			return $item->takeDict($ctx, $fields);
+		};
+	}
+	/**
+	 * Map
+	 */
+	static function map($ctx, $f)
+	{
+		return function ($ctx, $m) use (&$f)
+		{
+			return $m->map($ctx, $f);
 		};
 	}
 	/**
@@ -156,13 +229,238 @@ namespace Runtime;
 		};
 	}
 	/**
-	 * To
+	 * Intersect
+	 */
+	static function intersect($ctx, $arr)
+	{
+		return function ($ctx, $m) use (&$arr)
+		{
+			return $m->intersect($ctx, $arr);
+		};
+	}
+	/**
+	 * Sort
+	 */
+	static function sort($ctx, $f)
+	{
+		return function ($ctx, $m) use (&$f)
+		{
+			return $m->sortIm($ctx, $f);
+		};
+	}
+	/**
+	 * Transition
+	 */
+	static function transition($ctx, $f)
+	{
+		return function ($ctx, $m) use (&$f)
+		{
+			return $m->transition($ctx, $f);
+		};
+	}
+	/**
+	 * Sort asc
+	 */
+	static function sortAsc($ctx, $a, $b)
+	{
+		return ($a > $b) ? (1) : (($a < $b) ? (-1) : (0));
+	}
+	/**
+	 * Sort desc
+	 */
+	static function sortDesc($ctx, $a, $b)
+	{
+		return ($a > $b) ? (-1) : (($a < $b) ? (1) : (0));
+	}
+	/**
+	 * Sort attr
+	 */
+	static function sortAttr($ctx, $field_name, $f)
+	{
+		return function ($ctx, $a, $b) use (&$field_name,&$f)
+		{
+			$a = \Runtime\rtl::get($ctx, $a, $field_name);
+			$b = \Runtime\rtl::get($ctx, $b, $field_name);
+			if ($f == "asc")
+			{
+				return ($a > $b) ? (1) : (($a < $b) ? (-1) : (0));
+			}
+			if ($f == "desc")
+			{
+				return ($a > $b) ? (-1) : (($a < $b) ? (1) : (0));
+			}
+			return $f($ctx, $a, $b);
+		};
+	}
+	/**
+	 * Convert monad by type
 	 */
 	static function to($ctx, $type_value, $def_value=null)
 	{
 		return function ($ctx, $m) use (&$type_value,&$def_value)
 		{
-			return \Runtime\rtl::convert($m->value($ctx), $type_value, $def_value);
+			return new \Runtime\Monad($ctx, ($m->err == null) ? (\Runtime\rtl::convert($m->value($ctx), $type_value, $def_value)) : ($def_value));
+		};
+	}
+	/**
+	 * Convert monad by type
+	 */
+	static function default($ctx, $def_value=null)
+	{
+		return function ($ctx, $m) use (&$def_value)
+		{
+			return ($m->err != null || $m->val === null) ? (new \Runtime\Monad($ctx, $def_value)) : ($m);
+		};
+	}
+	/**
+	 * Set monad new value
+	 */
+	static function newValue($ctx, $value=null, $clear_error=false)
+	{
+		return function ($ctx, $m) use (&$value,&$clear_error)
+		{
+			return ($clear_error == true) ? (new \Runtime\Monad($ctx, $value)) : (($m->err == null) ? (new \Runtime\Monad($ctx, $value)) : ($m));
+		};
+	}
+	/**
+	 * Clear error
+	 */
+	static function clearError($ctx)
+	{
+		return function ($ctx, $m)
+		{
+			return new \Runtime\Monad($ctx, $m->val);
+		};
+	}
+	/**
+	 * Returns monad
+	 */
+	static function monad($ctx, $m)
+	{
+		return $m;
+	}
+	/**
+	 * Get method from class
+	 * @return fn
+	 */
+	static function method($ctx, $method_name)
+	{
+		return function ($ctx, $class_name) use (&$method_name)
+		{
+			return \Runtime\rtl::method($ctx, $class_name, $method_name);
+		};
+	}
+	/**
+	 * Apply function
+	 * @return fn
+	 */
+	static function applyMethod($ctx, $method_name, $args=null)
+	{
+		return function ($ctx, $class_name) use (&$method_name,&$args)
+		{
+			$f = \Runtime\rtl::method($ctx, $class_name, $method_name);
+			return \Runtime\rtl::apply($ctx, $f, $args);
+		};
+	}
+	/**
+	 * Apply async function
+	 * @return fn
+	 */
+	static function applyMethodAsync($ctx, $method_name, $args=null)
+	{
+		return function ($ctx, $class_name) use (&$method_name,&$args)
+		{
+			$f = \Runtime\rtl::method($ctx, $class_name, $method_name);
+			return \Runtime\rtl::applyAsync($ctx, $f, $args);
+		};
+	}
+	/**
+	 * Apply function
+	 * @return fn
+	 */
+	static function apply($ctx, $f)
+	{
+		return function ($ctx, $value) use (&$f)
+		{
+			return $f($ctx, $value);
+		};
+	}
+	/**
+	 * Apply function
+	 * @return fn
+	 */
+	static function applyAsync($ctx, $f)
+	{
+		return function ($ctx, $value) use (&$f)
+		{
+			return $f($ctx, $value);
+		};
+	}
+	/**
+	 * Log message
+	 * @return fn
+	 */
+	static function log($ctx, $message="")
+	{
+		return function ($ctx, $value) use (&$message)
+		{
+			if ($message == "")
+			{
+				var_dump($value);
+			}
+			else
+			{
+				var_dump($message);
+			}
+			return $value;
+		};
+	}
+	/**
+	 * Function or
+	 */
+	static function or($ctx, $arr)
+	{
+		return function ($ctx, $item) use (&$arr)
+		{
+			for ($i = 0;$i < $arr->count($ctx);$i++)
+			{
+				$f = \Runtime\rtl::get($ctx, $arr, $i);
+				$res = $f($ctx, $item);
+				if ($res)
+				{
+					return true;
+				}
+			}
+			return false;
+		};
+	}
+	/**
+	 * Function and
+	 */
+	static function and($ctx, $arr)
+	{
+		return function ($ctx, $item) use (&$arr)
+		{
+			for ($i = 0;$i < $arr->count($ctx);$i++)
+			{
+				$f = \Runtime\rtl::get($ctx, $arr, $i);
+				$res = $f($ctx, $item);
+				if (!$res)
+				{
+					return false;
+				}
+			}
+			return true;
+		};
+	}
+	/**
+	 * Join
+	 */
+	static function join($ctx, $ch)
+	{
+		return function ($ctx, $items) use (&$ch)
+		{
+			return \Runtime\rs::join($ctx, $ch, $items);
 		};
 	}
 	/* ======================= Class Init Functions ======================= */
@@ -184,10 +482,7 @@ namespace Runtime;
 	}
 	static function getClassInfo($ctx)
 	{
-		return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
-			"class_name"=>"Runtime.lib",
-			"name"=>"Runtime.lib",
+		return \Runtime\Dict::from([
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
@@ -201,9 +496,10 @@ namespace Runtime;
 	{
 		return null;
 	}
-	static function getMethodsList($ctx)
+	static function getMethodsList($ctx,$f=0)
 	{
-		$a = [
+		$a = [];
+		if (($f&4)==4) $a=[
 		];
 		return \Runtime\Collection::from($a);
 	}

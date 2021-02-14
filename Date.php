@@ -17,23 +17,30 @@
  *  limitations under the License.
  */
 namespace Runtime;
-class Container
+class Date extends \Runtime\BaseStruct
 {
-	public $val;
-	public $err;
-	function __construct($ctx, $value)
+	public $__y;
+	public $__m;
+	public $__d;
+	/**
+	 * Return date
+	 * @return string
+	 */
+	function getDate($ctx)
 	{
-		$this->val = $value;
+		return $this->y . \Runtime\rtl::toStr("-") . \Runtime\rtl::toStr($this->m) . \Runtime\rtl::toStr("-") . \Runtime\rtl::toStr($this->d);
 	}
 	/* ======================= Class Init Functions ======================= */
 	function _init($ctx)
 	{
-		$this->val = null;
-		$this->err = null;
+		parent::_init($ctx);
+		$this->__y = 0;
+		$this->__m = 0;
+		$this->__d = 0;
 	}
 	function getClassName()
 	{
-		return "Runtime.Container";
+		return "Runtime.Date";
 	}
 	static function getCurrentNamespace()
 	{
@@ -41,18 +48,15 @@ class Container
 	}
 	static function getCurrentClassName()
 	{
-		return "Runtime.Container";
+		return "Runtime.Date";
 	}
 	static function getParentClassName()
 	{
-		return "";
+		return "Runtime.BaseStruct";
 	}
 	static function getClassInfo($ctx)
 	{
-		return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
-			"class_name"=>"Runtime.Container",
-			"name"=>"Runtime.Container",
+		return \Runtime\Dict::from([
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
@@ -60,29 +64,37 @@ class Container
 	static function getFieldsList($ctx,$f)
 	{
 		$a = [];
+		if (($f&3)==3)
+		{
+			$a[]="y";
+			$a[]="m";
+			$a[]="d";
+		}
 		return \Runtime\Collection::from($a);
 	}
 	static function getFieldInfoByName($ctx,$field_name)
 	{
-		if ($field_name == "val") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
-			"class_name"=>"Runtime.Container",
-			"name"=> $field_name,
+		if ($field_name == "y") return \Runtime\Dict::from([
+			"t"=>"int",
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
-		if ($field_name == "err") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
-			"class_name"=>"Runtime.Container",
-			"name"=> $field_name,
+		if ($field_name == "m") return \Runtime\Dict::from([
+			"t"=>"int",
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "d") return \Runtime\Dict::from([
+			"t"=>"int",
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
 		return null;
 	}
-	static function getMethodsList($ctx)
+	static function getMethodsList($ctx,$f=0)
 	{
-		$a = [
+		$a = [];
+		if (($f&4)==4) $a=[
 		];
 		return \Runtime\Collection::from($a);
 	}

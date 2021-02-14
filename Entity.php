@@ -17,36 +17,31 @@
  *  limitations under the License.
  */
 namespace Runtime;
-class CoreEvent extends \Runtime\CoreStruct
+class Entity extends \Runtime\BaseStruct
 {
-	public $__sender;
+	public $__name;
+	public $__value;
+	public $__params;
+	/* Functions */
+	function className($ctx)
+	{
+		return ($this->name != "") ? (($this->value != "") ? ($this->value) : ($this->name)) : ("");
+	}
+	function logName($ctx)
+	{
+		return $this->getClassName($ctx) . \Runtime\rtl::toStr(" -> ") . \Runtime\rtl::toStr((($this->value != "") ? ($this->name . \Runtime\rtl::toStr(" -> ") . \Runtime\rtl::toStr($this->value)) : ($this->name)));
+	}
 	/* ======================= Class Init Functions ======================= */
 	function _init($ctx)
 	{
 		parent::_init($ctx);
-		$this->__sender = null;
-	}
-	function assignObject($ctx,$o)
-	{
-		if ($o instanceof \Runtime\CoreEvent)
-		{
-			$this->__sender = $o->__sender;
-		}
-		parent::assignObject($ctx,$o);
-	}
-	function assignValue($ctx,$k,$v)
-	{
-		if ($k == "sender")$this->__sender = $v;
-		else parent::assignValue($ctx,$k,$v);
-	}
-	function takeValue($ctx,$k,$d=null)
-	{
-		if ($k == "sender")return $this->__sender;
-		return parent::takeValue($ctx,$k,$d);
+		$this->__name = "";
+		$this->__value = "";
+		$this->__params = \Runtime\Dict::from([]);
 	}
 	function getClassName()
 	{
-		return "Runtime.CoreEvent";
+		return "Runtime.Entity";
 	}
 	static function getCurrentNamespace()
 	{
@@ -54,18 +49,15 @@ class CoreEvent extends \Runtime\CoreStruct
 	}
 	static function getCurrentClassName()
 	{
-		return "Runtime.CoreEvent";
+		return "Runtime.Entity";
 	}
 	static function getParentClassName()
 	{
-		return "Runtime.CoreStruct";
+		return "Runtime.BaseStruct";
 	}
 	static function getClassInfo($ctx)
 	{
-		return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
-			"class_name"=>"Runtime.CoreEvent",
-			"name"=>"Runtime.CoreEvent",
+		return \Runtime\Dict::from([
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
@@ -73,26 +65,37 @@ class CoreEvent extends \Runtime\CoreStruct
 	static function getFieldsList($ctx,$f)
 	{
 		$a = [];
-		if (($f|3)==3)
+		if (($f&3)==3)
 		{
-			$a[] = "sender";
+			$a[]="name";
+			$a[]="value";
+			$a[]="params";
 		}
 		return \Runtime\Collection::from($a);
 	}
 	static function getFieldInfoByName($ctx,$field_name)
 	{
-		if ($field_name == "sender") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
-			"class_name"=>"Runtime.CoreEvent",
-			"name"=> $field_name,
+		if ($field_name == "name") return \Runtime\Dict::from([
+			"t"=>"string",
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "value") return \Runtime\Dict::from([
+			"t"=>"string",
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "params") return \Runtime\Dict::from([
+			"t"=>"Runtime.Dict",
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
 		return null;
 	}
-	static function getMethodsList($ctx)
+	static function getMethodsList($ctx,$f=0)
 	{
-		$a = [
+		$a = [];
+		if (($f&4)==4) $a=[
 		];
 		return \Runtime\Collection::from($a);
 	}

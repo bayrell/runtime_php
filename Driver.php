@@ -16,47 +16,35 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-namespace Runtime\Annotations;
-class Driver extends \Runtime\Annotations\Entity
+namespace Runtime;
+class Driver extends \Runtime\Entity
 {
+	public $__global;
 	/* ======================= Class Init Functions ======================= */
-	function assignObject($ctx,$o)
+	function _init($ctx)
 	{
-		if ($o instanceof \Runtime\Annotations\Driver)
-		{
-		}
-		parent::assignObject($ctx,$o);
-	}
-	function assignValue($ctx,$k,$v)
-	{
-		parent::assignValue($ctx,$k,$v);
-	}
-	function takeValue($ctx,$k,$d=null)
-	{
-		return parent::takeValue($ctx,$k,$d);
+		parent::_init($ctx);
+		$this->__global = false;
 	}
 	function getClassName()
 	{
-		return "Runtime.Annotations.Driver";
+		return "Runtime.Driver";
 	}
 	static function getCurrentNamespace()
 	{
-		return "Runtime.Annotations";
+		return "Runtime";
 	}
 	static function getCurrentClassName()
 	{
-		return "Runtime.Annotations.Driver";
+		return "Runtime.Driver";
 	}
 	static function getParentClassName()
 	{
-		return "Runtime.Annotations.Entity";
+		return "Runtime.Entity";
 	}
 	static function getClassInfo($ctx)
 	{
-		return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
-			"class_name"=>"Runtime.Annotations.Driver",
-			"name"=>"Runtime.Annotations.Driver",
+		return \Runtime\Dict::from([
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
@@ -64,15 +52,25 @@ class Driver extends \Runtime\Annotations\Entity
 	static function getFieldsList($ctx,$f)
 	{
 		$a = [];
+		if (($f&3)==3)
+		{
+			$a[]="global";
+		}
 		return \Runtime\Collection::from($a);
 	}
 	static function getFieldInfoByName($ctx,$field_name)
 	{
+		if ($field_name == "global") return \Runtime\Dict::from([
+			"t"=>"bool",
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
 		return null;
 	}
-	static function getMethodsList($ctx)
+	static function getMethodsList($ctx,$f=0)
 	{
-		$a = [
+		$a = [];
+		if (($f&4)==4) $a=[
 		];
 		return \Runtime\Collection::from($a);
 	}

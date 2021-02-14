@@ -19,9 +19,9 @@
 namespace Runtime\Exceptions;
 class UnknownError extends \Runtime\Exceptions\RuntimeException
 {
-	function __construct($ctx, $context=null, $prev=null)
+	function __construct($ctx, $prev=null)
 	{
-		parent::__construct($ctx, \Runtime\rtl::translate($ctx, "Unknown error", null, "", $context), \Runtime\RuntimeConstant::ERROR_UNKNOWN, $context, $prev);
+		parent::__construct($ctx, $ctx->translate($ctx, "Runtime", "Unknown error"), \Runtime\rtl::ERROR_UNKNOWN, $prev);
 	}
 	/* ======================= Class Init Functions ======================= */
 	function getClassName()
@@ -42,10 +42,7 @@ class UnknownError extends \Runtime\Exceptions\RuntimeException
 	}
 	static function getClassInfo($ctx)
 	{
-		return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
-			"class_name"=>"Runtime.Exceptions.UnknownError",
-			"name"=>"Runtime.Exceptions.UnknownError",
+		return \Runtime\Dict::from([
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
@@ -59,9 +56,10 @@ class UnknownError extends \Runtime\Exceptions\RuntimeException
 	{
 		return null;
 	}
-	static function getMethodsList($ctx)
+	static function getMethodsList($ctx,$f=0)
 	{
-		$a = [
+		$a = [];
+		if (($f&4)==4) $a=[
 		];
 		return \Runtime\Collection::from($a);
 	}

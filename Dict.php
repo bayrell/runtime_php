@@ -29,7 +29,7 @@ class _Map implements \ArrayAccess, \JsonSerializable
 	{
 		$class_name = static::class;
 		$res = new $class_name(null);
-		if ($map != null)
+		if ($map != null && is_array($map))
 		{
 			foreach ($map as $key => $value)
 			{
@@ -124,14 +124,14 @@ class _Map implements \ArrayAccess, \JsonSerializable
 	/**
 	 * Get and set methods
 	 */
-	function __isset($k){return $this->has($k);}
-	function __get($k){return $this->item($k);}
-	function __set($k,$v){throw new \Runtime\Exceptions\AssignStructValueError($k);}
-	function __unset($k){throw new \Runtime\Exceptions\AssignStructValueError($k);}
-	public function offsetExists($k){return $this->has($k);}
-	public function offsetGet($k){return $this->item($k);}
-	public function offsetSet($k,$v){throw new \Runtime\Exceptions\AssignStructValueError($k);}
-	public function offsetUnset($k){throw new \Runtime\Exceptions\AssignStructValueError($k);}
+	function __isset($k){return $this->has(null, $k);}
+	function __get($k){return $this->get(null, $k, null);}
+	function __set($k,$v){throw new \Runtime\Exceptions\AssignStructValueError(null, $k);}
+	function __unset($k){throw new \Runtime\Exceptions\AssignStructValueError(null, $k);}
+	public function offsetExists($k){return $this->has(null, $k);}
+	public function offsetGet($k){return $this->get(null, $k, "");}
+	public function offsetSet($k,$v){throw new \Runtime\Exceptions\AssignStructValueError(null, $k);}
+	public function offsetUnset($k){throw new \Runtime\Exceptions\AssignStructValueError(null, $k);}
 	
 	/* Class name */
 	public function getClassName(){return "Runtime._Map";}
@@ -144,9 +144,18 @@ class Dict extends \Runtime\_Map
 	 * Returns new Instance
 	 * @return Object
 	 */
-	static function Instance($ctx)
+	static function Instance($ctx, $val=null)
 	{
-		return new \Runtime\Dict($ctx);
+		return new \Runtime\Dict($ctx, $val);
+	}
+	/**
+	 * Copy instance
+	 */
+	function cp($ctx)
+	{
+		$new_obj = static::Instance($ctx);
+		$new_obj->_map = $this->_map;
+		return $new_obj;
 	}
 	/**
 	 * Returns new Instance
@@ -158,13 +167,46 @@ class Dict extends \Runtime\_Map
 		return new $class_name($obj);
 	}
 	/**
+	 * Clone this struct with fields
+	 * @param Collection fields = null
+	 * @return Dict<T>
+	 */
+	function clone($ctx, $fields=null)
+	{
+		if ($fields == null)
+		{
+			return $this;
+		}
+		$new_obj = static::Instance($ctx);
+		if ($fields != null)
+		{
+			foreach ($fields->_arr as $key)
+			{
+				if (isset($this->_map[$key]))
+				{
+					$new_obj->_map[$key] = $this->_map[$key];
+				}
+			}
+		}
+		return $new_obj;
+	}
+	/**
 	 * Returns copy of Dict
 	 * @param int pos - position
 	 */
-	function copy($ctx)
+	function copy($ctx, $obj=null)
 	{
+		if ($obj == null)
+		{
+			return $this;
+		}
 		$new_obj = static::Instance($ctx);
 		$new_obj->_map = $this->_map;
+		if ($obj != null)
+		{
+			if ($obj instanceof \Runtime\Dict) $obj = $obj->_map;
+			$new_obj->_map = array_merge($new_obj->_map, $obj);
+		}
 		return $new_obj;
 	}
 	/**
@@ -189,7 +231,7 @@ class Dict extends \Runtime\_Map
 	function contains($ctx, $key)
 	{
 		$key = $this->toStr($key);
-		return isset($this->_map[$key]);
+		return array_key_exists($key, $this->_map);
 	}
 	/**
 	 * Return true if key exists
@@ -232,7 +274,7 @@ class Dict extends \Runtime\_Map
 		$key = $this->toStr($key);
 		if (!array_key_exists($key, $this->_map))
 		{
-			throw new KeyNotFound($key);
+			throw new \Runtime\Exceptions\KeyNotFound($ctx, $key);
 		}
 		return $this->_map[$key];
 	}
@@ -244,10 +286,14 @@ class Dict extends \Runtime\_Map
 	 */
 	function setIm($ctx, $key, $value)
 	{
-		$res = $this->copy($ctx);
+		$res = $this->cp($ctx);
 		$key = $this->toStr($key);
 		$res->_map[$key] = $value;
 		return $res;
+	}
+	function set1($ctx, $key, $value)
+	{
+		return $this->setIm($ctx, $key, $value);
 	}
 	/**
 	 * Remove value from position
@@ -257,13 +303,29 @@ class Dict extends \Runtime\_Map
 	function removeIm($ctx, $key)
 	{
 		$key = $this->toStr($key);
-		if (isset($this->_map[$key]))
+		if (array_key_exists($key, $this->_map))
 		{
-			$res = $this->copy($ctx);
+			$res = $this->cp($ctx);
 			unset($res->_map[$key]);
 			return $res;
 		}
 		return $this;
+	}
+	function remove1($ctx, $key)
+	{
+		return $this->removeIm($ctx, $key);
+	}
+	/**
+	 * Remove value from position
+	 * @param string key
+	 * @return self
+	 */
+	function removeKeys($ctx, $keys)
+	{
+		return ($keys != null) ? ($keys->reduce($ctx, function ($ctx, $item, $key)
+		{
+			return $item->removeIm($ctx, $key);
+		}, $this)) : ($this);
 	}
 	/**
 	 * Returns vector of the keys
@@ -361,13 +423,70 @@ class Dict extends \Runtime\_Map
 	 */
 	function concat($ctx, $map=null)
 	{
+		if ($map == null)
+		{
+			return $this;
+		}
+		$_map = [];
 		if ($map == null) return $this;
-		$res = $this->copy($ctx);
-		foreach ($this->_map as $key => $value)
+		if ($map instanceof \Runtime\Dict) $_map = $map->_map;
+		else if (gettype($map) == "array") $_map = $map;
+		$res = $this->cp($ctx);
+		foreach ($_map as $key => $value)
 		{
 			$res->_map[$key] = $value;
 		}
 		return $res;
+	}
+	/**
+	 * Clone this struct with fields
+	 * @param Collection fields = null
+	 * @return BaseStruct
+	 */
+	function intersect($ctx, $fields=null, $skip_empty=true)
+	{
+		if ($fields == null)
+		{
+			return \Runtime\Dict::from([]);
+		}
+		$obj = new \Runtime\Map($ctx);
+		$fields->each($ctx, function ($ctx, $field_name) use (&$skip_empty,&$obj)
+		{
+			if ($skip_empty && !$this->has($ctx, $field_name))
+			{
+				return ;
+			}
+			$obj->setValue($ctx, $field_name, $this->get($ctx, $field_name, null));
+		});
+		return $obj->toDict($ctx);
+	}
+	/**
+	 * Check equal
+	 */
+	function equal($ctx, $item)
+	{
+		if ($item == null)
+		{
+			return false;
+		}
+		$keys = (new \Runtime\Collection($ctx))->concat($ctx, $this->keys($ctx))->concat($ctx, $item->keys($ctx))->removeDuplicatesIm($ctx);
+		for ($i = 0;$i < $keys->count($ctx);$i++)
+		{
+			$key = \Runtime\rtl::get($ctx, $keys, $i);
+			if (!$this->has($ctx, $key))
+			{
+				return false;
+			}
+			if (!$item->has($ctx, $key))
+			{
+				return false;
+			}
+			if ($this->get($ctx, $key) != $item->get($ctx, $key))
+			{
+				return false;
+			}
+		}
+		return true;
 	}
 	/* ======================= Class Init Functions ======================= */
 	function getClassName()
@@ -388,10 +507,7 @@ class Dict extends \Runtime\_Map
 	}
 	static function getClassInfo($ctx)
 	{
-		return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
-			"class_name"=>"Runtime.Dict",
-			"name"=>"Runtime.Dict",
+		return \Runtime\Dict::from([
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
@@ -405,9 +521,10 @@ class Dict extends \Runtime\_Map
 	{
 		return null;
 	}
-	static function getMethodsList($ctx)
+	static function getMethodsList($ctx,$f=0)
 	{
-		$a = [
+		$a = [];
+		if (($f&4)==4) $a=[
 		];
 		return \Runtime\Collection::from($a);
 	}

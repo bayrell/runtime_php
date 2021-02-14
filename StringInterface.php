@@ -2,7 +2,7 @@
 /*!
  *  Bayrell Runtime Library
  *
- *  (c) Copyright 2016-2018 "Ildar Bikmamatov" <support@bayrell.org>
+ *  (c) Copyright 2016-2020 "Ildar Bikmamatov" <support@bayrell.org>
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -16,15 +16,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-namespace Runtime\Interfaces;
-interface LocalBusInterface
+namespace Runtime;
+interface StringInterface
 {
 	/**
-	 * Remote procedure call
+	 * Returns string
 	 */
-	static function call($__ctx, $bus, $context, $api_name, $space, $method_name, $data);
-	/**
-	 * Remote procedure call route
-	 */
-	static function callRoute($__ctx, $bus, $context, $url, $data);
+	function toString($ctx);
 }

@@ -19,9 +19,9 @@
 namespace Runtime\Exceptions;
 class IndexOutOfRange extends \Runtime\Exceptions\RuntimeException
 {
-	function __construct($ctx)
+	function __construct($ctx, $pos, $prev=null)
 	{
-		parent::__construct($ctx, ($ctx->staticMethod('translate'))($ctx, $ctx, "Index out of range", null), \Runtime\RuntimeConstant::ERROR_INDEX_OUT_OF_RANGE);
+		parent::__construct($ctx, $ctx->translate($ctx, "Runtime", "Index out of range. Pos: %pos%", \Runtime\Dict::from(["pos"=>$pos])), \Runtime\rtl::ERROR_INDEX_OUT_OF_RANGE, $prev);
 	}
 	/* ======================= Class Init Functions ======================= */
 	function getClassName()
@@ -42,10 +42,7 @@ class IndexOutOfRange extends \Runtime\Exceptions\RuntimeException
 	}
 	static function getClassInfo($ctx)
 	{
-		return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
-			"class_name"=>"Runtime.Exceptions.IndexOutOfRange",
-			"name"=>"Runtime.Exceptions.IndexOutOfRange",
+		return \Runtime\Dict::from([
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
@@ -59,9 +56,10 @@ class IndexOutOfRange extends \Runtime\Exceptions\RuntimeException
 	{
 		return null;
 	}
-	static function getMethodsList($ctx)
+	static function getMethodsList($ctx,$f=0)
 	{
-		$a = [
+		$a = [];
+		if (($f&4)==4) $a=[
 		];
 		return \Runtime\Collection::from($a);
 	}

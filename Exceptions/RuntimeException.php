@@ -27,7 +27,6 @@ class ClassException extends \Exception
 }
 class RuntimeException extends \Runtime\Exceptions\ClassException
 {
-	public $context;
 	public $prev;
 	public $error_message;
 	public $error_str;
@@ -106,7 +105,6 @@ class RuntimeException extends \Runtime\Exceptions\ClassException
 	function _init($ctx)
 	{
 		parent::_init($ctx);
-		$this->context = null;
 		$this->prev = null;
 		$this->error_message = "";
 		$this->error_str = "";
@@ -133,10 +131,7 @@ class RuntimeException extends \Runtime\Exceptions\ClassException
 	}
 	static function getClassInfo($ctx)
 	{
-		return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
-			"class_name"=>"Runtime.Exceptions.RuntimeException",
-			"name"=>"Runtime.Exceptions.RuntimeException",
+		return \Runtime\Dict::from([
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
@@ -148,67 +143,47 @@ class RuntimeException extends \Runtime\Exceptions\ClassException
 	}
 	static function getFieldInfoByName($ctx,$field_name)
 	{
-		if ($field_name == "context") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
-			"class_name"=>"Runtime.Exceptions.RuntimeException",
-			"name"=> $field_name,
+		if ($field_name == "prev") return \Runtime\Dict::from([
+			"t"=>"Object",
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
-		if ($field_name == "prev") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
-			"class_name"=>"Runtime.Exceptions.RuntimeException",
-			"name"=> $field_name,
+		if ($field_name == "error_message") return \Runtime\Dict::from([
+			"t"=>"string",
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
-		if ($field_name == "error_message") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
-			"class_name"=>"Runtime.Exceptions.RuntimeException",
-			"name"=> $field_name,
+		if ($field_name == "error_str") return \Runtime\Dict::from([
+			"t"=>"string",
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
-		if ($field_name == "error_str") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
-			"class_name"=>"Runtime.Exceptions.RuntimeException",
-			"name"=> $field_name,
+		if ($field_name == "error_code") return \Runtime\Dict::from([
+			"t"=>"int",
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
-		if ($field_name == "error_code") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
-			"class_name"=>"Runtime.Exceptions.RuntimeException",
-			"name"=> $field_name,
+		if ($field_name == "error_file") return \Runtime\Dict::from([
+			"t"=>"string",
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
-		if ($field_name == "error_file") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
-			"class_name"=>"Runtime.Exceptions.RuntimeException",
-			"name"=> $field_name,
+		if ($field_name == "error_line") return \Runtime\Dict::from([
+			"t"=>"int",
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
-		if ($field_name == "error_line") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
-			"class_name"=>"Runtime.Exceptions.RuntimeException",
-			"name"=> $field_name,
-			"annotations"=>\Runtime\Collection::from([
-			]),
-		]);
-		if ($field_name == "error_pos") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
-			"class_name"=>"Runtime.Exceptions.RuntimeException",
-			"name"=> $field_name,
+		if ($field_name == "error_pos") return \Runtime\Dict::from([
+			"t"=>"int",
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
 		return null;
 	}
-	static function getMethodsList($ctx)
+	static function getMethodsList($ctx,$f=0)
 	{
-		$a = [
+		$a = [];
+		if (($f&4)==4) $a=[
 		];
 		return \Runtime\Collection::from($a);
 	}

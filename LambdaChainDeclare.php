@@ -16,47 +16,41 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-namespace Runtime\Annotations;
-class Provider extends \Runtime\Annotations\Entity
+namespace Runtime;
+class LambdaChainDeclare extends \Runtime\BaseStruct
 {
+	public $__name;
+	public $__is_await;
+	function logName($ctx)
+	{
+		return $this->getClassName($ctx) . \Runtime\rtl::toStr(" -> ") . \Runtime\rtl::toStr($this->name);
+	}
 	/* ======================= Class Init Functions ======================= */
-	function assignObject($ctx,$o)
+	function _init($ctx)
 	{
-		if ($o instanceof \Runtime\Annotations\Provider)
-		{
-		}
-		parent::assignObject($ctx,$o);
-	}
-	function assignValue($ctx,$k,$v)
-	{
-		parent::assignValue($ctx,$k,$v);
-	}
-	function takeValue($ctx,$k,$d=null)
-	{
-		return parent::takeValue($ctx,$k,$d);
+		parent::_init($ctx);
+		$this->__name = "";
+		$this->__is_await = false;
 	}
 	function getClassName()
 	{
-		return "Runtime.Annotations.Provider";
+		return "Runtime.LambdaChainDeclare";
 	}
 	static function getCurrentNamespace()
 	{
-		return "Runtime.Annotations";
+		return "Runtime";
 	}
 	static function getCurrentClassName()
 	{
-		return "Runtime.Annotations.Provider";
+		return "Runtime.LambdaChainDeclare";
 	}
 	static function getParentClassName()
 	{
-		return "Runtime.Annotations.Entity";
+		return "Runtime.BaseStruct";
 	}
 	static function getClassInfo($ctx)
 	{
-		return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
-			"class_name"=>"Runtime.Annotations.Provider",
-			"name"=>"Runtime.Annotations.Provider",
+		return \Runtime\Dict::from([
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
@@ -64,15 +58,31 @@ class Provider extends \Runtime\Annotations\Entity
 	static function getFieldsList($ctx,$f)
 	{
 		$a = [];
+		if (($f&3)==3)
+		{
+			$a[]="name";
+			$a[]="is_await";
+		}
 		return \Runtime\Collection::from($a);
 	}
 	static function getFieldInfoByName($ctx,$field_name)
 	{
+		if ($field_name == "name") return \Runtime\Dict::from([
+			"t"=>"string",
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
+		if ($field_name == "is_await") return \Runtime\Dict::from([
+			"t"=>"bool",
+			"annotations"=>\Runtime\Collection::from([
+			]),
+		]);
 		return null;
 	}
-	static function getMethodsList($ctx)
+	static function getMethodsList($ctx,$f=0)
 	{
-		$a = [
+		$a = [];
+		if (($f&4)==4) $a=[
 		];
 		return \Runtime\Collection::from($a);
 	}

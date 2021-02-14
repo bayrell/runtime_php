@@ -24,14 +24,14 @@ class Monad
 	function __construct($ctx, $value, $err=null)
 	{
 		$this->val = $value;
-		$this->err = null;
+		$this->err = $err;
 	}
 	/**
 	 * Return attr of object
 	 */
 	function attr($ctx, $attr_name)
 	{
-		if ($this->val == null || $this->err != null)
+		if ($this->val === null || $this->err != null)
 		{
 			return $this;
 		}
@@ -42,7 +42,7 @@ class Monad
 	 */
 	function call($ctx, $f)
 	{
-		if ($this->val == null || $this->err != null)
+		if ($this->val === null || $this->err != null)
 		{
 			return $this;
 		}
@@ -61,7 +61,10 @@ class Monad
 				$res = null;
 				$err = $e;
 			}
-			throw $_ex;
+			else
+			{
+				throw $_ex;
+			}
 		}
 		return new \Runtime\Monad($ctx, $res, $err);
 	}
@@ -70,7 +73,7 @@ class Monad
 	 */
 	function callAsync($ctx, $f)
 	{
-		if ($this->val == null || $this->err != null)
+		if ($this->val === null || $this->err != null)
 		{
 			return $this;
 		}
@@ -89,16 +92,19 @@ class Monad
 				$res = null;
 				$err = $e;
 			}
-			throw $_ex;
+			else
+			{
+				throw $_ex;
+			}
 		}
 		return new \Runtime\Monad($ctx, $res, $err);
 	}
 	/**
 	 * Call method on value
 	 */
-	function callMethod($ctx, $method_name, $args=null)
+	function callMethod($ctx, $f, $args=null)
 	{
-		if ($this->val == null || $this->err != null)
+		if ($this->val === null || $this->err != null)
 		{
 			return $this;
 		}
@@ -107,12 +113,7 @@ class Monad
 		try
 		{
 			
-			$f = \Runtime\rtl::method($ctx, $this->val->getClassName($ctx), $method_name);
-			if ($args != null)
-			{
-				$f = \Runtime\rtl::apply($ctx, $f, $args);
-			}
-			$res = $f($ctx, $this->val);
+			$res = \Runtime\rtl::apply($ctx, $f, $args);
 		}
 		catch (\Exception $_ex)
 		{
@@ -122,16 +123,19 @@ class Monad
 				$res = null;
 				$err = $e;
 			}
-			throw $_ex;
+			else
+			{
+				throw $_ex;
+			}
 		}
 		return new \Runtime\Monad($ctx, $res, $err);
 	}
 	/**
 	 * Call async method on value
 	 */
-	function callMethodAsync($ctx, $method_name, $args=null)
+	function callMethodAsync($ctx, $f, $args=null)
 	{
-		if ($this->val == null || $this->err != null)
+		if ($this->val === null || $this->err != null)
 		{
 			return $this;
 		}
@@ -140,12 +144,7 @@ class Monad
 		try
 		{
 			
-			$f = \Runtime\rtl::method($ctx, $this->val->getClassName($ctx), $method_name);
-			if ($args != null)
-			{
-				$f = \Runtime\rtl::apply($ctx, $f, $args);
-			}
-			$res = $f($ctx, $this->val);
+			$res = \Runtime\rtl::applyAsync($ctx, $f, $args);
 		}
 		catch (\Exception $_ex)
 		{
@@ -155,7 +154,10 @@ class Monad
 				$res = null;
 				$err = $e;
 			}
-			throw $_ex;
+			else
+			{
+				throw $_ex;
+			}
 		}
 		return new \Runtime\Monad($ctx, $res, $err);
 	}
@@ -171,7 +173,11 @@ class Monad
 	 */
 	function value($ctx)
 	{
-		if ($this->val == null || $this->err != null)
+		if ($this->err != null)
+		{
+			throw $this->err;
+		}
+		if ($this->val === null || $this->err != null)
 		{
 			return null;
 		}
@@ -201,10 +207,7 @@ class Monad
 	}
 	static function getClassInfo($ctx)
 	{
-		return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
-			"class_name"=>"Runtime.Monad",
-			"name"=>"Runtime.Monad",
+		return \Runtime\Dict::from([
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
@@ -216,25 +219,22 @@ class Monad
 	}
 	static function getFieldInfoByName($ctx,$field_name)
 	{
-		if ($field_name == "val") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
-			"class_name"=>"Runtime.Monad",
-			"name"=> $field_name,
+		if ($field_name == "val") return \Runtime\Dict::from([
+			"t"=>"var",
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
-		if ($field_name == "err") return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_FIELD,
-			"class_name"=>"Runtime.Monad",
-			"name"=> $field_name,
+		if ($field_name == "err") return \Runtime\Dict::from([
+			"t"=>"var",
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
 		return null;
 	}
-	static function getMethodsList($ctx)
+	static function getMethodsList($ctx,$f=0)
 	{
-		$a = [
+		$a = [];
+		if (($f&4)==4) $a=[
 		];
 		return \Runtime\Collection::from($a);
 	}

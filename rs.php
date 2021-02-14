@@ -43,6 +43,13 @@ class rs
 		return $res;
 	}
 	/**
+	 * Is start
+	 */
+	static function start($ctx, $s, $search)
+	{
+		return static::search($ctx, $s, $search) == 0;
+	}
+	/**
 	 * Returns substring
 	 * @param string s The string
 	 * @param int start
@@ -175,10 +182,30 @@ class rs
 	 * @param {int} flags - Флаги
 	 * @return {string} json строка
 	 */
-	static function json_encode($ctx, $s, $flags)
+	static function json_encode_primitive($ctx, $s, $flags)
 	{
 		$flags = $flags || JSON_UNESCAPED_UNICODE;
 		return json_encode($s, JSON_UNESCAPED_UNICODE);
+	}
+	/**
+	 * Json encode data
+	 * @param var data
+	 * @return string
+	 */
+	static function json_encode($ctx, $data)
+	{
+		$f = \Runtime\rtl::method($ctx, "Runtime.RuntimeUtils", "json_encode");
+		return $f($ctx, $data);
+	}
+	/**
+	 * Json decode to primitive values
+	 * @param string s Encoded string
+	 * @return var
+	 */
+	static function json_decode($ctx, $obj)
+	{
+		$f = \Runtime\rtl::method($ctx, "Runtime.RuntimeUtils", "json_decode");
+		return $f($ctx, $obj);
 	}
 	/**
 	 * Escape HTML special chars
@@ -188,7 +215,6 @@ class rs
 	static function htmlEscape($ctx, $s)
 	{
 		if ($s instanceof \Runtime\Collection) return $s;
-		if ($s instanceof \Runtime\UIStruct) return $s;
 		return htmlspecialchars($s, ENT_QUOTES | ENT_HTML401);
 	}
 	static function escapeHtml($ctx, $s)
@@ -206,20 +232,19 @@ class rs
 	 */
 	static function pathinfo($ctx, $filepath)
 	{
-		$arr1 = \Runtime\rs::explode($ctx, ".", $filepath)->toVector($ctx);
-		$arr2 = \Runtime\rs::explode($ctx, "/", $filepath)->toVector($ctx);
-		$ret = new \Runtime\PathInfo($ctx);
-		$ret->filepath = $filepath;
-		$ret->extension = $arr1->pop($ctx);
-		$ret->basename = $arr2->pop($ctx);
-		$ret->dirname = \Runtime\rs::implode($ctx, "/", $arr2);
-		$ext_length = \Runtime\rs::strlen($ctx, $ret->extension);
+		$arr1 = static::explode($ctx, ".", $filepath)->toVector($ctx);
+		$arr2 = static::explode($ctx, "/", $filepath)->toVector($ctx);
+		$filepath = $filepath;
+		$extension = $arr1->popValue($ctx);
+		$basename = $arr2->popValue($ctx);
+		$dirname = static::join($ctx, "/", $arr2);
+		$ext_length = static::strlen($ctx, $extension);
 		if ($ext_length > 0)
 		{
 			$ext_length++;
 		}
-		$ret->filename = \Runtime\rs::substr($ctx, $ret->basename, 0, -1 * $ext_length);
-		return $ret;
+		$filename = static::substr($ctx, $basename, 0, -1 * $ext_length);
+		return \Runtime\Dict::from(["filepath"=>$filepath,"extension"=>$extension,"basename"=>$basename,"dirname"=>$dirname,"filename"=>$filename]);
 	}
 	/**
 	 * Возвращает имя файла без расширения
@@ -229,8 +254,8 @@ class rs
 	static function filename($ctx, $filepath)
 	{
 		$ret = \Runtime\rs::pathinfo($ctx, $filepath);
-		$res = $ret->basename;
-		$ext = $ret->extension;
+		$res = \Runtime\rtl::get($ctx, $ret, "basename");
+		$ext = \Runtime\rtl::get($ctx, $ret, "extension");
 		if ($ext != "")
 		{
 			$sz = 0 - \Runtime\rs::strlen($ctx, $ext) - 1;
@@ -246,7 +271,7 @@ class rs
 	static function basename($ctx, $filepath)
 	{
 		$ret = \Runtime\rs::pathinfo($ctx, $filepath);
-		$res = $ret->basename;
+		$res = \Runtime\rtl::get($ctx, $ret, "basename");
 		return $res;
 	}
 	/**
@@ -257,7 +282,7 @@ class rs
 	static function extname($ctx, $filepath)
 	{
 		$ret = \Runtime\rs::pathinfo($ctx, $filepath);
-		$res = $ret->extension;
+		$res = \Runtime\rtl::get($ctx, $ret, "extension");
 		return $res;
 	}
 	/**
@@ -268,7 +293,7 @@ class rs
 	static function dirname($ctx, $filepath)
 	{
 		$ret = \Runtime\rs::pathinfo($ctx, $filepath);
-		$res = $ret->dirname;
+		$res = \Runtime\rtl::get($ctx, $ret, "dirname");
 		return $res;
 	}
 	/**
@@ -318,6 +343,16 @@ class rs
 	{
 		return static::replace($ctx, "\n", "<br/>", $s);
 	}
+	/**
+	 * Remove spaces
+	 */
+	static function spaceless($ctx, $s)
+	{
+		$s = \Runtime\re::replace($ctx, " +", " ", $s);
+		$s = \Runtime\re::replace($ctx, "\t", "", $s);
+		$s = \Runtime\re::replace($ctx, "\n", "", $s);
+		return $s;
+	}
 	/* =================== Deprecated =================== */
 	/**
 	 * Разбивает строку на подстроки
@@ -363,6 +398,96 @@ class rs
 			return -1;
 		return $res;
 	}
+	/**
+	 * URL encode
+	 * @param string s
+	 * @return string
+	 */
+	static function url_encode($ctx, $s)
+	{
+		return urlencode($s);
+	}
+	/**
+	 * Base64 encode
+	 * @param string s
+	 * @return string
+	 */
+	static function base64_encode($ctx, $s)
+	{
+		return base64_encode($s);
+	}
+	/**
+	 * Base64 decode
+	 * @param string s
+	 * @return string
+	 */
+	static function base64_decode($ctx, $s)
+	{
+		return base64_decode($s);
+	}
+	/**
+	 * Base64 encode
+	 * @param string s
+	 * @return string
+	 */
+	static function base64_encode_url($ctx, $s)
+	{
+		$s = base64_encode($s);
+		$s = str_replace('+', '-', $s);
+		$s = str_replace('/', '_', $s);
+		$s = str_replace('=', '', $s);
+		return $s;
+	}
+	/**
+	 * Base64 decode
+	 * @param string s
+	 * @return string
+	 */
+	static function base64_decode_url($ctx, $s)
+	{
+		$c = 4 - strlen($s) % 4;
+		if ($c < 4 && $c > 0) $s .= str_repeat('=', $c);
+		$s = str_replace('-', '+', $s);
+		$s = str_replace('_', '/', $s);
+		return base64_decode($s);
+	}
+	/**
+	 * Returns string lenght
+	 * @param string s The string
+	 * @return int
+	 */
+	static function url_get_add($ctx, $s, $key, $value)
+	{
+		$pos = static::strpos($ctx, $s, "?");
+		$s1 = ($pos >= 0) ? (static::substr($ctx, $s, 0, $pos)) : ($s);
+		$s2 = ($pos >= 0) ? (static::substr($ctx, $s, $pos + 1)) : ("");
+		$find = false;
+		$arr = static::explode($ctx, "&", $s2);
+		$arr = $arr->map($ctx, function ($ctx, $s) use (&$key,&$value,&$find)
+		{
+			$arr = static::explode($ctx, "=", $s);
+			if (\Runtime\rtl::get($ctx, $arr, 0) == $key)
+			{
+				$find = true;
+				return $key . \Runtime\rtl::toStr("=") . \Runtime\rtl::toStr(static::htmlEscape($ctx, $value));
+			}
+			return $s;
+		})->filter($ctx, function ($ctx, $s)
+		{
+			return $s != "";
+		});
+		if (!$find && $value != "")
+		{
+			$arr = $arr->appendIm($ctx, $key . \Runtime\rtl::toStr("=") . \Runtime\rtl::toStr(static::htmlEscape($ctx, $value)));
+		}
+		$s = $s1;
+		$s2 = static::join($ctx, "&", $arr);
+		if ($s2 != "")
+		{
+			$s = $s . \Runtime\rtl::toStr("?") . \Runtime\rtl::toStr($s2);
+		}
+		return $s;
+	}
 	/* ======================= Class Init Functions ======================= */
 	function getClassName()
 	{
@@ -382,10 +507,7 @@ class rs
 	}
 	static function getClassInfo($ctx)
 	{
-		return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
-			"class_name"=>"Runtime.rs",
-			"name"=>"Runtime.rs",
+		return \Runtime\Dict::from([
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
@@ -399,9 +521,10 @@ class rs
 	{
 		return null;
 	}
-	static function getMethodsList($ctx)
+	static function getMethodsList($ctx,$f=0)
 	{
-		$a = [
+		$a = [];
+		if (($f&4)==4) $a=[
 		];
 		return \Runtime\Collection::from($a);
 	}

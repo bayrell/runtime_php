@@ -28,10 +28,22 @@ class Vector extends \Runtime\Collection
 		return new \Runtime\Vector($ctx);
 	}
 	/**
+	 * Returns new Vector
+	 * @param int offset
+	 * @param int lenght
+	 * @return Collection<T>
+	 */
+	function vectorSlice($ctx, $offset, $length=null)
+	{
+		$arr2 = static::Instance($ctx);
+		$arr2->_arr = array_slice($this->_arr, $offset, $length);
+		return $arr2;
+	}
+	/**
 	 * Append value to the end of array
 	 * @param T value
 	 */
-	function push($ctx, $value)
+	function pushValue($ctx, $value)
 	{
 		$this->_arr[] = $value;
 		return $this;
@@ -40,7 +52,7 @@ class Vector extends \Runtime\Collection
 	 * Insert first value size_to array
 	 * @return T value
 	 */
-	function unshift($ctx, $value)
+	function unshiftValue($ctx, $value)
 	{
 		array_unshift($this->_arr, $value);
 		return $this;
@@ -49,7 +61,7 @@ class Vector extends \Runtime\Collection
 	 * Extract last value from array
 	 * @return T value
 	 */
-	function pop($ctx)
+	function popValue($ctx)
 	{
 		return array_pop($this->_arr);
 	}
@@ -57,16 +69,17 @@ class Vector extends \Runtime\Collection
 	 * Extract first value from array
 	 * @return T value
 	 */
-	function shift($ctx)
+	function shiftValue($ctx)
 	{
-		return array_shift($this->_arr);
+		array_shift($this->_arr);
+		return $this;
 	}
 	/**
 	 * Insert value to position
 	 * @param T value
 	 * @param int pos - position
 	 */
-	function insert($ctx, $pos, $value)
+	function insertValue($ctx, $pos, $value)
 	{
 		array_splice($this->_arr, $pos, 0, [$value]);
 		return $this;
@@ -76,9 +89,32 @@ class Vector extends \Runtime\Collection
 	 * @param int pos - position
 	 * @param int count - count remove items
 	 */
-	function remove($ctx, $pos, $count=1)
+	function removePosition($ctx, $pos, $count=1)
 	{
 		array_splice($this->_arr, $pos, $count);
+		return $this;
+	}
+	/**
+	 * Remove value
+	 */
+	function removeValue($ctx, $value)
+	{
+		$index = $this->indexOf($ctx, $value);
+		if ($index != -1)
+		{
+			$this->removePosition($ctx, $index, 1);
+		}
+		return $this;
+	}
+	/**
+	 * Remove value
+	 */
+	function removeValues($ctx, $values)
+	{
+		for ($i = 0;$i < $values->count($ctx);$i++)
+		{
+			$this->removeValue($ctx, $values->item($ctx, $i));
+		}
 		return $this;
 	}
 	/**
@@ -86,7 +122,7 @@ class Vector extends \Runtime\Collection
 	 * @param int pos_begin - start position
 	 * @param int pos_end - end position
 	 */
-	function removeRange($ctx, $pos_begin, $pos_end)
+	function removeRangeValues($ctx, $pos_begin, $pos_end)
 	{
 		$this->remove($pos_begin, $pos_end - $pos_begin + 1);
 		return $this;
@@ -96,7 +132,7 @@ class Vector extends \Runtime\Collection
 	 * @param int pos - position
 	 * @param T value 
 	 */
-	function set($ctx, $pos, $value)
+	function setValue($ctx, $pos, $value)
 	{
 		if (!array_key_exists($pos, $this->_arr))
 		{
@@ -117,7 +153,7 @@ class Vector extends \Runtime\Collection
 	 * Append value to the end of the vector
 	 * @param T value
 	 */
-	function append($ctx, $value)
+	function appendValue($ctx, $value)
 	{
 		$this->push($ctx, $value);
 		return $this;
@@ -126,7 +162,7 @@ class Vector extends \Runtime\Collection
 	 * Insert first value to begin of the vector
 	 * @return T value
 	 */
-	function prepend($ctx, $value)
+	function prependValue($ctx, $value)
 	{
 		$this->unshift($ctx, $value);
 		return $this;
@@ -157,36 +193,6 @@ class Vector extends \Runtime\Collection
 		}
 		return $this;
 	}
-	/**
-	 * Remove value
-	 */
-	function removeValue($ctx, $value)
-	{
-		$index = $this->indexOf($ctx, $value);
-		if ($index != -1)
-		{
-			$this->remove($ctx, $index, 1);
-		}
-		return $this;
-	}
-	/**
-	 * Remove value
-	 */
-	function removeItem($ctx, $value)
-	{
-		return $this->removeValue($ctx, $value);
-	}
-	/**
-	 * Remove value
-	 */
-	function removeItems($ctx, $values)
-	{
-		for ($i = 0;$i < $values->count($ctx);$i++)
-		{
-			$this->removeValue($ctx, $values->item($ctx, $i));
-		}
-		return $this;
-	}
 	/* ======================= Class Init Functions ======================= */
 	function getClassName()
 	{
@@ -206,10 +212,7 @@ class Vector extends \Runtime\Collection
 	}
 	static function getClassInfo($ctx)
 	{
-		return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
-			"class_name"=>"Runtime.Vector",
-			"name"=>"Runtime.Vector",
+		return \Runtime\Dict::from([
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
@@ -223,9 +226,10 @@ class Vector extends \Runtime\Collection
 	{
 		return null;
 	}
-	static function getMethodsList($ctx)
+	static function getMethodsList($ctx,$f=0)
 	{
-		$a = [
+		$a = [];
+		if (($f&4)==4) $a=[
 		];
 		return \Runtime\Collection::from($a);
 	}

@@ -17,7 +17,7 @@
  *  limitations under the License.
  */
 namespace Runtime;
-class ModuleDescription implements \Runtime\Interfaces\ModuleDescriptionInterface, \Runtime\Interfaces\AssetsInterface
+class ModuleDescription
 {
 	/**
 	 * Returns module name
@@ -33,7 +33,7 @@ class ModuleDescription implements \Runtime\Interfaces\ModuleDescriptionInterfac
 	 */
 	static function getModuleVersion($ctx)
 	{
-		return "0.9.0";
+		return "0.11.0";
 	}
 	/**
 	 * Returns required modules
@@ -44,33 +44,11 @@ class ModuleDescription implements \Runtime\Interfaces\ModuleDescriptionInterfac
 		return null;
 	}
 	/**
-	 * Compatibility with older versions
-	 */
-	static function getRequiredModules($ctx)
-	{
-		return static::requiredModules($ctx);
-	}
-	/**
-	 * Returns module files load order
-	 * @return Collection<string>
-	 */
-	static function assets($ctx)
-	{
-		return \Runtime\Collection::from(["Runtime/rtl","Runtime/rs","Runtime/re","Runtime/lib","Runtime/Collection","Runtime/CoreObject","Runtime/Dict","Runtime/RuntimeConstant","Runtime/RuntimeUtils","Runtime/Exceptions/RuntimeException","Runtime/Interfaces/AssetsInterface","Runtime/Interfaces/BusInterface","Runtime/Interfaces/ModuleDescriptionInterface","Runtime/Interfaces/SerializeInterface","Runtime/Interfaces/StringInterface","Runtime/CoreStruct","Runtime/CoreProvider","Runtime/CoreEvent","Runtime/Map","Runtime/Message","Runtime/MessageRPC","Runtime/PathInfo","Runtime/ModuleDescription","Runtime/Monad","Runtime/Reference","Runtime/Vector","Runtime/Exceptions/ApiException","Runtime/Exceptions/IndexOutOfRange","Runtime/Exceptions/KeyNotFound","Runtime/Exceptions/UnknownError","Runtime/DateTime","Runtime/Annotations/Entity","Runtime/Annotations/IntrospectionClass","Runtime/Annotations/IntrospectionInfo","Runtime/Annotations/LambdaChain","Runtime/Annotations/LambdaChainDeclare","Runtime/Annotations/Driver","Runtime/Annotations/Provider","Runtime/UIStruct","Runtime/Context","Runtime/AsyncAwait"]);
-	}
-	/**
 	 * Returns enities
 	 */
 	static function entities($ctx)
 	{
-		return \Runtime\Collection::from([new \Runtime\Annotations\LambdaChainDeclare($ctx, \Runtime\Dict::from(["name"=>"Runtime.Entities"]))]);
-	}
-	/**
-	 * Returns enities
-	 */
-	static function resources($ctx)
-	{
-		return null;
+		return \Runtime\Collection::from([]);
 	}
 	/* ======================= Class Init Functions ======================= */
 	function getClassName()
@@ -91,10 +69,7 @@ class ModuleDescription implements \Runtime\Interfaces\ModuleDescriptionInterfac
 	}
 	static function getClassInfo($ctx)
 	{
-		return new \Runtime\Annotations\IntrospectionInfo($ctx, [
-			"kind"=>\Runtime\Annotations\IntrospectionInfo::ITEM_CLASS,
-			"class_name"=>"Runtime.ModuleDescription",
-			"name"=>"Runtime.ModuleDescription",
+		return \Runtime\Dict::from([
 			"annotations"=>\Runtime\Collection::from([
 			]),
 		]);
@@ -108,9 +83,10 @@ class ModuleDescription implements \Runtime\Interfaces\ModuleDescriptionInterfac
 	{
 		return null;
 	}
-	static function getMethodsList($ctx)
+	static function getMethodsList($ctx,$f=0)
 	{
-		$a = [
+		$a = [];
+		if (($f&4)==4) $a=[
 		];
 		return \Runtime\Collection::from($a);
 	}
